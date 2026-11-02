@@ -43,3 +43,11 @@ out/
 coverage/
 
 # --- Language-specific (added in Phase 0) ---
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/

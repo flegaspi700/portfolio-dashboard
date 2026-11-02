@@ -106,8 +106,9 @@ creep, including from AI agents.
   `check-compliance.ps1` on all 13 repos and hand-build one static mock. If
   it doesn't look good enough to send, move more repos onto the standard
   before building further.
-- **Assumption:** `check-compliance.ps1` can run inside a GitHub Action, since
-  it was built as a local tool. → Check in the first scan story.
+- **Settled:** the scan doesn't run `check-compliance.ps1` in the Action. It
+  applies the same check registry in Python over the GitHub API (see
+  `05-decisions-log.md`).
 - **Risk:** a bug publishes private repo details to the public page or logs.
   → Publish private repos from an explicit list of allowed fields, with a
   test that fails if anything else gets through, and keep those details out

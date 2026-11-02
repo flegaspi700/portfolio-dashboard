@@ -8,15 +8,18 @@ between sessions/prompts.
 
 ```
 portfolio-dashboard/
-  <component-1>/   # <what lives here>
-  <component-2>/   # <what lives here>
+  scan/            # reads repos; works out facts, compliance and status; assembles the scan result
+  privacy/         # allow-list filter; the only component that writes scan output
   tests/           # mirrors the module structure above
   docs/            # these planning docs
-  <entry point>    # wires the components together
+  main.py          # wires the components together
+  requirements.txt      # runtime dependencies, pinned
+  requirements-dev.txt  # dev tools, pinned
 ```
 
-One component per top-level folder. <Note any imports that are forbidden,
-e.g. "core logic never imports from the I/O layer".>
+One component per top-level folder. Later phases add their own folders when
+their stories start. `scan/` never writes to disk, and logic in `scan/` takes
+fetched data as input, so only one module there touches the network.
 
 ## Simplicity first
 
@@ -58,12 +61,12 @@ Start simple and split when there's a reason, not upfront.
 
 ## Naming
 
-- <Modules/files: e.g. `snake_case`>
-- <Functions/variables: e.g. `snake_case`>
-- <Classes/types: e.g. `PascalCase`>
+- Modules/files: `snake_case`
+- Functions/variables: `snake_case`
+- Classes/types: `PascalCase`
 - Field names at component boundaries stay identical across the whole
   codebase — pick one spelling and never mix variants.
-- Test files: <e.g. `test_<module>.py`>, mirroring the source file name
+- Test files: `test_<module>.py`, mirroring the source file name
 
 ## Typing
 
@@ -74,7 +77,7 @@ Start simple and split when there's a reason, not upfront.
 
 ## Style
 
-- Format with <formatter>, lint with <linter> — see
+- Format with `ruff format`, lint with `ruff check` — see
   `05-decisions-log.md`
 - Keep functions short — if a function does two jobs, split it into two
 
