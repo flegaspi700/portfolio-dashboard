@@ -156,8 +156,9 @@ change**. If a new kind of diagram would help (e.g. the first stored data
 
 ## File/folder conventions
 
-See `docs/06-coding-conventions.md` for the full layout. Summary: <one line
-describing the top-level layout and where tests live>.
+See `docs/06-coding-conventions.md` for the full layout. Summary: one folder per
+component (`scan/`, `privacy/`), `main.py` wires them together, and `tests/`
+mirrors the source layout.
 
 **Text files are UTF-8 without a BOM.** Windows PowerShell 5.1 reads them
 wrong by default (`—` shows as three odd characters starting with `â`),
@@ -277,13 +278,14 @@ exact commands — don't guess or invent alternatives.
 
 | Task | Command |
 |---|---|
-| Run the app | `<command>` |
-| Run all tests | `<command>` |
-| Run one test file | `<command>` |
-| Coverage report | `<command>` |
-| Lint | `<command>` |
-| Format | `<command>` |
-| Dependency audit | `<command>` |
+| Set up the environment | `py -3.13 -m venv .venv`, then `.venv\Scripts\python -m pip install -r requirements.txt -r requirements-dev.txt` |
+| Run the app | `.venv\Scripts\python main.py` |
+| Run all tests | `.venv\Scripts\python -m pytest` |
+| Run one test file | `.venv\Scripts\python -m pytest tests/scan/test_example.py` |
+| Coverage report | `.venv\Scripts\python -m pytest --cov=scan --cov=privacy --cov-report=term-missing` |
+| Lint | `.venv\Scripts\python -m ruff check .` |
+| Format | `.venv\Scripts\python -m ruff format .` |
+| Dependency audit | `.venv\Scripts\python -m pip_audit -r requirements.txt -r requirements-dev.txt` |
 
 ## Testing expectations
 

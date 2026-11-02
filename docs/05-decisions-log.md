@@ -130,14 +130,32 @@ flag a newly adopted old repo immediately.
 
 ## 2026-11-02 — Reuse or reimplement the compliance checks
 
-**Status:** Proposed
+**Status:** Accepted
 
-**Context:** The vision assumes `check-compliance.ps1` can run in an Action, but
-its header says the dashboard runs the same checks over the GitHub API. It also
-only checks a schema's top level, while `compliance.md` says "fits the schema",
-so a stricter validator could give different levels.
+**Context:** The vision assumed `check-compliance.ps1` could run in an Action, but
+it reads a local folder, so every repo would have to be cloned. It also only
+checks a schema's top level, while `compliance.md` says "fits the schema".
 
-**Decision:** _Pending. Settle in Phase 0 alongside `/stack`, before S1.2.1._
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. Reimplement the check kinds in Python, with full schema validation | Follows the written spec; no cloning; nested mistakes can't reach the page | A repo can pass locally yet fail C4 on the page until the script is fixed | $0 |
+| B. Reimplement in Python, validating the top level only | Matches the script exactly | Nested mistakes, such as a malformed `progress` block, pass C4 and can reach the page | $0 |
+| C. Run the script itself in the Action | No second copy of the logic | Clones private repos onto the runner; needs PowerShell in the stack | $0 |
+
+**Decision:** A. The scan reads the check registry at run time and applies the
+kinds in Python over the GitHub API. On nested schema errors, the spec wins over
+the script.
+
+**Why:** The written spec is the source of truth, and the script's own comment
+describes its top-level check as a limit of Windows PowerShell.
+
+**Trade-offs accepted:** The scan and `check-compliance.ps1` can disagree on C4
+until the script is fixed in `pmo-project-standardization`. S1.2.1 and F1.2 state
+this exception.
+
+**Revisit if:** the script gains full validation, which removes the exception.
 
 ---
 
@@ -212,42 +230,46 @@ repos onto the standard first), or hosting on Pages stops fitting.
 
 ---
 
-## YYYY-MM-DD — Language and stack
+## 2026-11-02 — Language and stack
 
-**Status:** Proposed
+**Status:** Accepted
 
-**Context:** The template doesn't assume a language. The stack is chosen
-per project in Phase 0 (see `AGENTS.md` → Choosing the stack).
+**Context:** The template doesn't assume a language. The scan is a batch job and
+the page is generated HTML with a little vanilla JS, so nothing needs a browser
+framework. Free tools only, and G4 favours the least code handling private data.
 
 **Options considered:**
 
 | Option | Pros | Cons | Cost |
 |---|---|---|---|
-| _<language + key libraries>_ | | | |
-| _<alternative>_ | | | |
+| A. Python 3.13: `urllib`, `jsonschema`, `Jinja2` from Phase 3 | Few dependencies, no build step; `Jinja2` can auto-escape untrusted text | Must reimplement the 4 check kinds | $0 |
+| B. TypeScript on Node 24: `fetch`, `ajv`, `eta` | Same language as the page's JS; `ajv` is a strong validator | Build step and many more dev dependencies, for a page that barely needs JS | $0 |
+| C. PowerShell 7: reuse `check-compliance.ps1` | No second copy of the check logic; levels match the local tool exactly | Reads a local folder, so private repos get cloned onto the runner; `pwsh` isn't installed here; weak for HTML generation | $0 |
 
-**Decision:** _Pending — fill in during Phase 0._
+**Decision:** A.
 
-**Why:** _What the project needs (from `00-vision.md`) and why this option
-fits best._
+**Why:** Simplest fit that meets the constraints, with the least code and
+dependencies around private data.
 
-**Trade-offs accepted:** _What we give up by not choosing the
-alternatives._
+**Trade-offs accepted:** The 4 check kinds exist in Python as well as PowerShell.
+The rules themselves stay in the standard's check registry, read at run time.
 
-**Revisit if:** _The condition that would make this worth reconsidering._
+**Revisit if:** the page grows real client-side needs that vanilla JS can't meet.
 
 ---
 
-## YYYY-MM-DD — Formatter, linter and test runner
+## 2026-11-02 — Formatter, linter and test runner
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Context:** Tooling needs to be fixed early so AI-generated code stays
 consistent between sessions. Follows from the language choice above.
 
-**Decision:** _Pending — fill in during Phase 0._
+**Decision:** `ruff` for formatting and linting, `pytest` with `pytest-cov` for
+tests and coverage, `pip-audit` for dependency audits. `mypy` is deferred.
 
-**Why:** _Fill in once chosen._
+**Why:** `ruff` covers both formatting and linting with one tool, and these are
+the standard choices for Python.
 
 ---
 

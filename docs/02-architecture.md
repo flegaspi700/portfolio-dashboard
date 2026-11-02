@@ -159,7 +159,6 @@ For those, the process is:
 Choices that need a comparison but haven't been decided yet. Each should
 also exist as a `Proposed` entry in `05-decisions-log.md`.
 
-- Reuse or reimplement the compliance checks? → decide in Phase 0, with `/stack`
 - How does the output get published? → decide at the start of Phase 2
 - How is "needs attention first" ranked? → decide at the start of Phase 3
 
@@ -171,6 +170,8 @@ rejected options and reasoning are in the linked log entry.
 | Area | Chosen | Main alternative rejected | Trade-off accepted | Decision |
 |---|---|---|---|---|
 | Hosting | Static dashboard on GitHub Pages, on real data | Markdown report only; demo data | A token to look after, and a filter for private data | `05-decisions-log.md` → "Product direction: static dashboard on real data" |
+| Language and stack | Python 3.13 with `urllib`, `jsonschema`, and `Jinja2` from Phase 3 | TypeScript on Node; PowerShell 7 | The 4 check kinds exist in Python as well as PowerShell | `05-decisions-log.md` → "Language and stack" |
+| Compliance checks | Reimplemented in Python with full schema validation, reading the registry at run time | Running `check-compliance.ps1`; top-level validation only | Can disagree with the script on C4 until it is fixed | `05-decisions-log.md` → "Reuse or reimplement the compliance checks" |
 | Repo scope | Spec exclusions plus pushed since 2026-01-01 | Rolling 12 months; spec rule only | Repos never age out unless archived or tagged | `05-decisions-log.md` → "Repo scope: spec exclusions plus a fixed cut-off" |
 | Private repos | Real name plus signals, from an allow-list | Masked names; adding a summary | Private rows don't say which checks failed | `05-decisions-log.md` → "Private repos: real name plus signals" |
 | Scan failure | Publish partial and flag it | All or nothing | A "could not scan" row may be visible for a day | `05-decisions-log.md` → "Scan failure: publish partial and flag it" |

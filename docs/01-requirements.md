@@ -175,7 +175,8 @@ the same repos are counted every time.
 results into a compliance level and warnings.
 **Phase:** 1
 **Depends on:** F1.1
-**Done when:** levels match `check-compliance.ps1` on the same repos.
+**Done when:** levels match `check-compliance.ps1` on the same repos, except
+where a nested schema error makes C4 fail here (the spec wins over the script).
 
 #### S1.2.1 — Evaluate check kinds
 
@@ -185,13 +186,14 @@ results into a compliance level and warnings.
 **Status:** Ready
 
 **Acceptance criteria:**
-- [ ] Given the four kinds (`exists`, `contains`, `absent`, `schema`), when evaluated on fixtures, then results match `check-compliance.ps1`
+- [ ] Given the four kinds (`exists`, `contains`, `absent`, `schema`), when evaluated on fixtures, then results match `check-compliance.ps1`, except as in the next criterion
+- [ ] Given a `portfolio.json` with a nested schema error, when the `schema` kind is evaluated, then C4 fails, even though `check-compliance.ps1` passes it
 - [ ] Given `applies_if` that doesn't match, when evaluated, then the result is n/a
 - [ ] Given `if_exists` with a missing file, when evaluated, then the check passes
 - [ ] Given a check kind the scanner doesn't recognise, when evaluated, then the run stops and names the kind and check
 - [ ] Given the check registry can't be read from `pmo-project-standardization`, when the scan starts, then the run stops, with no local copy as a fallback
 
-**Notes:** `check-compliance.ps1` only checks a schema's top level, while `compliance.md` says "fits the schema". Settle this in the Phase 0 decision "Reuse or reimplement the compliance checks" before building this story.
+**Notes:** `check-compliance.ps1` only checks a schema's top level, while `compliance.md` says "fits the schema". The spec wins: `05-decisions-log.md` → "Reuse or reimplement the compliance checks".
 
 #### S1.2.2 — Work out the compliance level
 

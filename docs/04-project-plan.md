@@ -17,15 +17,15 @@ its exit criteria are met and the "before marking a phase done" section of
 **Goal:** Prove the toolchain and the riskiest assumptions, with no real logic
 yet.
 
-- [ ] Choose and record the stack with `/stack` (`AGENTS.md` → Choosing the stack)
-- [ ] Decide whether to reuse `check-compliance.ps1` or reimplement its checks, including how strict the `schema` check is (`05-decisions-log.md`)
+- [x] Choose and record the stack with `/stack` (`AGENTS.md` → Choosing the stack)
+- [x] Decide whether to reuse `check-compliance.ps1` or reimplement its checks, including how strict the `schema` check is (`05-decisions-log.md`)
 - [ ] Run `check-compliance.ps1` on all 13 repos
 - [ ] Hand-build one mock page from the results and decide go or no-go. **The mock contains private data, so it stays outside this repo.**
 - [ ] Create a read-only token and read one private repo from an Action, logging nothing
 - [ ] Set up the environment and dependencies
 - [ ] Create the test folders (`07-testing-checklist.md` → Kinds of tests)
       and run one passing test from the test runner
-- [ ] Fill in `AGENTS.md` → Commands (run, test, coverage, lint, format)
+- [x] Fill in `AGENTS.md` → Commands (run, test, coverage, lint, format)
 - [x] Make the first commit on `main` (`13-git-workflow.md`)
 - [x] Create the GitHub repo and push `main`
 - [ ] (Optional) protect `main` (`13-git-workflow.md`)
@@ -57,7 +57,8 @@ with nothing published.
 - [ ] S2.1.3 — Keep logs safe
 
 **Exit criteria:** A local run on the real repos lists all 13, levels match
-`check-compliance.ps1`, and the leak test passes for output files and logs.
+`check-compliance.ps1` (apart from the nested schema exception in F1.2), and the
+leak test passes for output files and logs.
 
 ## Phase 2 — Report and daily run
 **Estimate:** To be set when its stories are written
