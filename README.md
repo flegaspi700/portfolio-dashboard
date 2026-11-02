@@ -72,7 +72,7 @@ in this folder:
 
 ## Project target (current)
 
-**In:** the 12 non-fork repos pushed to in 2026, with limited detail for private
+**In:** the 13 non-fork repos pushed to since 2026-01-01, with limited detail for private
 ones; a daily scan with JSON output, a Markdown report, and a static page with
 summary tiles, a sortable table and per-repo pages; link buttons that open a
 pre-filled GitHub issue for the owner.

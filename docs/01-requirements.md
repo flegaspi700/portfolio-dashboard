@@ -89,46 +89,327 @@ at each phase end (`07-testing-checklist.md`).
 
 | ID | Title | Type | Phase | Status |
 |---|---|---|---|---|
-| E1 | <epic title> | Epic | 1-3 | Backlog |
-| F1.1 | <feature title> | Feature | 1 | Backlog |
-| S1.1.1 | <story title> | Story | 1 | Backlog |
-| S1.1.2 | <story title> | Story | 1 | Backlog |
+| E1 | Portfolio scan | Epic | 1 | Backlog |
+| F1.1 | Find in-scope repos | Feature | 1 | Backlog |
+| S1.1.1 | Select in-scope repos | Story | 1 | Ready |
+| S1.1.2 | Read repo facts | Story | 1 | Ready |
+| F1.2 | Work out compliance | Feature | 1 | Backlog |
+| S1.2.1 | Evaluate check kinds | Story | 1 | Ready |
+| S1.2.2 | Work out the compliance level | Story | 1 | Ready |
+| S1.2.3 | Work out scan warnings | Story | 1 | Ready |
+| F1.3 | Read reported status | Feature | 1 | Backlog |
+| S1.3.1 | Read `portfolio.json` | Story | 1 | Ready |
+| F1.4 | Assemble the scan result | Feature | 1 | Backlog |
+| S1.4.1 | Assemble the scan result | Story | 1 | Ready |
+| E2 | Private data protection | Epic | 1, 3 | Backlog |
+| F2.1 | Allow-list and leak test | Feature | 1 | Backlog |
+| S2.1.1 | Allow-list filter | Story | 1 | Ready |
+| S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Ready |
+| S2.1.3 | Keep logs safe | Story | 1 | Ready |
+| F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
+| E3 | Daily publishing | Epic | 2 | Backlog |
+| F3.1 | Markdown report | Feature | 2 | Backlog |
+| F3.2 | Scheduled Action | Feature | 2 | Backlog |
+| F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
+| E4 | Dashboard page | Epic | 3 | Backlog |
+| F4.1 | Portfolio summary | Feature | 3 | Backlog |
+| F4.2 | Sortable table | Feature | 3 | Backlog |
+| F4.3 | Per-repo pages | Feature | 3 | Backlog |
+| F4.4 | Request links | Feature | 3 | Backlog |
+
+Component folders in the stories below are provisional until `/stack` and
+`06-coding-conventions.md` settle the layout. All tests use fixtures, with no
+real network or clock. Phases 2 and 3 get their stories when they are next.
 
 ---
 
-## E1 — <Epic title>
+## E1 — Portfolio scan
 
-**Goal:** <the outcome, in one or two sentences — why this matters>
-**Serves:** <goal IDs from `00-vision.md`, e.g. G1>
-**Out of scope:** <what this epic deliberately does not cover>
+**Goal:** Read every in-scope repo and work out its facts, compliance and
+reported status, so the owner and a reviewer never have to open each repo.
+**Serves:** G2, G3
+**Out of scope:** Changing other repos; redefining the standard; publishing
+anything (E3, E4).
 
-### F1.1 — <Feature title>
+### F1.1 — Find in-scope repos
 
-**Description:** <what this feature adds, in one or two sentences>
-**Phase:** <phase number from `04-project-plan.md`>
-**Depends on:** <feature IDs, or "none">
-**Done when:** <how you'll see the stories working together, e.g. "can
-demo X end-to-end on real input">
+**Description:** Decide which repos count, and read what GitHub knows about
+each one.
+**Phase:** 1
+**Depends on:** none
+**Done when:** a real run lists the expected 13 repos with their GitHub facts.
 
-#### S1.1.1 — <Story title>
+#### S1.1.1 — Select in-scope repos
 
-**Story:** As a <user/role>, I want <capability>, so that <benefit>.
-<For technical stories with no user-facing angle, use instead:>
-**Story:** Technical — <what must exist or change, and why>.
+**Story:** Technical — apply the spec's exclusions plus the scan cut-off, so
+the same repos are counted every time.
 
-**Component:** <folder from `06-coding-conventions.md`>
-**Status:** Backlog
+**Component:** `scan/`
+**Status:** Ready
 
 **Acceptance criteria:**
-- [ ] Given <starting state>, when <action>, then <observable result>
-- [ ] <edge case: empty / missing / invalid input>
-- [ ] <edge case: largest or worst realistic input>
+- [ ] Given a listing, when selecting, then archived repos, forks, repos tagged `portfolio-exclude` and repos last pushed before 2026-01-01 are left out
+- [ ] Given a repo pushed exactly on 2026-01-01, when selecting, then it is included
+- [ ] Given an empty listing, when selecting, then the result is an empty list, not an error
+- [ ] Given 54 repos across several API pages, when listing, then all pages are read
+- [ ] Given a repo with missing or unrecognised visibility, when selecting, then it is treated as private
 
-**Notes:** <links, constraints, decisions in `05-decisions-log.md`>
+**Notes:** Scope rule: `05-decisions-log.md` → "Repo scope: spec exclusions plus a fixed cut-off".
 
-#### S1.1.2 — <Story title>
+#### S1.1.2 — Read repo facts
 
-<...>
+**Story:** As the owner, I want last activity and open work per repo, so that I don't have to open each one.
+
+**Component:** `scan/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a repo, when read, then last push, created date, language, description, default branch and open issue and PR counts are returned
+- [ ] Given GitHub's issue count that includes PRs, when read, then issues and PRs are reported separately
+- [ ] Given an empty repo with no default branch, when read, then facts are returned and files count as missing
+- [ ] Given an API error or rate limit, when read, then that repo is reported as failed, with no made-up values
+
+### F1.2 — Work out compliance
+
+**Description:** Run the standard's checks against each repo and turn the
+results into a compliance level and warnings.
+**Phase:** 1
+**Depends on:** F1.1
+**Done when:** levels match `check-compliance.ps1` on the same repos.
+
+#### S1.2.1 — Evaluate check kinds
+
+**Story:** Technical — a pure function of the check registry plus repo files, so results follow the standard and not a separate copy of it.
+
+**Component:** `scan/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the four kinds (`exists`, `contains`, `absent`, `schema`), when evaluated on fixtures, then results match `check-compliance.ps1`
+- [ ] Given `applies_if` that doesn't match, when evaluated, then the result is n/a
+- [ ] Given `if_exists` with a missing file, when evaluated, then the check passes
+- [ ] Given a check kind the scanner doesn't recognise, when evaluated, then the run stops and names the kind and check
+- [ ] Given the check registry can't be read from `pmo-project-standardization`, when the scan starts, then the run stops, with no local copy as a fallback
+
+**Notes:** `check-compliance.ps1` only checks a schema's top level, while `compliance.md` says "fits the schema". Settle this in the Phase 0 decision "Reuse or reimplement the compliance checks" before building this story.
+
+#### S1.2.2 — Work out the compliance level
+
+**Story:** As a reviewer, I want one level per repo, so that I can compare them.
+
+**Component:** `scan/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given C1–C3 pass and all due checks pass, when working out the level, then it is Level 3
+- [ ] Given C1–C3 pass and a due required check fails, when working out the level, then it is Level 2
+- [ ] Given only C4 passes, when working out the level, then it is Level 1
+- [ ] Given nothing passes, when working out the level, then it is Level 0
+- [ ] Given a required check fails before its `required_from` date, when working out the level, then it is a warning and the level doesn't drop
+- [ ] Given a required check fails on its `required_from` date, when working out the level, then it counts as due
+- [ ] Given a template version stamp, when working out the level, then it is reported but never affects the level
+
+#### S1.2.3 — Work out scan warnings
+
+**Story:** As the owner, I want stale reports flagged, so that the page doesn't look confident while wrong.
+
+**Component:** `scan/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given `updated` is over 30 days old or `null`, and there were pushes in the last 30 days, when scanning, then spec warning S1 fires
+- [ ] Given `updated` is exactly 30 days old, when scanning, then spec warning S1 doesn't fire
+- [ ] Given `health` is `not-reported` more than 14 days after the repo was created or adopted, when scanning, then spec warning S2 fires
+- [ ] Given no `portfolio.json`, when scanning, then spec warning S2 doesn't fire, because Level 0 is already the finding
+- [ ] Given a required check fails with `required_from` within 14 days, when scanning, then spec warning S3 fires
+
+**Notes:** These are warnings S1, S2 and S3 in `spec/compliance.md`, not story IDs. The adoption date for S2 isn't recorded anywhere, so it is the date of the first commit that touched `portfolio.json`; this stops a newly adopted old repo being flagged immediately.
+
+### F1.3 — Read reported status
+
+**Description:** Read what each project reports about itself through the
+reporting contract.
+**Phase:** 1
+**Depends on:** F1.1
+**Done when:** a missing or broken `portfolio.json` shows as not reported and
+doesn't stop the run.
+
+#### S1.3.1 — Read `portfolio.json`
+
+**Story:** As a reviewer, I want each project's reported status, so that I can see how it is doing, and can tell when it hasn't said.
+
+**Component:** `scan/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a valid file, when read, then its fields are returned unchanged
+- [ ] Given a missing file, when read, then health is `not-reported` and the run continues
+- [ ] Given invalid JSON, a schema mismatch or an unknown `schema` version, when read, then health is `not-reported`, and the problem is recorded without quoting the file's content
+- [ ] Given a file over 1 MB, when read, then it is treated as invalid and not parsed
+- [ ] Given any input, when read, then health, risks and call-outs are never inferred
+
+### F1.4 — Assemble the scan result
+
+**Description:** Combine facts, compliance and status into one structure, and
+say whether the run succeeded.
+**Phase:** 1
+**Depends on:** F1.1, F1.2, F1.3
+**Done when:** one failed repo gives a "could not scan" row and the rest are
+complete.
+
+#### S1.4.1 — Assemble the scan result
+
+**Story:** Technical — combine the parts into one structure the filter and later the report and page can read.
+
+**Component:** `scan/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given all repos succeed, when assembling, then there is one row per repo, sorted by name, plus the scan time and spec version
+- [ ] Given one repo fails, when assembling, then its row says "could not scan", its other fields are `null`, and the result is marked partial
+- [ ] Given a bad token or every repo failing, when assembling, then the result is marked failed
+- [ ] Given zero in-scope repos, when assembling, then the result is marked failed, because this repo is always in scope, so zero means something broke
+- [ ] Given the same inputs, when assembling twice, then the output is identical apart from the scan time
+
+**Notes:** Failure behaviour: `05-decisions-log.md` → "Scan failure: publish partial and flag it".
+
+---
+
+## E2 — Private data protection
+
+**Goal:** Only allow-listed fields ever leave the scan, with a test that fails
+if anything else gets through.
+**Serves:** G4
+**Out of scope:** Access control on the page (it is public, with no sign-in).
+
+### F2.1 — Allow-list and leak test
+
+**Description:** Cut private rows to the approved fields, write only that
+result, and prove it for output files and logs.
+**Phase:** 1
+**Depends on:** F1.4
+**Done when:** canary values planted in a private repo appear in no output file
+or log.
+
+#### S2.1.1 — Allow-list filter
+
+**Story:** As the owner, I want private rows cut to approved fields, so that details can't reach the page.
+
+**Component:** `privacy/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a private row, when filtered, then only these remain: name, visibility, lifecycle, health, compliance level, last activity date, risk count, blocker count, scan status
+- [ ] Given a new field no one has listed, when filtered, then it is dropped
+- [ ] Given a failed private row, when filtered, then only name and scan status remain, with no error text
+- [ ] Given a public row, when filtered, then it passes unchanged
+
+**Notes:** Allow-list: `05-decisions-log.md` → "Private repos: real name plus signals". Private rows show the level only, not which checks failed.
+
+#### S2.1.2 — Write only filtered output, with a leak test
+
+**Story:** As the owner, I want proof that nothing private gets through, so that I can publish safely.
+
+**Component:** `privacy/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a fixture private repo with a unique canary value in every field, when the full scan runs, then no canary appears in any output file
+- [ ] Given the filter is bypassed, when the leak test runs, then it fails
+- [ ] Given a failed result, when the scan ends, then nothing is written
+- [ ] Given a partial or failed result, when the scan ends, then the exit code is non-zero
+- [ ] Given any run, when the scan runs, then unfiltered data is never written to disk
+
+#### S2.1.3 — Keep logs safe
+
+**Story:** As the owner, I want safe logs, so that nothing private appears in Action logs, which are public on a public repo.
+
+**Component:** `privacy/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the canary fixture, when the scan runs at every log level, then no canary appears in captured logs
+- [ ] Given an exception carrying a private file's content or a URL, when logged, then only the repo name and error type are logged
+- [ ] Given a run with a token, when the scan runs, then the token appears nowhere in logs
+
+### F2.2 — Leak test covers everything published
+
+**Description:** Extend the leak test to the Markdown report and the built page.
+**Phase:** 3
+**Depends on:** F2.1, F3.1, F4.3
+**Done when:** the same test also runs on the report and the built page.
+
+---
+
+## E3 — Daily publishing
+
+**Goal:** The view rebuilds itself every day, and a failure gets noticed.
+**Serves:** G3
+**Out of scope:** Automated update PRs to other repos; history and trends.
+
+### F3.1 — Markdown report
+
+**Description:** Generate a Markdown report of the portfolio.
+**Phase:** 2
+**Depends on:** F2.1
+**Done when:** the report is generated from the scan output alone.
+
+### F3.2 — Scheduled Action
+
+**Description:** Run the scan and publish the result daily on GitHub Actions.
+**Phase:** 2
+**Depends on:** F3.1
+**Done when:** it runs daily with no manual steps, and a failed run leaves the
+last good version up.
+
+### F3.3 — Failure alert and keep-alive
+
+**Description:** Make failures visible, and keep the schedule and the token alive.
+**Phase:** 2
+**Depends on:** F3.2
+**Done when:** a forced failure sends an alert, the token renewal reminder
+exists, and the 60-day workflow shutoff is handled.
+
+---
+
+## E4 — Dashboard page
+
+**Goal:** A reader understands the portfolio from one link and can drill down.
+**Serves:** G1, G2
+**Out of scope:** Backend, sign-in, editing on the page, history and trends.
+
+### F4.1 — Portfolio summary
+
+**Description:** Tiles, "needs attention first", last-updated time with an
+old-data flag, and an explanation of the compliance levels.
+**Phase:** 3
+**Depends on:** F3.2
+**Done when:** a first-time reader can name the project needing attention
+within 3 minutes.
+
+### F4.2 — Sortable table
+
+**Description:** All in-scope repos in one table that can be sorted.
+**Phase:** 3
+**Depends on:** F4.1
+**Done when:** all repos can be sorted by keyboard, and status isn't shown by
+colour alone.
+
+### F4.3 — Per-repo pages
+
+**Description:** A drill-down page for each repo.
+**Phase:** 3
+**Depends on:** F4.2
+**Done when:** public repos show full detail and private repos show
+allow-listed fields only.
+
+### F4.4 — Request links
+
+**Description:** Links that open a pre-filled GitHub issue for the owner.
+**Phase:** 3
+**Depends on:** F4.3
+**Done when:** a link opens a pre-filled issue in public repos, and private
+repos have no links.
 
 ---
 
