@@ -55,7 +55,7 @@ How you'll know it worked. Measurable where possible.
 
 - A first-time reader can say, within 3 minutes and without help, how healthy
   the portfolio is and which project needs attention first.
-- All 12 active repos appear on the page, and at least 4 are on the standard
+- All 13 in-scope repos appear on the page, and at least 4 are on the standard
   (Level 2 or higher) with real status data.
 - The page rebuilds daily with no manual steps for 30 days straight, and
   shows when it was last updated.
@@ -81,7 +81,7 @@ creep, including from AI agents.
 - **No redefining the standard here.** The reporting contract and compliance
   rules stay in `pmo-project-standardization`, and this project only uses
   them.
-- **No coverage of older repos in v1.** Forks and repos not pushed to in 2026
+- **No coverage of older repos in v1.** Forks and repos not pushed to since 2026-01-01
   are left out, or counted in a single summary line.
 
 ## Constraints
@@ -103,7 +103,7 @@ creep, including from AI agents.
 
 - **Assumption:** the page will look worthwhile with real data, even though
   few repos are on the standard yet. → Check first: run
-  `check-compliance.ps1` on all 12 repos and hand-build one static mock. If
+  `check-compliance.ps1` on all 13 repos and hand-build one static mock. If
   it doesn't look good enough to send, move more repos onto the standard
   before building further.
 - **Assumption:** `check-compliance.ps1` can run inside a GitHub Action, since

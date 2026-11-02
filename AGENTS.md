@@ -59,7 +59,7 @@ here; in replies, briefly explain the approach before the code. When
 ## What this project is
 
 A public, read-only portfolio dashboard: a daily GitHub Action scans the
-owner's 12 active GitHub repos and publishes a static GitHub Pages site showing
+owner's 13 in-scope GitHub repos and publishes a static GitHub Pages site showing
 each project's status, health, risks and compliance with the standard in
 `pmo-project-standardization`. It's a showcase for hiring managers first and
 the owner's working view second. Hard boundaries: it never changes other repos,
