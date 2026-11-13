@@ -21,8 +21,9 @@ flowchart LR
     privacy -- "scan output, allow-listed" --> out["Report and page, later phases"]
 ```
 
-No code exists yet, so this shows the planned flow from the requirements and
-the glossary; check it against the code as stories land.
+Only `scan/repos.py` exists so far (S1.1.1: the repo listing and scope
+rule, taking a fetch function); the rest is the planned flow from the
+requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
 
