@@ -13,6 +13,34 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-13 — Environment set up
+
+**Worked on:** Phase 0, the environment and test-folder tasks
+
+**Time spent:** about 0.2h
+
+**Changed:**
+- `requirements.txt`, `requirements-dev.txt` — the pins from
+  `docs/architecture.md` → Tech stack (jsonschema 4.26.0; pytest 9.2.0,
+  pytest-cov 7.1.0, ruff 0.17.3, pip-audit 2.10.1)
+- `tests/test_environment.py` — checks the venv runs Python 3.13 and every
+  installed package matches its pin; seen failing with a wrong pin first
+- `docs/requirements.md` — the two Phase 0 tasks ticked
+
+**Stopped at:** the AGENTS.md commands work: tests 2 passed, Ruff lint and
+format clean, `pip-audit` found no known vulnerabilities. Coverage reports
+"no data" until `scan/` and `privacy/` exist; `main.py` comes with the
+first story that wires components (S1.4.1), so the Run command has nothing
+to run yet.
+
+**Next step:** the token test (the owner creates a fine-grained read-only
+token and stores it as a repo secret; then a workflow reads one private
+repo and logs nothing).
+
+**Open questions:** None
+
+---
+
 ## 2026-11-13 — Threat model, first pass
 
 **Worked on:** Phase 0, the threat model task
