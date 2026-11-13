@@ -185,7 +185,7 @@ Phase 1; recording the page's checklist in Phase 3).
 |---|---|---|---|---|
 | E1 | Portfolio scan | Epic | 1 | Backlog |
 | F1.1 | Find in-scope repos | Feature | 1 | Backlog |
-| S1.1.1 | Select in-scope repos | Story | 1 | Ready |
+| S1.1.1 | Select in-scope repos | Story | 1 | Done |
 | S1.1.2 | Read repo facts | Story | 1 | Ready |
 | F1.2 | Work out compliance | Feature | 1 | Backlog |
 | S1.2.1 | Evaluate check kinds | Story | 1 | Ready |
@@ -239,14 +239,14 @@ each one.
 the same repos are counted every time.
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a listing, when selecting, then archived repos, forks, repos tagged `portfolio-exclude` and repos last pushed before 2026-01-01 are left out
-- [ ] Given a repo pushed exactly on 2026-01-01, when selecting, then it is included
-- [ ] Given an empty listing, when selecting, then the result is an empty list, not an error
-- [ ] Given 54 repos across several API pages, when listing, then all pages are read
-- [ ] Given a repo with missing or unrecognised visibility, when selecting, then it is treated as private
+- [x] Given a listing, when selecting, then archived repos, forks, repos tagged `portfolio-exclude` and repos last pushed before 2026-01-01 are left out
+- [x] Given a repo pushed exactly on 2026-01-01, when selecting, then it is included
+- [x] Given an empty listing, when selecting, then the result is an empty list, not an error
+- [x] Given 54 repos across several API pages, when listing, then all pages are read
+- [x] Given a repo with missing or unrecognised visibility, when selecting, then it is treated as private
 
 **Notes:** Scope rule: `decisions.md` → "Repo scope: spec exclusions plus a fixed cut-off".
 
