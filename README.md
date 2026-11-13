@@ -7,7 +7,7 @@ It is rebuilt daily as a static GitHub Pages site.
 
 ## Project target (current)
 
-**In:** the 13 non-fork repos pushed to since 2026-01-01, with limited detail for private
+**In:** all non-fork repos pushed to since 2026-01-01, with limited detail for private
 ones; a daily scan with JSON output, a Markdown report, and a static page with
 summary tiles, a sortable table and per-repo pages; link buttons that open a
 pre-filled GitHub issue for the owner.

@@ -13,6 +13,30 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-13 — NFRs filled in; scope wording no longer counts repos
+
+**Worked on:** Phase 0, the NFR task
+
+**Time spent:** about 0.1h
+
+**Changed:**
+- `docs/requirements.md` — NFR1 (scan under 5 minutes, under 1,000 API
+  requests), NFR4 (30 days unattended; a failed run never replaces the last
+  good page), NFR5 (allow-list only; 0 canary values or token in output and
+  logs), and a new NFR7 (page under 2 s and 500 KB); NFR task ticked.
+  "13 repos" became "all in-scope repos" in the success criteria, Phase 1
+  exit criteria and F1.1, as the owner chose (the scope rule gives 17 now)
+- `README.md` — the same change in Project target
+
+**Stopped at:** compliance level 3, no warnings. Phase 0 still needs the
+threat model, the environment and test folders, and the token test.
+
+**Next step:** the threat model in `docs/security.md`.
+
+**Open questions:** None
+
+---
+
 ## 2026-11-13 — Go decision
 
 **Worked on:** Phase 0, the go/no-go task
