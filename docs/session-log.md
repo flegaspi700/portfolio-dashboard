@@ -13,6 +13,29 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-13 — Go decision
+
+**Worked on:** Phase 0, the go/no-go task
+
+**Time spent:** about 0.1h
+
+**Changed:**
+- `docs/decisions.md` — "Go: build the dashboard", with the counts behind it
+  (17 in scope; 5 at Level 3, 3 at Level 1, 9 at Level 0)
+- `docs/requirements.md` — Phase 0 tasks: compliance run and go/no-go ticked
+
+**Stopped at:** go decided and logged. Phase 0 still needs the token test
+(an Action reads one private repo and logs nothing), the threat model, the
+NFRs, the environment and test folders.
+
+**Next step:** fill in NFR1, NFR4 and NFR5 in `docs/requirements.md`, then
+the threat model in `docs/security.md`.
+
+**Open questions:** change "13 repos" in the success criteria, Phase 1 exit
+criteria and F1.1 to "all in-scope repos"? (The scope rule now gives 17.)
+
+---
+
 ## 2026-11-13 — Moved to standard v2.0.0
 
 **Worked on:** no story — moving the project from the v1 template to the

@@ -13,6 +13,52 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-13 — Go: build the dashboard
+
+**Status:** Accepted
+
+**Context:** Phase 0 asked whether the page would look worthwhile on real
+data. On 2026-11-02 the answer was no for now: 13 repos were in scope, 2
+were at Level 3, 11 at Level 0, and 1 reported real health, so most rows
+of the mock were empty. The recommendation was to move the rollout ahead
+of Phase 1. Since then the standard went to v2.0.0 (a five-file footprint
+per repo) and was rolled out.
+
+Counts on 2026-11-13, with the scope rule in this log (2026-11-02, "Repo
+scope"):
+
+| | Repos |
+|---|---|
+| In scope | 17 (new repos were pushed this month) |
+| Level 3 (Current) | 5 |
+| Level 1 (Reporting) | 3 |
+| Level 0 (Not on standard) | 9 |
+| Reporting real health | 0 (all eight reporting repos are `not-reported` until their first `/report`) |
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| Go: start Phase 1 now | The success bar of at least 4 repos at Level 2 or higher is met (5); 8 of 17 rows have real data | Health is still empty until the owners run `/report` | $0 |
+| Wait until health is reported everywhere | The first real page looks fuller | Delays the build for data Phase 1 doesn't need: the scan works on any data | $0 |
+
+**Decision:** Go. Finish the rest of Phase 0 (token test, threat model,
+NFRs, environment), then start Phase 1.
+
+**Why:** The reason for the earlier no-go, too few repos on the standard,
+is gone. Health data can come in during Phase 1, since the scan doesn't
+depend on it.
+
+**Trade-offs accepted:** The first page will show health as not reported
+for most repos until their owners run `/report`.
+
+**Revisit if:** the first real scan output looks empty or misleading.
+
+**Open question:** the vision's success criteria, Phase 1's exit criteria
+and F1.1's "Done when" say "13 repos", a snapshot of the scope rule on
+2026-11-02. The rule now gives 17. Changing those criteria is the owner's
+call; "all in-scope repos" would stop them going stale.
+
 ## 2026-11-02 — Repo scope: spec exclusions plus a fixed cut-off
 
 **Status:** Accepted
