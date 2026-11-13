@@ -146,9 +146,10 @@ Work that isn't a story. Tick it here when done.
 - [x] Run `check-compliance.ps1` on all 13 repos (2026-11-02; again on 2026-11-13)
 - [x] Hand-build one mock page from the results and decide go or no-go. **The mock contains private data, so it stays outside this repo.** (Mock 2026-11-02; decided **go** on 2026-11-13, see `decisions.md`)
 - [ ] Create a read-only token and read one private repo from an Action, logging nothing
-- [ ] Set up the environment and dependencies
-- [ ] Create the test folders (the standard's `testing.md` → Kinds of tests)
-      and run one passing test from the test runner
+- [x] Set up the environment and dependencies (2026-11-13: Python 3.13 venv, pinned `requirements.txt` and `requirements-dev.txt`)
+- [x] Create the test folders (the standard's `testing.md` → Kinds of tests)
+      and run one passing test from the test runner (2026-11-13: `tests/test_environment.py`;
+      `tests/scan/` and `tests/privacy/` arrive with their first stories)
 - [x] Fill in `AGENTS.md` → Commands (run, test, coverage, lint, format)
 - [x] Make the first commit on `main` (the standard's `git.md`)
 - [x] Create the GitHub repo and push `main`
