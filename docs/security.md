@@ -55,9 +55,14 @@ ones included, with a read-only token.
 - **T7:** pinned requirements, `pip-audit` at each phase end (NFR2),
   Dependabot alerts (a Phase 0 setup task).
 
-**4. Did it work?** Not yet: there's no code. The token test closes Phase
-0 (an Action reads one private repo and logs nothing); the leak test
-arrives in Phase 1.
+**4. Did it work?** Token test, 2026-11-13 (closes Phase 0, T1 and T2):
+the `token-check` workflow read a private repo's `portfolio.json` from an
+Action (HTTP 200, valid JSON). The public run log shows the token masked
+(`***`), and none of the file's text values appear in it (6 checked, 0
+found; the repo's name appears, which the allow-list publishes anyway).
+The first run had failed safely because the secret had been stored empty.
+The leak test for scan output and logs arrives in Phase 1 (S2.1.2,
+S2.1.3).
 
 ## Personal data
 

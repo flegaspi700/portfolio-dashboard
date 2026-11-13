@@ -130,7 +130,7 @@ show the size of the work, not dates.
 
 | Phase | Goal | Exit criteria | Status | Estimate | Started | Finished |
 |---|---|---|---|---|---|---|
-| 0 — Setup and go/no-go | Prove the toolchain and the riskiest assumptions, with no real logic yet | The go/no-go is decided and logged, and an Action has read a private repo with nothing private in its logs. If the mock is a no-go, the Phase 4 rollout tasks move ahead of Phase 1 | Active | 2-3 days | 2026-11-02 | |
+| 0 — Setup and go/no-go | Prove the toolchain and the riskiest assumptions, with no real logic yet | The go/no-go is decided and logged, and an Action has read a private repo with nothing private in its logs. If the mock is a no-go, the Phase 4 rollout tasks move ahead of Phase 1 | Done | 2-3 days | 2026-11-02 | 2026-11-13 |
 | 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all in-scope repos, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Planned | 10 days at most (10 stories) | | |
 | 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Planned | Set when its stories are written | | |
 | 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Planned | Set when its stories are written | | |
@@ -145,7 +145,7 @@ Work that isn't a story. Tick it here when done.
 - [x] Decide whether to reuse `check-compliance.ps1` or reimplement its checks, including how strict the `schema` check is (`decisions.md`)
 - [x] Run `check-compliance.ps1` on all 13 repos (2026-11-02; again on 2026-11-13)
 - [x] Hand-build one mock page from the results and decide go or no-go. **The mock contains private data, so it stays outside this repo.** (Mock 2026-11-02; decided **go** on 2026-11-13, see `decisions.md`)
-- [ ] Create a read-only token and read one private repo from an Action, logging nothing
+- [x] Create a read-only token and read one private repo from an Action, logging nothing (2026-11-13: `token-check` workflow, run 43514961329; see `security.md`)
 - [x] Set up the environment and dependencies (2026-11-13: Python 3.13 venv, pinned `requirements.txt` and `requirements-dev.txt`)
 - [x] Create the test folders (the standard's `testing.md` → Kinds of tests)
       and run one passing test from the test runner (2026-11-13: `tests/test_environment.py`;
@@ -159,6 +159,11 @@ Work that isn't a story. Tick it here when done.
 - [x] First pass of the threat model (`security.md`) (2026-11-13)
 - [ ] Record what applies to this page in `accessibility.md`
 - [x] Fill in the non-functional requirements (`requirements.md`) (2026-11-13)
+
+Phase 0 closed 2026-11-13 with its exit criteria met. The open tasks above
+are optional or the owner's call (protect `main`, Dependabot and secret
+scanning), or wait until they're needed (a local `.env` for the token in
+Phase 1; recording the page's checklist in Phase 3).
 
 **Phase 2:**
 - [ ] Decide how the output gets published (`decisions.md`), since committed output stays in public history

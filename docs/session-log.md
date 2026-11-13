@@ -13,6 +13,32 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-13 — Token test passed; Phase 0 done
+
+**Worked on:** Phase 0, the token test
+
+**Time spent:** about 0.3h
+
+**Changed:**
+- `.github/workflows/token-check.yml` (PR #8) — manual workflow that reads
+  one repo's `portfolio.json` with the read token and logs no content
+- `docs/requirements.md` — token task ticked; Phase 0 marked Done
+- `docs/security.md` — "Did it work?" records the token test
+
+**Stopped at:** Phase 0 done. The owner created a fine-grained, read-only
+token (one private repo, Contents read, 90 days) and stored it as
+`PORTFOLIO_READ_TOKEN`. The first run failed safely: the secret had been
+saved empty, because `gh secret set` can't prompt without a terminal; it
+was stored again through the website. The second run passed, and the
+public log shows the token masked and none of the file's content.
+
+**Next step:** Phase 1, `/story S1.1.1` (select in-scope repos). Give the
+token access to the other in-scope private repos when the scan needs them.
+
+**Open questions:** None
+
+---
+
 ## 2026-11-13 — Environment set up
 
 **Worked on:** Phase 0, the environment and test-folder tasks
