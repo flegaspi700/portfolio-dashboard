@@ -1,20 +1,15 @@
-# Decisions log
+# Decisions
 
-Running log of design and technology decisions, in ADR-style (Architecture
-Decision Record). Add new entries at the top. Copy the template at the
-bottom for new entries.
+Design and technology decisions for this project, newest first. When to log
+one, and the entry format: the standard's `decisions.md`. Never rewrite an
+accepted entry: add a new one and mark the old one `Superseded by`.
 
-- Log open questions too, as `Proposed` entries with the decision left
-  pending and a note on what result will settle it — that way they don't
-  get decided silently.
-- For significant choices (see `02-architecture.md` → Design options and
-  trade-offs), fill in **Options considered** with every serious option,
-  not just the winner. Knowing what was rejected and why stops the same
-  debate from restarting later.
-- Small choices can skip the options table — a one-line Decision and Why
-  is enough.
-- Never delete or rewrite an accepted entry. If a decision changes, add a
-  new entry and mark the old one `Superseded by <new entry>`.
+Entries before 2026-11-13 were written under the v1 template and refer to
+its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
+`02`, `03`, `06` (layout, naming), `11` → `architecture.md`; `05` →
+`decisions.md`; `10` → `session-log.md`; `14`, `15` → `security.md`,
+`accessibility.md`; `06`, `07`, `13` (the rules) → the standard's
+`coding.md`, `testing.md`, `git.md`.
 
 ---
 
@@ -272,32 +267,3 @@ tests and coverage, `pip-audit` for dependency audits. `mypy` is deferred.
 the standard choices for Python.
 
 ---
-
-## Template for new entries
-
-```
-## YYYY-MM-DD — <short decision title>
-
-**Status:** Proposed | Accepted | Superseded by <link>
-
-**Context:** What prompted this decision? What constraints or goals
-(from 00-vision.md) apply?
-
-**Options considered:**   (skip for small choices)
-
-| Option | Pros | Cons | Cost |
-|---|---|---|---|
-| <simplest option that could work> | | | <$0 / $X per month / usage-based> |
-| <option B> | | | |
-| <option C, if any> | | | |
-
-**Decision:** What was decided?
-
-**Why:** Which criteria decided it — e.g. simplicity, effort, performance,
-cost, security, ease of changing later.
-
-**Trade-offs accepted:** What we give up with this choice.
-
-**Revisit if:** The condition or measurement that would make this worth
-reconsidering (e.g. "capture rate drops below 20 fps").
-```

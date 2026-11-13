@@ -1,91 +1,179 @@
 # Requirements
 
-What the project must do, broken down as **Epic → Feature → Story**. The
-project plan (`04-project-plan.md`) decides *when* each piece gets built;
-this doc decides *what* gets built and how you know it's done.
+What this project builds, and how you know each piece is done. Format and
+rules: the standard's `requirements.md`.
 
-- **Epic:** a large capability or outcome. Too big to build in one go.
-  Usually spans several phases.
-- **Feature:** a piece of an epic that is useful on its own. Fits in one
-  phase.
-- **Story:** the smallest unit of work: one prompt-sized change to one
-  component, with acceptance criteria that can be tested. If a story needs
-  more than ~a day or touches several components, split it.
+## Vision
 
-## How to work with this doc
+A public, read-only dashboard of my GitHub project portfolio, rebuilt
+daily as a static GitHub Pages site from real data: what each active project
+is, how healthy it is, what needs attention, and whether it follows the
+project standard. A showcase for hiring managers first, my working view
+second.
 
-- Every epic serves at least one goal from `00-vision.md`. An epic that
-  serves none is out of scope until the vision changes.
-- A small project can have a single epic with a few features, and stories
-  for the current phase only — don't pad it to look complete.
-- Break requirements down top-down when starting the project: write the
-  epics first, then features, then stories only for the current and next
-  phase. Stories for later phases get written when you reach them.
-- IDs are stable — never renumber. Removed items get status `Dropped`, not
-  deleted.
-- Every story's acceptance criteria become its tests (see
-  `07-testing-checklist.md`).
-- Reference story IDs in the project plan, commit messages and prompts
-  (e.g. "Implement S1.2.3").
-- A story is done when it meets its acceptance criteria *and* the
-  Definition of Done below. Then update its status here and in the summary
-  table.
+### Problem
 
-**Statuses:** `Backlog` → `Ready` (acceptance criteria written) →
-`In progress` → `Done` · or `Dropped`
+Nobody can see the state of my GitHub projects in one place. To find out
+what a project is, who owns it, how healthy it is, what its risks are, or
+whether it follows my project standard, you have to open each repo and read
+its docs. So gaps stay hidden, and someone reviewing my work, such as a
+hiring manager, has no quick way to see how I run a portfolio of projects.
 
-## Definition of Done
+### Who it's for
 
-A story is `Done` only when it meets **its own acceptance criteria** *and*
-**every item below**. This list is the same for every story — edit it here
-if the project needs more (or fewer) checks, never per story.
+- **Primary (showcase):** a hiring manager or senior reviewer looking at my
+  work. They have a few minutes, want the overall picture first, and today
+  have to read through individual repos to judge how I work.
+- **Also:** me, as owner of the portfolio. I need to see which projects need
+  attention and which are behind the standard, and today I'd have to check
+  each repo by hand.
+- **Designed as if** a portfolio manager or executive uses it: it reads at a
+  glance and lets you drill down when you want more.
 
-- [ ] Each acceptance criterion has a test, written first and seen failing;
-      the tests now pass, and the output has been seen (not just reported)
-- [ ] No test was deleted, skipped, or weakened to get there
-- [ ] The full test suite still passes
-- [ ] The code is the simplest version that works — nothing speculative
-      (`06-coding-conventions.md` → Simplicity first)
-- [ ] New/changed files have a header note; non-obvious functions have a
-      doc comment; existing notes still match the code
-- [ ] Any new decision is logged in `05-decisions-log.md`; any new term is
-      in `11-glossary.md`; diagrams in `02-architecture.md` still match
-      the code
-- [ ] No non-functional requirement (below) is broken by the change
-- [ ] Security checks for the change pass (`14-security.md` → Every
-      change); accessibility checks too if the UI changed
-      (`15-accessibility.md`)
-- [ ] Story status is updated here (story + summary table)
-- [ ] A session log entry is written in `10-session-log.md`
+### Why build it
 
-A **feature** is done when all its stories are `Done`, its integration
-and manual tests pass (`07-testing-checklist.md` → Before marking a feature
-done), and its **Done when** line is demonstrated. An **epic** is done when all its features are.
+Mainly as a portfolio piece: to show a hiring manager that I can define a
+project management standard and also apply it and report on it across real
+projects, using AI-assisted development. The second reason is practical: I
+want a real view of my own projects, and building it will push me to move
+more of them onto the standard.
 
-## Non-functional requirements
+"Good enough" means a page I'd be happy to send a hiring manager, built on
+real data and refreshed automatically, and one I actually check myself. It
+doesn't need to be a full PMO product.
 
-Qualities the whole system must have, rather than things it does —
-how fast, how secure, how accessible, how reliable, how cheap. They apply
-to every story, so they're checked by the Definition of Done and verified
-at each phase end (`07-testing-checklist.md`).
+### Goals
 
-- Each one must be **measurable** — "fast" isn't a requirement; "≥ 20
-  updates/sec on the target machine" is.
-- Delete the example rows that don't apply; add your own. Stories that
-  exist mainly to meet an NFR reference its ID in **Notes**.
+- **G1:** A reviewer can understand the state of my portfolio within a few
+  minutes, starting from one link: what the projects are, how healthy they
+  are, and what needs attention.
+- **G2:** I can see each week which projects need my attention and which are
+  behind the standard, without opening each repo.
+- **G3:** The view stays current with no manual upkeep beyond the status each
+  project's owner reports.
+- **G4:** Publishing it publicly never exposes details of my private repos.
 
-| ID | Category | Requirement (measurable) | How verified | Status |
-|---|---|---|---|---|
-| NFR1 | Performance | <e.g. main loop runs ≥ 20 times/sec on the target machine> | <e.g. timing test in tests/integration> | Not met yet |
-| NFR2 | Security | No known high-severity vulnerabilities in dependencies | Dependency audit + Dependabot, each phase end (`14-security.md`) | Not met yet |
-| NFR3 | Accessibility | Meets WCAG 2.2 AA | Manual pass per `15-accessibility.md` | Not met yet |
-| NFR4 | Reliability | <e.g. runs a full 30-minute session without crashing> | <e.g. end-to-end test / manual test> | Not met yet |
-| NFR5 | Privacy | <e.g. no personal data stored or logged> | <e.g. review of logs and stored files> | Not met yet |
-| NFR6 | Cost | $0 per month: free tiers only (`16-budget.md` is not needed) | Any new cost needs a logged decision in `05-decisions-log.md` | Not met yet |
+### Success looks like
 
-**Statuses:** `Not met yet` · `Met` (with date last verified) · `At risk`
+- A first-time reader can say, within 3 minutes and without help, how healthy
+  the portfolio is and which project needs attention first.
+- All 13 in-scope repos appear on the page, and at least 4 are on the standard
+  (Level 2 or higher) with real status data.
+- The page rebuilds daily with no manual steps for 30 days straight, and
+  shows when it was last updated.
+- An automated test confirms that nothing beyond the allowed fields for
+  private repos reaches the published page or the Action logs.
+- I check it at least weekly for a month instead of going repo by repo.
+- I'm happy to put the link on my resume or send it to a hiring manager.
 
-## Summary
+### Non-goals
+
+- **No changes to other repos from the dashboard.** It only reads. Buttons
+  are links that open a pre-filled GitHub issue for the owner.
+- **No automated updates in v1.** Having GitHub Actions or Claude Code open
+  draft PRs waits for a later release.
+- **No backend, sign-in or database.** It's a static page, so it isn't a live
+  app with permissions or an audit trail.
+- **No history or trends in v1.** It shows the current state only.
+- **No editing health, risks or call-outs on the page.** Those judgments come
+  from each project's owner through `portfolio.json`.
+- **No redefining the standard here.** The reporting contract and compliance
+  rules stay in `pmo-project-standardization`, and this project only uses
+  them.
+- **No coverage of older repos in v1.** Forks and repos not pushed to since 2026-01-01
+  are left out, or counted in a single summary line.
+
+### Constraints
+
+- **Time:** no fixed deadline. Built in small stories, one at a time.
+- **Budget:** free tools and tiers only: GitHub Pages and GitHub Actions,
+  with no paid services.
+- **Platform / environment:** runs on GitHub Actions and is served as a
+  static site from GitHub Pages. Developed on Windows 11.
+- **Other:**
+  - The repo is public, so its code, history and Action logs are visible to
+    anyone.
+  - Reading private repos needs a read-only token, stored as an encrypted
+    Actions secret.
+  - Compliance results must follow the rules in
+    `pmo-project-standardization` and not a separate copy of them.
+
+### Assumptions and risks
+
+- **Assumption:** the page will look worthwhile with real data, even though
+  few repos are on the standard yet. → Check first: run
+  `check-compliance.ps1` on all 13 repos and hand-build one static mock. If
+  it doesn't look good enough to send, move more repos onto the standard
+  before building further.
+- **Settled:** the scan doesn't run `check-compliance.ps1` in the Action. It
+  applies the same check registry in Python over the GitHub API (see
+  `decisions.md`).
+- **Risk:** a bug publishes private repo details to the public page or logs.
+  → Publish private repos from an explicit list of allowed fields, with a
+  test that fails if anything else gets through, and keep those details out
+  of the logs.
+- **Risk:** the daily rebuild stops without anyone noticing. GitHub turns off
+  scheduled workflows in public repos after 60 days without repo activity,
+  and the token can expire. → Show the last-updated time prominently and flag
+  it when old. Add a failure alert and a token renewal reminder.
+- **Risk:** owners stop reporting, so health data goes stale and the page
+  looks confident while being wrong. → Show how old each status is and flag
+  stale reports.
+- **Risk:** the numbers mislead a reader, for example if most repos show as
+  behind the standard with no context. → Explain the compliance levels on the
+  page and present the gap as a finding.
+
+## Phases
+
+There's no fixed deadline (`requirements.md` → Constraints), so estimates
+show the size of the work, not dates.
+
+| Phase | Goal | Exit criteria | Status | Estimate | Started | Finished |
+|---|---|---|---|---|---|---|
+| 0 — Setup and go/no-go | Prove the toolchain and the riskiest assumptions, with no real logic yet | The go/no-go is decided and logged, and an Action has read a private repo with nothing private in its logs. If the mock is a no-go, the Phase 4 rollout tasks move ahead of Phase 1 | Active | 2-3 days | 2026-11-02 | |
+| 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all 13, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Planned | 10 days at most (10 stories) | | |
+| 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Planned | Set when its stories are written | | |
+| 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Planned | Set when its stories are written | | |
+| 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met, and the link is good enough to send to a hiring manager | Planned | At least 30 days (the unattended run) | | |
+
+### Phase tasks
+
+Work that isn't a story. Tick it here when done.
+
+**Phase 0:**
+- [x] Choose and record the stack with `/stack` (the standard's `decisions.md` → Choosing the stack)
+- [x] Decide whether to reuse `check-compliance.ps1` or reimplement its checks, including how strict the `schema` check is (`decisions.md`)
+- [ ] Run `check-compliance.ps1` on all 13 repos
+- [ ] Hand-build one mock page from the results and decide go or no-go. **The mock contains private data, so it stays outside this repo.**
+- [ ] Create a read-only token and read one private repo from an Action, logging nothing
+- [ ] Set up the environment and dependencies
+- [ ] Create the test folders (the standard's `testing.md` → Kinds of tests)
+      and run one passing test from the test runner
+- [x] Fill in `AGENTS.md` → Commands (run, test, coverage, lint, format)
+- [x] Make the first commit on `main` (the standard's `git.md`)
+- [x] Create the GitHub repo and push `main`
+- [ ] (Optional) protect `main` (the standard's `git.md`)
+- [ ] Turn on Dependabot and secret scanning (`security.md` → GitHub setup)
+- [ ] Copy `.env.example` to `.env` for the local token
+- [ ] First pass of the threat model (`security.md`)
+- [ ] Record what applies to this page in `accessibility.md`
+- [ ] Fill in the non-functional requirements (`requirements.md`)
+
+**Phase 2:**
+- [ ] Decide how the output gets published (`decisions.md`), since committed output stays in public history
+- [ ] Write the stories for F3.1, F3.2, F3.3
+
+**Phase 3:**
+- [ ] Decide the "needs attention first" ranking (`decisions.md`)
+- [ ] Write the stories for F4.1, F4.2, F4.3, F4.4, F2.2
+
+**Phase 4:**
+- [ ] Rollout: get at least 4 repos to Level 2 or higher with real status data (done by hand in those repos, not by the dashboard)
+- [ ] Run the daily rebuild for 30 days straight with no manual steps
+- [ ] First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first
+- [ ] Check the page at least weekly for a month
+
+## Epics, features and stories
 
 | ID | Title | Type | Phase | Status |
 |---|---|---|---|---|
@@ -118,7 +206,7 @@ at each phase end (`07-testing-checklist.md`).
 | F4.4 | Request links | Feature | 3 | Backlog |
 
 Component folders in the stories below are provisional until `/stack` and
-`06-coding-conventions.md` settle the layout. All tests use fixtures, with no
+the standard's `coding.md` settle the layout. All tests use fixtures, with no
 real network or clock. Phases 2 and 3 get their stories when they are next.
 
 ---
@@ -154,7 +242,7 @@ the same repos are counted every time.
 - [ ] Given 54 repos across several API pages, when listing, then all pages are read
 - [ ] Given a repo with missing or unrecognised visibility, when selecting, then it is treated as private
 
-**Notes:** Scope rule: `05-decisions-log.md` → "Repo scope: spec exclusions plus a fixed cut-off".
+**Notes:** Scope rule: `decisions.md` → "Repo scope: spec exclusions plus a fixed cut-off".
 
 #### S1.1.2 — Read repo facts
 
@@ -193,7 +281,7 @@ where a nested schema error makes C4 fail here (the spec wins over the script).
 - [ ] Given a check kind the scanner doesn't recognise, when evaluated, then the run stops and names the kind and check
 - [ ] Given the check registry can't be read from `pmo-project-standardization`, when the scan starts, then the run stops, with no local copy as a fallback
 
-**Notes:** `check-compliance.ps1` only checks a schema's top level, while `compliance.md` says "fits the schema". The spec wins: `05-decisions-log.md` → "Reuse or reimplement the compliance checks".
+**Notes:** `check-compliance.ps1` only checks a schema's top level, while `compliance.md` says "fits the schema". The spec wins: `decisions.md` → "Reuse or reimplement the compliance checks".
 
 #### S1.2.2 — Work out the compliance level
 
@@ -273,7 +361,7 @@ complete.
 - [ ] Given zero in-scope repos, when assembling, then the result is marked failed, because this repo is always in scope, so zero means something broke
 - [ ] Given the same inputs, when assembling twice, then the output is identical apart from the scan time
 
-**Notes:** Failure behaviour: `05-decisions-log.md` → "Scan failure: publish partial and flag it".
+**Notes:** Failure behaviour: `decisions.md` → "Scan failure: publish partial and flag it".
 
 ---
 
@@ -306,7 +394,7 @@ or log.
 - [ ] Given a failed private row, when filtered, then only name and scan status remain, with no error text
 - [ ] Given a public row, when filtered, then it passes unchanged
 
-**Notes:** Allow-list: `05-decisions-log.md` → "Private repos: real name plus signals". Private rows show the level only, not which checks failed.
+**Notes:** Allow-list: `decisions.md` → "Private repos: real name plus signals". Private rows show the level only, not which checks failed.
 
 #### S2.1.2 — Write only filtered output, with a leak test
 
@@ -415,54 +503,22 @@ repos have no links.
 
 ---
 
+## Non-functional requirements
+
+| ID | Category | Requirement (measurable) | How verified | Status |
+|---|---|---|---|---|
+| NFR1 | Performance | <e.g. main loop runs ≥ 20 times/sec on the target machine> | <e.g. timing test in tests/integration> | Not met yet |
+| NFR2 | Security | No known high-severity vulnerabilities in dependencies | Dependency audit + Dependabot, each phase end (`security.md`) | Not met yet |
+| NFR3 | Accessibility | Meets WCAG 2.2 AA | Manual pass per `accessibility.md` | Not met yet |
+| NFR4 | Reliability | <e.g. runs a full 30-minute session without crashing> | <e.g. end-to-end test / manual test> | Not met yet |
+| NFR5 | Privacy | <e.g. no personal data stored or logged> | <e.g. review of logs and stored files> | Not met yet |
+| NFR6 | Cost | $0 per month: free tiers only (the standard's `cost.md` is not needed) | Any new cost needs a logged decision in `decisions.md` | Not met yet |
+
+**Statuses:** `Not met yet` · `Met` (with date last verified) · `At risk`
+
 ## Bugs
 
-Bugs found in finished work. Each one gets a regression test before it's
-fixed (`07-testing-checklist.md` → Bugs). Small bugs found while a story is
-still in progress are just part of that story.
+None logged yet.
 
 | ID | Title | Found in | Severity | Status | Test |
 |---|---|---|---|---|---|
-| B1 | <what's wrong, in one line> | <story/feature ID> | High / Medium / Low | Open | <test name> |
-
-**Statuses:** `Open` → `In progress` → `Fixed` · or `Won't fix` (with a
-reason in Notes)
-
-### B1 — <Bug title>
-
-**Steps to reproduce:**
-1. <...>
-
-**Expected:** <what should happen>
-**Actual:** <what happens instead>
-**Notes:** <cause once found, related decisions>
-
----
-
-## Template for new items
-
-```
-## E<n> — <Epic title>
-
-**Goal:** <outcome>
-**Serves:** <G-IDs from 00-vision.md>
-**Out of scope:** <exclusions>
-
-### F<n>.<m> — <Feature title>
-
-**Description:** <what it adds>
-**Phase:** <n>
-**Depends on:** <IDs or "none">
-**Done when:** <end-to-end demo>
-
-#### S<n>.<m>.<k> — <Story title>
-
-**Story:** As a <user>, I want <capability>, so that <benefit>.
-**Component:** <folder>
-**Status:** Backlog
-
-**Acceptance criteria:**
-- [ ] Given <state>, when <action>, then <result>
-
-**Notes:** <optional>
-```
