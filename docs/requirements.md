@@ -143,8 +143,8 @@ Work that isn't a story. Tick it here when done.
 **Phase 0:**
 - [x] Choose and record the stack with `/stack` (the standard's `decisions.md` → Choosing the stack)
 - [x] Decide whether to reuse `check-compliance.ps1` or reimplement its checks, including how strict the `schema` check is (`decisions.md`)
-- [ ] Run `check-compliance.ps1` on all 13 repos
-- [ ] Hand-build one mock page from the results and decide go or no-go. **The mock contains private data, so it stays outside this repo.**
+- [x] Run `check-compliance.ps1` on all 13 repos (2026-11-02; again on 2026-11-13)
+- [x] Hand-build one mock page from the results and decide go or no-go. **The mock contains private data, so it stays outside this repo.** (Mock 2026-11-02; decided **go** on 2026-11-13, see `decisions.md`)
 - [ ] Create a read-only token and read one private repo from an Action, logging nothing
 - [ ] Set up the environment and dependencies
 - [ ] Create the test folders (the standard's `testing.md` → Kinds of tests)
