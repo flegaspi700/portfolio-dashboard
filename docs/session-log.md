@@ -13,6 +13,42 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-13 — S1.1.1 done: select in-scope repos
+
+**Worked on:** S1.1.1
+
+**Time spent:** about 0.3h, estimated. Correct it if that's off.
+
+**Changed:**
+- `scan/repos.py` — `list_repos(fetch)` reads every page of
+  `/user/repos?affiliation=owner` through a fetch function passed in;
+  `select_in_scope` keeps repos that aren't archived, forks or tagged
+  `portfolio-exclude` and were pushed on or after 2026-01-01, as
+  `InScopeRepo` records. Odd visibility counts as private; logs hold counts
+  only (NFR5)
+- `scan/__init__.py` — package header note
+- `tests/scan/test_repos.py` — 12 tests, seen failing on stubs first, then
+  passing; fake fetch, no network
+- `docs/requirements.md` — S1.1.1 Done; `docs/architecture.md` — diagram
+  note says `scan/repos.py` exists
+- PR #10, squash-merged by the agent at the owner's request (an exception
+  to "the user merges"); branch deleted locally and on GitHub
+
+**Stopped at:** S1.1.1 merged on `main`. 14 tests pass, `scan/` coverage
+100%, Ruff clean. Two small calls in the code: a repo with no push date is
+out of scope, and paging stops at the first empty page (one extra request).
+Not verified yet: how the fine-grained token answers
+`/user/repos?affiliation=owner` (all public repos, or only the ones it was
+given). The first real call shows it.
+
+**Next step:** `/story S1.1.2` (read repo facts). Check the real listing's
+counts against the 17 in scope once a real fetch function exists (S1.4.1 at
+the latest).
+
+**Open questions:** None
+
+---
+
 ## 2026-11-13 — Token test passed; Phase 0 done
 
 **Worked on:** Phase 0, the token test
