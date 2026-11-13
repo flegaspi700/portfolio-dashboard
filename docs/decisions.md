@@ -209,6 +209,11 @@ publishing method also affects GitHub's 60-day shutoff of scheduled workflows.
 
 **Decision:** _Pending. Settle at the start of Phase 2._
 
+**Constraint (threat model T6, added 2026-11-13):** only filtered scan
+output may ever be committed or deployed. Deploying a Pages artifact is
+preferred over committing output, because anything committed stays in the
+public history.
+
 ---
 
 ## 2026-11-02 — "Needs attention first" ranking

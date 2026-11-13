@@ -155,7 +155,7 @@ Work that isn't a story. Tick it here when done.
 - [ ] (Optional) protect `main` (the standard's `git.md`)
 - [ ] Turn on Dependabot and secret scanning (`security.md` → GitHub setup)
 - [ ] Copy `.env.example` to `.env` for the local token
-- [ ] First pass of the threat model (`security.md`)
+- [x] First pass of the threat model (`security.md`) (2026-11-13)
 - [ ] Record what applies to this page in `accessibility.md`
 - [x] Fill in the non-functional requirements (`requirements.md`) (2026-11-13)
 
@@ -451,6 +451,10 @@ or log.
 **Depends on:** F3.1
 **Done when:** it runs daily with no manual steps, and a failed run leaves the
 last good version up.
+**Notes:** security (threat model T2, `security.md`): the workflows set
+minimal `permissions:`, never run on `pull_request_target`, and pin
+third-party Actions to a full commit SHA. These become acceptance criteria
+when the stories are written.
 
 ### F3.3 — Failure alert and keep-alive
 

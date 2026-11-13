@@ -13,6 +13,30 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-13 — Threat model, first pass
+
+**Worked on:** Phase 0, the threat model task
+
+**Time spent:** about 0.2h
+
+**Changed:**
+- `docs/security.md` — threat model T1–T7 with mitigations mapped to
+  stories, NFRs and decisions; personal data section
+- `docs/decisions.md` — a constraint added to the open "How the output gets
+  published" decision (T6: only filtered output may be committed or
+  deployed)
+- `docs/requirements.md` — F3.2 notes the workflow rules for T2; threat
+  model task ticked
+
+**Stopped at:** compliance level 3, no warnings. Phase 0 still needs the
+environment and test folders, and the token test.
+
+**Next step:** set up the environment and one passing test.
+
+**Open questions:** None
+
+---
+
 ## 2026-11-13 — NFRs filled in; scope wording no longer counts repos
 
 **Worked on:** Phase 0, the NFR task
