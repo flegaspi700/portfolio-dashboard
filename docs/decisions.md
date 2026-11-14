@@ -13,6 +13,37 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-14 — Read the check registry from the standard's default branch
+
+**Status:** Accepted
+
+**Context:** The scan reads `spec/compliance-checks.json` and
+`spec/portfolio.schema.json` from `pmo-project-standardization` at run time
+(S1.2.1), never a local copy. That repo is public, publishes versions as git
+tags (no GitHub releases), and its `main` was the same as `v2.1.0` on
+2026-11-14.
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. The default branch (`main`) | One request per file; always the newest rules; no version parsing | A change merged before it's tagged applies at once | $0 |
+| B. The newest version tag | Only released rules count | Needs semver parsing of the tag list, and one more request | $0 |
+| C. A version pinned in this repo | Fully predictable | Has to be bumped after every standard release, or "current" goes stale | $0 |
+
+**Decision:** A.
+
+**Why:** The simplest option, and the standard's own process puts each
+registry change and its CHANGELOG entry in one PR, so `main` holds rules
+the owner has already accepted.
+
+**Trade-offs accepted:** Levels can shift the day a registry change merges,
+before its tag exists.
+
+**Revisit if:** the standard starts merging work in progress to `main`.
+
+---
+
 ## 2026-11-13 — Go: build the dashboard
 
 **Status:** Accepted

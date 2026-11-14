@@ -1,0 +1,75 @@
+{
+  "_about": "Made-up checks and repos for tests/scan/test_checks.py (S1.2.1). Every expected value except those in script_differs was confirmed by running check-compliance.ps1 (pmo-project-standardization v2.1.0) on the same fixtures on 2026-11-14. Repo files are path -> text; a path not listed is missing.",
+  "schemas": {
+    "portfolio.schema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "required": ["schema", "name", "health"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": { "const": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "health": { "enum": ["green", "amber", "red", "not-reported"] },
+        "progress": {
+          "type": ["object", "null"],
+          "required": ["stories_done", "as_of"],
+          "additionalProperties": false,
+          "properties": {
+            "stories_done": { "type": "integer", "minimum": 0 },
+            "as_of": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "checks": [
+    { "id": "EX", "severity": "required", "kind": "exists", "paths": ["a.md", "docs/b.md"] },
+    { "id": "CT", "severity": "required", "kind": "contains", "path": "AGENTS.md", "pattern": "\\*\\*Hosting: (local|github)\\*\\*" },
+    { "id": "CT_CASE", "severity": "optional", "kind": "contains", "path": "AGENTS.md", "pattern": "utf-8 without a bom" },
+    { "id": "CT_IF_EXISTS", "severity": "warning", "kind": "contains", "path": "CLAUDE.md", "if_exists": true, "pattern": "(?m)^\\s*@AGENTS\\.md\\s*$" },
+    { "id": "AB", "severity": "warning", "kind": "absent", "paths": ["docs/requirements.md", "docs/missing.md"], "pattern": "<[A-Za-z][^<>`\\r\\n]*\\s[^<>`\\r\\n]*>" },
+    { "id": "SC", "severity": "required", "kind": "schema", "path": "portfolio.json", "schema": "portfolio.schema.json" },
+    { "id": "AI_CONTAINS", "severity": "optional", "kind": "contains", "path": "AGENTS.md", "pattern": "(?m)^## Doc status", "applies_if": { "path": "AGENTS.md", "pattern": "Template version: v\\d" } },
+    { "id": "AI_EXISTS", "severity": "optional", "kind": "exists", "paths": ["extra.md"], "applies_if": { "path": "NOTES.md", "pattern": "apply" } }
+  ],
+  "repos": {
+    "full": {
+      "a.md": "x",
+      "docs/b.md": "x",
+      "AGENTS.md": "# Project\r\n\r\nTemplate version: v1.4.0\r\n**Hosting: github**\r\n\r\n- Text files are UTF-8 without a BOM.\r\n\r\n## Doc status\r\n",
+      "CLAUDE.md": "@AGENTS.md\r\n",
+      "docs/requirements.md": "# Requirements\n\nNo placeholders here, only `<code>` and <br/>.\n",
+      "portfolio.json": "{\"schema\": 1, \"name\": \"full\", \"health\": \"green\", \"progress\": {\"stories_done\": 3, \"as_of\": \"2026-11-01\"}}"
+    },
+    "empty": {},
+    "broken": {
+      "a.md": "x",
+      "AGENTS.md": "# Project\n\n**Hosting: gitlab**\n",
+      "CLAUDE.md": "Read AGENTS.md first.\n",
+      "docs/requirements.md": "# Requirements\n\n<One paragraph vision>\n",
+      "portfolio.json": "{ not json",
+      "NOTES.md": "please apply this"
+    },
+    "schema_missing_field": { "portfolio.json": "{\"schema\": 1, \"name\": \"x\"}" },
+    "schema_unknown_field": { "portfolio.json": "{\"schema\": 1, \"name\": \"x\", \"health\": \"green\", \"colour\": \"blue\"}" },
+    "schema_bad_enum": { "portfolio.json": "{\"schema\": 1, \"name\": \"x\", \"health\": \"purple\"}" },
+    "schema_wrong_const": { "portfolio.json": "{\"schema\": 2, \"name\": \"x\", \"health\": \"green\"}" },
+    "schema_nested_error": { "portfolio.json": "{\"schema\": 1, \"name\": \"x\", \"health\": \"green\", \"progress\": {\"stories_done\": 3}}" },
+    "schema_top_level_type_error": { "portfolio.json": "{\"schema\": 1, \"name\": 5, \"health\": \"green\"}" }
+  },
+  "expected": {
+    "full": { "EX": true, "CT": true, "CT_CASE": true, "CT_IF_EXISTS": true, "AB": true, "SC": true, "AI_CONTAINS": true, "AI_EXISTS": null },
+    "empty": { "EX": false, "CT": false, "CT_CASE": false, "CT_IF_EXISTS": true, "AB": true, "SC": false, "AI_CONTAINS": null, "AI_EXISTS": null },
+    "broken": { "EX": false, "CT": false, "CT_CASE": false, "CT_IF_EXISTS": false, "AB": false, "SC": false, "AI_CONTAINS": null, "AI_EXISTS": false },
+    "schema_missing_field": { "SC": false },
+    "schema_unknown_field": { "SC": false },
+    "schema_bad_enum": { "SC": false },
+    "schema_wrong_const": { "SC": false },
+    "schema_nested_error": { "SC": false },
+    "schema_top_level_type_error": { "SC": false }
+  },
+  "script_differs": {
+    "schema_nested_error": { "SC": "check-compliance.ps1 passes it: it checks only the schema's top level. The spec wins (docs/decisions.md, 'Reuse or reimplement the compliance checks')." },
+    "schema_top_level_type_error": { "SC": "check-compliance.ps1 passes it: it doesn't check types at all. Same reason as the nested error." }
+  }
+}
