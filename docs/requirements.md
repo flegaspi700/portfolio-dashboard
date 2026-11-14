@@ -186,7 +186,7 @@ Phase 1; recording the page's checklist in Phase 3).
 | E1 | Portfolio scan | Epic | 1 | Backlog |
 | F1.1 | Find in-scope repos | Feature | 1 | Backlog |
 | S1.1.1 | Select in-scope repos | Story | 1 | Done |
-| S1.1.2 | Read repo facts | Story | 1 | Ready |
+| S1.1.2 | Read repo facts | Story | 1 | Done |
 | F1.2 | Work out compliance | Feature | 1 | Backlog |
 | S1.2.1 | Evaluate check kinds | Story | 1 | Ready |
 | S1.2.2 | Work out the compliance level | Story | 1 | Ready |
@@ -255,13 +255,15 @@ the same repos are counted every time.
 **Story:** As the owner, I want last activity and open work per repo, so that I don't have to open each one.
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a repo, when read, then last push, created date, language, description, default branch and open issue and PR counts are returned
-- [ ] Given GitHub's issue count that includes PRs, when read, then issues and PRs are reported separately
-- [ ] Given an empty repo with no default branch, when read, then facts are returned and files count as missing
-- [ ] Given an API error or rate limit, when read, then that repo is reported as failed, with no made-up values
+- [x] Given a repo, when read, then last push, created date, language, description, default branch and open issue and PR counts are returned
+- [x] Given GitHub's issue count that includes PRs, when read, then issues and PRs are reported separately
+- [x] Given an empty repo with no default branch, when read, then facts are returned and files count as missing
+- [x] Given an API error or rate limit, when read, then that repo is reported as failed, with no made-up values
+
+**Notes:** `scan/facts.py`. About 3 API requests per repo (the repo, then open PRs paged until an empty page). On a real empty repo GitHub may still name a default branch, so file reads (S1.2.1) should also treat an empty-repository answer as files missing.
 
 ### F1.2 — Work out compliance
 

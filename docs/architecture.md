@@ -21,9 +21,10 @@ flowchart LR
     privacy -- "scan output, allow-listed" --> out["Report and page, later phases"]
 ```
 
-Only `scan/repos.py` exists so far (S1.1.1: the repo listing and scope
-rule, taking a fetch function); the rest is the planned flow from the
-requirements and the glossary. Check it against the code as stories land.
+So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule)
+and `facts.py` (S1.1.2: each repo's facts, or a failed read), both taking a
+fetch function; the rest is the planned flow from the requirements and the
+glossary. Check it against the code as stories land.
 
 ## Layout
 
@@ -139,6 +140,7 @@ ruled out: if one shows up in code or docs, rename it.
 | compliance level | A repo's standing against the standard, worked out by the scan: 0 Not on standard, 1 Reporting, 2 Adopted, 3 Current. | "score", "grade" |
 | in-scope repo | A repo the portfolio counts: not archived, not a fork, not tagged `portfolio-exclude`, and pushed since the scan cut-off. | "active repo", "tracked repo" |
 | leak test | The automated test that plants canary values in a private repo and fails if any reach output files or logs. | "privacy check" |
+| repo facts | What GitHub knows about an in-scope repo: last push, created date, language, description, default branch, and open issue and PR counts (issues exclude PRs). A repo whose facts can't be read is a failed read, with no values guessed. | "metadata", "repo info" |
 | request link | A link on the page that opens a pre-filled GitHub issue for a public repo's owner. It changes nothing by itself. | "action button", "update button" |
 | scan | One run that reads all in-scope repos and works out their facts, compliance and status. | "crawl", "sync" |
 | scan cut-off | The fixed date 2026-01-01. Repos last pushed before it are out of scope. | "activity window" |
