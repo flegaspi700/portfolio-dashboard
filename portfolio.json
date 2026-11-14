@@ -10,7 +10,7 @@
   "health": "not-reported",
   "health_reason": null,
   "phase": null,
-  "progress": { "stories_done": 1, "stories_total": 10, "open_bugs": 0, "as_of": "2026-11-13" },
+  "progress": { "stories_done": 3, "stories_total": 11, "open_bugs": 0, "as_of": "2026-11-14" },
   "next_milestone": null,
   "risks": [],
   "blockers": [],
