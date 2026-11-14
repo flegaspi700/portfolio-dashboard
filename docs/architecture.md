@@ -21,10 +21,11 @@ flowchart LR
     privacy -- "scan output, allow-listed" --> out["Report and page, later phases"]
 ```
 
-So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule)
-and `facts.py` (S1.1.2: each repo's facts, or a failed read), both taking a
-fetch function; the rest is the planned flow from the requirements and the
-glossary. Check it against the code as stories land.
+So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
+`facts.py` (S1.1.2: each repo's facts, or a failed read) and `checks.py`
+(S1.2.1: the check registry, read from the standard, and the four check
+kinds), all taking a fetch function or fetched data; the rest is the
+planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
 

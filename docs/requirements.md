@@ -188,9 +188,10 @@ Phase 1; recording the page's checklist in Phase 3).
 | S1.1.1 | Select in-scope repos | Story | 1 | Done |
 | S1.1.2 | Read repo facts | Story | 1 | Done |
 | F1.2 | Work out compliance | Feature | 1 | Backlog |
-| S1.2.1 | Evaluate check kinds | Story | 1 | Ready |
+| S1.2.1 | Evaluate check kinds | Story | 1 | Done |
 | S1.2.2 | Work out the compliance level | Story | 1 | Ready |
 | S1.2.3 | Work out scan warnings | Story | 1 | Ready |
+| S1.2.4 | Read repo files | Story | 1 | Ready |
 | F1.3 | Read reported status | Feature | 1 | Backlog |
 | S1.3.1 | Read `portfolio.json` | Story | 1 | Ready |
 | F1.4 | Assemble the scan result | Feature | 1 | Backlog |
@@ -263,7 +264,7 @@ the same repos are counted every time.
 - [x] Given an empty repo with no default branch, when read, then facts are returned and files count as missing
 - [x] Given an API error or rate limit, when read, then that repo is reported as failed, with no made-up values
 
-**Notes:** `scan/facts.py`. About 3 API requests per repo (the repo, then open PRs paged until an empty page). On a real empty repo GitHub may still name a default branch, so file reads (S1.2.1) should also treat an empty-repository answer as files missing.
+**Notes:** `scan/facts.py`. About 3 API requests per repo (the repo, then open PRs paged until an empty page). On a real empty repo GitHub may still name a default branch, so file reads (S1.2.4) should also treat an empty-repository answer as files missing.
 
 ### F1.2 — Work out compliance
 
@@ -279,17 +280,17 @@ where a nested schema error makes C4 fail here (the spec wins over the script).
 **Story:** Technical — a pure function of the check registry plus repo files, so results follow the standard and not a separate copy of it.
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the four kinds (`exists`, `contains`, `absent`, `schema`), when evaluated on fixtures, then results match `check-compliance.ps1`, except as in the next criterion
-- [ ] Given a `portfolio.json` with a nested schema error, when the `schema` kind is evaluated, then C4 fails, even though `check-compliance.ps1` passes it
-- [ ] Given `applies_if` that doesn't match, when evaluated, then the result is n/a
-- [ ] Given `if_exists` with a missing file, when evaluated, then the check passes
-- [ ] Given a check kind the scanner doesn't recognise, when evaluated, then the run stops and names the kind and check
-- [ ] Given the check registry can't be read from `pmo-project-standardization`, when the scan starts, then the run stops, with no local copy as a fallback
+- [x] Given the four kinds (`exists`, `contains`, `absent`, `schema`), when evaluated on fixtures, then results match `check-compliance.ps1`, except as in the next criterion
+- [x] Given a `portfolio.json` with a nested schema error, when the `schema` kind is evaluated, then C4 fails, even though `check-compliance.ps1` passes it
+- [x] Given `applies_if` that doesn't match, when evaluated, then the result is n/a
+- [x] Given `if_exists` with a missing file, when evaluated, then the check passes
+- [x] Given a check kind the scanner doesn't recognise, when evaluated, then the run stops and names the kind and check
+- [x] Given the check registry can't be read from `pmo-project-standardization`, when the scan starts, then the run stops, with no local copy as a fallback
 
-**Notes:** `check-compliance.ps1` only checks a schema's top level, while `compliance.md` says "fits the schema". The spec wins: `decisions.md` → "Reuse or reimplement the compliance checks".
+**Notes:** `check-compliance.ps1` only checks a schema's top level, while `compliance.md` says "fits the schema". The spec wins: `decisions.md` → "Reuse or reimplement the compliance checks". Built in `scan/checks.py`; the registry is read from the standard's default branch (`decisions.md`, 2026-11-14), and fetching repo files is S1.2.4. Matching, as in the script, ignores case. The fixtures' expected results were confirmed by running `check-compliance.ps1` on them (2026-11-14), and on this repo with the real v2.1.0 registry all 14 checks agreed. Found while building: the script doesn't check top-level types either (`"name": 5` passes it), so C4 also differs there; the spec wins for the same reason.
 
 #### S1.2.2 — Work out the compliance level
 
@@ -322,6 +323,22 @@ where a nested schema error makes C4 fail here (the spec wins over the script).
 - [ ] Given a required check fails with `required_from` within 14 days, when scanning, then spec warning S3 fires
 
 **Notes:** These are warnings S1, S2 and S3 in `spec/compliance.md`, not story IDs. The adoption date for S2 isn't recorded anywhere, so it is the date of the first commit that touched `portfolio.json`; this stops a newly adopted old repo being flagged immediately.
+
+#### S1.2.4 — Read repo files
+
+**Story:** Technical — fetch the files the check registry names from each repo, so the checks (S1.2.1) get their input with as few requests as possible (NFR1).
+
+**Component:** `scan/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the check registry, when reading a repo, then only the paths the checks and their `applies_if` name are fetched, and only those that exist in the repo's file tree (one tree request per repo)
+- [ ] Given a path not in the tree, when read, then it counts as missing, with no request for it
+- [ ] Given an empty repo (no default branch, or GitHub says the repository is empty), when read, then every file counts as missing and the read doesn't fail
+- [ ] Given a file over 1 MB, when read, then its content isn't fetched and it counts as present but unreadable
+- [ ] Given an API error or rate limit, when read, then that repo is reported as failed, with no made-up values
+
+**Notes:** Split out of S1.2.1 on 2026-11-14, which stays a pure function of the registry plus files. How a present-but-unreadable file affects each check kind is decided when this story starts.
 
 ### F1.3 — Read reported status
 
