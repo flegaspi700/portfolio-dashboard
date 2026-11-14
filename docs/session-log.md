@@ -13,6 +13,56 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-14 — S1.1.2 and S1.2.1 done: repo facts and check kinds
+
+**Worked on:** S1.1.2, S1.2.1
+
+**Time spent:** about 0.75h, estimated from commit and file timestamps. Correct it if that's off.
+
+**Changed:**
+- `scan/facts.py`, `tests/scan/test_facts.py` — S1.1.2: `read_facts`
+  returns last push, created date, language, description, default branch,
+  and open issues and PRs counted separately (GitHub's issue count includes
+  PRs). Any API error, rate limit or network failure gives a `FailedRead`
+  with no values guessed; logs carry no repo names. PR #12, merged
+- `scan/checks.py`, `tests/scan/test_checks.py`,
+  `tests/scan/fixtures/check_kinds.json` — S1.2.1: `load_registry` reads the
+  check registry and its schemas from the standard's default branch and
+  stops the run if it can't; the four check kinds give pass, fail or n/a.
+  Matching ignores case, like the script's `-match`. Cross-checked with
+  `check-compliance.ps1`: 28 of 28 shared fixture results, and all 14 real
+  checks on this repo. PR #13, merged
+- `docs/decisions.md` — "Read the check registry from the standard's
+  default branch" (chosen over the newest tag or a pinned version)
+- `docs/requirements.md` — S1.1.2 and S1.2.1 Done; new story S1.2.4 (read
+  repo files), because no story fetched repo files
+- `docs/architecture.md` — component note; "repo facts" in the glossary
+- `portfolio.json` — progress 3 of 11 stories
+
+**Stopped at:** S1.1.1, S1.1.2 and S1.2.1 merged on `main`; 80 tests pass,
+`scan/` coverage 100%, Ruff clean. Nothing runs against real GitHub yet:
+there is no real fetch function and no `main.py`. The owner chose to keep
+the original plan (no early dry-run story), so the first real run comes
+with S1.4.1 / F2.1.
+
+**Next step:** `/story S1.2.2` (work out the compliance level from
+`evaluate_checks` results and the registry's `levels`, `severity` and
+`required_from`).
+
+**Open questions:**
+- `check-compliance.ps1` also passes top-level type errors (`"name": 5`),
+  not only nested ones, so C4 differs from it in a second way. Widen the
+  exception with a new decision entry, or raise a fix in
+  `pmo-project-standardization`?
+- S1.2.4's acceptance criteria were drafted by the agent: review them
+  before it starts.
+- Which story builds the real fetch function (with `PORTFOLIO_READ_TOKEN`)
+  and `main.py`? Probably S1.4.1 or S2.1.2; decide when it comes up.
+- The local `.env` needs `PORTFOLIO_READ_TOKEN` (the read-only GitHub
+  token) before the first real run; list the name in `.env.example` then.
+
+---
+
 ## 2026-11-13 — S1.1.1 done: select in-scope repos
 
 **Worked on:** S1.1.1
