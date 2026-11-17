@@ -183,8 +183,8 @@ Phase 1; recording the page's checklist in Phase 3).
 
 | ID | Title | Type | Phase | Status |
 |---|---|---|---|---|
-| E1 | Portfolio scan | Epic | 1 | Backlog |
-| F1.1 | Find in-scope repos | Feature | 1 | Backlog |
+| E1 | Portfolio scan | Epic | 1 | Done |
+| F1.1 | Find in-scope repos | Feature | 1 | Done |
 | S1.1.1 | Select in-scope repos | Story | 1 | Done |
 | S1.1.2 | Read repo facts | Story | 1 | Done |
 | F1.2 | Work out compliance | Feature | 1 | Done |
@@ -194,9 +194,9 @@ Phase 1; recording the page's checklist in Phase 3).
 | S1.2.4 | Read repo files | Story | 1 | Done |
 | F1.3 | Read reported status | Feature | 1 | Done |
 | S1.3.1 | Read `portfolio.json` | Story | 1 | Done |
-| F1.4 | Assemble the scan result | Feature | 1 | Backlog |
+| F1.4 | Assemble the scan result | Feature | 1 | Done |
 | S1.4.1 | Assemble the scan result | Story | 1 | Done |
-| S1.4.2 | Run a real scan | Story | 1 | Backlog |
+| S1.4.2 | Run a real scan | Story | 1 | Done |
 | E2 | Private data protection | Epic | 1, 3 | Backlog |
 | F2.1 | Allow-list and leak test | Feature | 1 | Done |
 | S2.1.1 | Allow-list filter | Story | 1 | Done |
@@ -234,6 +234,7 @@ each one.
 **Phase:** 1
 **Depends on:** none
 **Done when:** a real run lists all in-scope repos with their GitHub facts.
+**Status:** Done 2026-11-17: the first real run (S1.4.2) listed all 17 in-scope repos with their facts.
 
 #### S1.1.1 — Select in-scope repos
 
@@ -381,6 +382,7 @@ say whether the run succeeded.
 **Depends on:** F1.1, F1.2, F1.3
 **Done when:** one failed repo gives a "could not scan" row and the rest are
 complete.
+**Status:** Done 2026-11-17: S1.4.1 and S1.4.2 done. The Done when line is shown on fixtures (`test_one_failed_repo_could_not_scan_with_null_fields_and_partial_result`); the first real run had no failed repo.
 
 #### S1.4.1 — Assemble the scan result
 
@@ -403,17 +405,20 @@ complete.
 **Story:** Technical — a real fetch function and `main.py`, so the scan runs against GitHub with the read-only token and the assembled result (S1.4.1) is built from real data.
 
 **Component:** `scan/`, `main.py`
-**Status:** Backlog
+**Status:** Done
 
-**Acceptance criteria (draft, for the owner to review):**
-- [ ] Given `PORTFOLIO_READ_TOKEN` is set, when `main.py` runs, then it scans the owner's repos over the GitHub API with that token and logs only counts: repos in scope, scanned, failed, API requests made, time taken
-- [ ] Given the token is missing, when `main.py` runs, then it stops before any request, with a message naming the variable and `.env.example`
-- [ ] Given a request takes too long, when fetching, then it times out and counts as a network error
-- [ ] Given a rate-limit or other API error, when fetching, then it is raised as an HTTP error, with no retry loop, so the repo or run fails as S1.1.2 and S1.4.1 say
-- [ ] Given any result, when `main.py` ends, then it exits with the code the write step (S2.1.2) returns
-- [ ] Given any run, when `main.py` ends, then nothing has been written to disk (writing filtered output is S2.1.2)
+**Acceptance criteria:**
+- [x] Given `PORTFOLIO_READ_TOKEN` is set (in the environment or `.env`), when `main.py` runs, then it scans the token owner's repos (login from `GET /user`), writes `output/scan.json` through the write step (S2.1.2), and logs only counts: repos in scope, could not scan, API requests, time taken
+- [x] Given the token is missing, when `main.py` runs, then it stops before any request, with a message naming the variable and `.env.example`, and a non-zero exit code
+- [x] Given a request takes over 30 seconds, when fetching, then it times out and counts as a network error
+- [x] Given a rate-limit or other API error, when fetching, then it is raised as an HTTP error, with no retry loop, so the repo or run fails as S1.1.2 and S1.4.1 say
+- [x] Given any result, when `main.py` ends, then it exits with the code the write step returns
+- [x] Given any run, when `main.py` runs, then logging goes through `configure_logging` (S2.1.3), only `output/scan.json` is written, and the real token appears in no log line
+- [x] Given a real local run, when it ends, then every in-scope repo is listed, and levels match `check-compliance.ps1` on the repos cloned locally
 
-**Notes:** Added 2026-11-17: the owner chose a separate story for the real run over folding it into S1.4.1 or S2.1.2. The first real run is the end of F1.4. Check then whether the token needs Pull requests: read, since `read_facts` lists open PRs (`security.md` lists Contents and Metadata only). `.env.example` gets the variable name in this story. The exit-code rule itself is S2.1.2's (owner's choice, 2026-11-17).
+**Notes:** Added 2026-11-17: the owner chose a separate story for the real run over folding it into S1.4.1 or S2.1.2. The owner approved these criteria on 2026-11-17, with `.env` read by the standard library (no new dependency; a variable already in the environment wins). The exit-code rule itself is S2.1.2's. Checked before building, 2026-11-17: the token lists 58 repos (13 private) and reads all 13 private file trees, but GitHub refused its PR lists on all 13 (HTTP 403); the owner chose to add Pull requests: read to the token rather than drop the PR count. Built in `scan/github.py` (the fetch function: one GET per call, 30 s timeout, API paths only so the token goes nowhere else) and `main.py`.
+
+**First real run, 2026-11-17:** after the owner added Pull requests: read, `main.py` listed 58 repos, selected 17 in scope (the same 17 the scope rule gives on an independent `gh` listing), scanned all 17 with none failed, in 86 API requests and 28.4 seconds, exit code 0. Levels: 5 at Level 3, 3 at Level 1, 9 at Level 0; all 12 locally cloned repos matched `check-compliance.ps1`. The 9 private rows held only allow-list fields, and the log lines carried counts only.
 
 ---
 
