@@ -13,6 +13,33 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-17 — Scan output: one JSON file
+
+**Status:** Accepted
+
+**Context:** S2.1.2 is the first code that writes to disk. The scan output
+needs a place and a form that Phase 2's report and Phase 3's page can read.
+How the output is published is still decided at the start of Phase 2.
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. One JSON file, `output/scan.json`, git-ignored, replaced in one step | One place to read and leak-test; a crash never leaves half a file | Phase 3's per-repo pages read one bigger file | $0 |
+| B. One JSON file per repo plus a summary | Close to Phase 3's per-repo pages | Shapes Phase 3 now; stale files to clean up | $0 |
+| C. Print to stdout only | Simplest | The leak test checks stdout, not files on disk | $0 |
+
+**Decision:** A. The write step also returns the exit code: 0 for a
+complete result, 1 for partial or failed. `main.py` (S1.4.2) exits with it.
+
+**Why:** The simplest file that later phases can read, and one rule for the
+exit code in one tested place.
+
+**Trade-offs accepted:** A failed result writes nothing, so the previous
+file stays; Phase 2 must show its scan time so a stale file is visible.
+
+---
+
 ## 2026-11-17 — Unreadable files don't pass content checks
 
 **Status:** Accepted

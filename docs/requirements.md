@@ -200,7 +200,7 @@ Phase 1; recording the page's checklist in Phase 3).
 | E2 | Private data protection | Epic | 1, 3 | Backlog |
 | F2.1 | Allow-list and leak test | Feature | 1 | Backlog |
 | S2.1.1 | Allow-list filter | Story | 1 | Done |
-| S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Ready |
+| S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Done |
 | S2.1.3 | Keep logs safe | Story | 1 | Ready |
 | F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
 | E3 | Daily publishing | Epic | 2 | Backlog |
@@ -410,10 +410,10 @@ complete.
 - [ ] Given the token is missing, when `main.py` runs, then it stops before any request, with a message naming the variable and `.env.example`
 - [ ] Given a request takes too long, when fetching, then it times out and counts as a network error
 - [ ] Given a rate-limit or other API error, when fetching, then it is raised as an HTTP error, with no retry loop, so the repo or run fails as S1.1.2 and S1.4.1 say
-- [ ] Given a partial or failed result, when `main.py` ends, then the exit code is non-zero
+- [ ] Given any result, when `main.py` ends, then it exits with the code the write step (S2.1.2) returns
 - [ ] Given any run, when `main.py` ends, then nothing has been written to disk (writing filtered output is S2.1.2)
 
-**Notes:** Added 2026-11-17: the owner chose a separate story for the real run over folding it into S1.4.1 or S2.1.2. The first real run is the end of F1.4. Check then whether the token needs Pull requests: read, since `read_facts` lists open PRs (`security.md` lists Contents and Metadata only). `.env.example` gets the variable name in this story.
+**Notes:** Added 2026-11-17: the owner chose a separate story for the real run over folding it into S1.4.1 or S2.1.2. The first real run is the end of F1.4. Check then whether the token needs Pull requests: read, since `read_facts` lists open PRs (`security.md` lists Contents and Metadata only). `.env.example` gets the variable name in this story. The exit-code rule itself is S2.1.2's (owner's choice, 2026-11-17).
 
 ---
 
@@ -453,14 +453,16 @@ or log.
 **Story:** As the owner, I want proof that nothing private gets through, so that I can publish safely.
 
 **Component:** `privacy/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a fixture private repo with a unique canary value in every field, when the full scan runs, then no canary appears in any output file
-- [ ] Given the filter is bypassed, when the leak test runs, then it fails
-- [ ] Given a failed result, when the scan ends, then nothing is written
-- [ ] Given a partial or failed result, when the scan ends, then the exit code is non-zero
-- [ ] Given any run, when the scan runs, then unfiltered data is never written to disk
+- [x] Given a fixture private repo with a unique canary value in every field, when the full scan runs, then no canary appears in any output file
+- [x] Given the filter is bypassed, when the leak test runs, then it fails
+- [x] Given a failed result, when the scan ends, then nothing is written
+- [x] Given a partial or failed result, when the scan ends, then the exit code is non-zero
+- [x] Given any run, when the scan runs, then unfiltered data is never written to disk
+
+**Notes:** Output is one JSON file, `output/scan.json`, git-ignored: `decisions.md`, "Scan output: one JSON file" (2026-11-17). The write step returns the exit code; `main.py` (S1.4.2) exits with it. Built in `privacy/output.py`: `write_output` takes the scan result and runs the filter itself, so there is no path for unfiltered data to disk, and swaps the file in one step. The leak test is `tests/privacy/test_output.py`: a private repo with a different canary in each of 19 places (repo description, language, branch, topic, AGENTS.md, CLAUDE.md, requirements and every free-text `portfolio.json` field) runs through the whole scan on `tests/fake_github.py`, shared with S1.4.1's tests. A second test swaps in a filter that lets everything through and checks the leak test catches it.
 
 #### S2.1.3 — Keep logs safe
 

@@ -51,3 +51,6 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+
+# --- Scan output (docs/decisions.md, "Scan output: one JSON file") ---
+output/
