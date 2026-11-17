@@ -132,7 +132,7 @@ show the size of the work, not dates.
 |---|---|---|---|---|---|---|
 | 0 — Setup and go/no-go | Prove the toolchain and the riskiest assumptions, with no real logic yet | The go/no-go is decided and logged, and an Action has read a private repo with nothing private in its logs. If the mock is a no-go, the Phase 4 rollout tasks move ahead of Phase 1 | Done | 2-3 days | 2026-11-02 | 2026-11-13 |
 | 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all in-scope repos, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Done | 10 days at most (10 stories) | 2026-11-13 | 2026-11-17 |
-| 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Planned | Set when its stories are written | | |
+| 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Active | 5 days at most (5 stories) | 2026-11-17 | |
 | 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Planned | Set when its stories are written | | |
 | 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met, and the link is good enough to send to a hiring manager | Planned | At least 30 days (the unattended run) | | |
 
@@ -175,8 +175,8 @@ accurate (T2 now names the local `.env`). No manual tests and no UI yet, so
 no accessibility pass.
 
 **Phase 2:**
-- [ ] Decide how the output gets published (`decisions.md`), since committed output stays in public history
-- [ ] Write the stories for F3.1, F3.2, F3.3
+- [x] Decide how the output gets published (`decisions.md`), since committed output stays in public history (2026-11-17: deploy to Pages, nothing committed)
+- [x] Write the stories for F3.1, F3.2, F3.3 (2026-11-17, approved by the owner)
 
 **Phase 3:**
 - [ ] Decide the "needs attention first" ranking (`decisions.md`)
@@ -214,8 +214,13 @@ no accessibility pass.
 | F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
 | E3 | Daily publishing | Epic | 2 | Backlog |
 | F3.1 | Markdown report | Feature | 2 | Backlog |
+| S3.1.1 | Render the Markdown report | Story | 2 | Ready |
 | F3.2 | Scheduled Action | Feature | 2 | Backlog |
+| S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | Ready |
 | F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
+| S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | Ready |
+| S3.3.2 | Keep the schedule alive | Story | 2 | Ready |
+| S3.3.3 | Token renewal reminder | Story | 2 | Ready |
 | E4 | Dashboard page | Epic | 3 | Backlog |
 | F4.1 | Portfolio summary | Feature | 3 | Backlog |
 | F4.2 | Sortable table | Feature | 3 | Backlog |
@@ -515,6 +520,24 @@ or log.
 **Depends on:** F2.1
 **Done when:** the report is generated from the scan output alone.
 
+#### S3.1.1 — Render the Markdown report
+
+**Story:** As a reviewer, I want one readable report of the portfolio, so that I can see every project's state without opening each repo.
+
+**Component:** `report/` (new)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given `output/scan.json`, when rendering, then `output/site/index.md` has the scan time (UTC), the spec version, summary counts (repos per level, per health, could not scan), and one table row per repo, sorted by name: name, visibility, level, health, lifecycle, last activity, risks, blockers, scan status
+- [ ] Given a partial result, when rendering, then a line at the top says the scan was partial and how many repos could not be scanned, and those rows say "could not scan"
+- [ ] Given any run, when rendering, then the report reads only the scan output file, never the scan result (F3.1's Done when)
+- [ ] Given repo text, when rendering, then no free text from any repo appears (names, fixed values, numbers and dates only), and a name with Markdown or HTML characters is escaped (T3)
+- [ ] Given the canary fixture, when the report is rendered, then no canary appears in it (NFR5, ahead of F2.2)
+- [ ] Given the same scan output, when rendering twice, then the reports are identical
+- [ ] Given no `output/scan.json`, when rendering, then it stops with a clear message and a non-zero exit code
+
+**Notes:** Criteria approved by the owner on 2026-11-17. Free text is left out on purpose: the scan output is already filtered, but public repos' text would be rendered as HTML by the Pages build (T3). Ranking by "needs attention first" is Phase 3.
+
 ### F3.2 — Scheduled Action
 
 **Description:** Run the scan and publish the result daily on GitHub Actions.
@@ -527,6 +550,22 @@ minimal `permissions:`, never run on `pull_request_target`, and pin
 third-party Actions to a full commit SHA. These become acceptance criteria
 when the stories are written.
 
+#### S3.2.1 — Daily workflow: scan, report, deploy
+
+**Story:** As the owner, I want the report rebuilt every day by itself, so that it stays current with no manual steps.
+
+**Component:** `.github/workflows/` (new workflow)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the daily schedule (06:00 UTC) or a manual run, when the workflow runs, then it runs `main.py` with `PORTFOLIO_READ_TOKEN` from the repo secret, renders the report (S3.1.1), builds it with GitHub's Pages actions and deploys it
+- [ ] Given a complete or partial result, when the run ends, then the report is deployed; a partial run then fails the job, after deploying (`decisions.md`, "Scan failure")
+- [ ] Given a failed result (no scan output), when the run ends, then nothing is deployed, the last good page stays, and the job fails
+- [ ] Given the workflow file, when checked by a test, then it sets minimal `permissions:` per job, has no `pull_request_target` trigger, pins every action to a full commit SHA, and passes the token only to the scan step (T2)
+- [ ] Given the first Action run, when the owner reads its public log, then it shows counts only, with the token masked, and the run time and request count meet NFR1 (manual check, recorded in `docs/manual-tests.md`)
+
+**Notes:** Owner setup, once: Settings → Pages → Source: GitHub Actions. Adds `docs/manual-tests.md` (the standard's extra doc for checks only a person can do). A test reads the workflow file as text, so no YAML library is added.
+
 ### F3.3 — Failure alert and keep-alive
 
 **Description:** Make failures visible, and keep the schedule and the token alive.
@@ -534,6 +573,48 @@ when the stories are written.
 **Depends on:** F3.2
 **Done when:** a forced failure sends an alert, the token renewal reminder
 exists, and the 60-day workflow shutoff is handled.
+
+#### S3.3.1 — Failure alert, with a forced-failure test
+
+**Story:** As the owner, I want to hear when the daily run fails, so that a broken page doesn't go unnoticed.
+
+**Component:** `.github/workflows/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a failed or partial run, when it ends, then the job fails, so GitHub sends the owner its failed-workflow email
+- [ ] Given a manual run with `force_failure` set, when it runs, then it fails before deploying, and the last good page stays
+- [ ] Given the forced failure, when it runs, then the owner receives the alert (manual check, recorded in `docs/manual-tests.md`; NFR4's forced-failure test)
+
+**Notes:** Uses GitHub's own notifications, so no new permission or service. The owner's notification settings must send failed-workflow emails.
+
+#### S3.3.2 — Keep the schedule alive
+
+**Story:** Technical — stop GitHub switching off the daily schedule after 60 days without a commit, since publishing commits nothing.
+
+**Component:** `.github/workflows/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a run, when it ends, then it re-enables its own workflow through the GitHub API with the workflow's own token (`actions: write` on that job only), which resets the 60-day timer
+- [ ] Given the keep-alive call fails, when the run ends, then the job fails, so the alert fires before the schedule can lapse
+- [ ] Given the workflow file, when checked by a test, then the keep-alive uses no third-party action
+
+**Notes:** Check during the story that re-enabling an enabled workflow does reset the timer (it's what the common keep-alive actions do); if not, choose another way then.
+
+#### S3.3.3 — Token renewal reminder
+
+**Story:** As the owner, I want a warning before the read token expires, so that the page doesn't silently stop updating (T5).
+
+**Component:** `scan/`, `main.py`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given GitHub's token-expiry header on the `GET /user` answer, when the scan runs, then it logs the expiry date (a date, never the token)
+- [ ] Given the token expires within 14 days, when the run ends, then the report is still deployed and the job then fails, so the alert reminds the owner
+- [ ] Given no expiry header (a token that never expires), when the scan runs, then it logs that and carries on
+
+**Notes:** The read token expires about mid-February 2026 (90 days from 2026-11-13).
 
 ---
 
