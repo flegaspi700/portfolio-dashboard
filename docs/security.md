@@ -33,8 +33,10 @@ ones included, with a read-only token.
   page (F2.2). Errors log only a generic reason or the error type, never
   the error's text; the scan logs no repo names at all, which is stricter
   than the allow-list needs (S2.1.3, `privacy/safe_logging.py`). NFR5.
-- **T2:** a fine-grained, read-only token (Contents and Metadata: read)
-  limited to the selected repos, with an expiry date, stored as an
+- **T2:** a fine-grained, read-only token (Contents, Metadata and Pull
+  requests: read; Pull requests added 2026-11-17 because the scan counts
+  open PRs), with access to every repo the scan reads (13 private on
+  2026-11-17), sent only to api.github.com (`scan/github.py`), with an expiry date, stored as an
   encrypted Actions secret; it never appears in logs (S2.1.3); a renewal
   reminder (F3.3). New, for F3.2's stories: workflows set minimal
   `permissions:`, never run on `pull_request_target`, and pin third-party
@@ -66,7 +68,9 @@ The leak test for scan output and logs is in place (S2.1.2, S2.1.3,
 2026-11-17), on fixtures: canaries in 19 places of a private repo, and in
 the text of API errors, plus a made-up token, reach no output file and no
 log line at DEBUG, INFO or WARNING. The first real run (S1.4.2) checks the
-real token's logs.
+real token's logs. First real run, 2026-11-17 (S1.4.2): the log lines
+carried counts only, no repo names or token, and the 9 private rows in
+`output/scan.json` held only allow-list fields.
 
 ## Personal data
 

@@ -31,8 +31,9 @@ results), `status.py` (S1.3.1: the validated `portfolio.json`, or
 `not-reported`) and `warnings.py` (S1.2.3: scan warnings S1-S3, reading the
 adoption date only when S2 could fire), all taking a fetch function or
 fetched data. `result.py` (S1.4.1) runs them in order for each in-scope
-repo and assembles the scan result; the real fetch function and `main.py`
-are S1.4.2. `privacy/allow_list.py` (S2.1.1) turns the scan result into
+repo and assembles the scan result. `scan/github.py` (S1.4.2) is the real
+fetch function, the only code that touches the network, and `main.py` wires
+it all together. `privacy/allow_list.py` (S2.1.1) turns the scan result into
 the scan output, cutting private rows to the allow-list, and
 `privacy/output.py` (S2.1.2) writes it to `output/scan.json` and gives the
 exit code; `privacy/safe_logging.py` (S2.1.3) sets up logging so an

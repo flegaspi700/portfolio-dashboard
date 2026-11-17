@@ -1,7 +1,8 @@
 """A fake GitHub for tests that run the whole scan (S1.4.1, S2.1.2).
 
 `FakeGitHub` is a fetch function: it answers every API path the scan uses
-(the standard's check registry and schema, the repo listing, and each
+(the standard's check registry and schema, the token's user, the repo
+listing, and each
 repo's facts, PRs, file tree, blobs and commit history) from plain Python
 data. No network. The registry is made up but shaped like spec version 2.
 """
@@ -103,6 +104,8 @@ class FakeGitHub:
             name = path.removeprefix(standard)
             document = REGISTRY if name == "compliance-checks.json" else SCHEMA
             return {"content": encoded(json.dumps(document))}
+        if path == "/user":
+            return {"login": OWNER}
         if path.startswith("/user/repos"):
             if self.fail_listing:
                 raise self.fail_listing
