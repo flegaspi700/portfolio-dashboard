@@ -6,15 +6,15 @@
   "owner": "Frederick Legaspi",
   "sponsor": "Frederick Legaspi",
   "program": "PMO Standardization",
-  "lifecycle": "planning",
-  "health": "not-reported",
-  "health_reason": null,
-  "phase": null,
-  "progress": { "stories_done": 11, "stories_total": 12, "open_bugs": 0, "as_of": "2026-11-17" },
+  "lifecycle": "active",
+  "health": "green",
+  "health_reason": "Phase 1 done on 2026-11-17: a real scan of all 17 in-scope repos, filtered and leak-tested.",
+  "phase": { "current": 2, "name": "Report and daily run" },
+  "progress": { "stories_done": 12, "stories_total": 12, "open_bugs": 0, "as_of": "2026-11-17" },
   "next_milestone": null,
   "risks": [],
   "blockers": [],
   "callouts": [],
   "budget": null,
-  "updated": null
+  "updated": "2026-11-17"
 }

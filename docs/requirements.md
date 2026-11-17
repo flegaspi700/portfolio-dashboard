@@ -131,7 +131,7 @@ show the size of the work, not dates.
 | Phase | Goal | Exit criteria | Status | Estimate | Started | Finished |
 |---|---|---|---|---|---|---|
 | 0 — Setup and go/no-go | Prove the toolchain and the riskiest assumptions, with no real logic yet | The go/no-go is decided and logged, and an Action has read a private repo with nothing private in its logs. If the mock is a no-go, the Phase 4 rollout tasks move ahead of Phase 1 | Done | 2-3 days | 2026-11-02 | 2026-11-13 |
-| 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all in-scope repos, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Planned | 10 days at most (10 stories) | | |
+| 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all in-scope repos, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Done | 10 days at most (10 stories) | 2026-11-13 | 2026-11-17 |
 | 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Planned | Set when its stories are written | | |
 | 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Planned | Set when its stories are written | | |
 | 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met, and the link is good enough to send to a hiring manager | Planned | At least 30 days (the unattended run) | | |
@@ -154,8 +154,8 @@ Work that isn't a story. Tick it here when done.
 - [x] Make the first commit on `main` (the standard's `git.md`)
 - [x] Create the GitHub repo and push `main`
 - [ ] (Optional) protect `main` (the standard's `git.md`)
-- [ ] Turn on Dependabot and secret scanning (`security.md` → GitHub setup)
-- [ ] Copy `.env.example` to `.env` for the local token
+- [ ] Turn on Dependabot and secret scanning (`security.md` → GitHub setup). Secret scanning and push protection are on; Dependabot alerts are off (checked 2026-11-17)
+- [x] Copy `.env.example` to `.env` for the local token (2026-11-17)
 - [x] First pass of the threat model (`security.md`) (2026-11-13)
 - [ ] Record what applies to this page in `accessibility.md`
 - [x] Fill in the non-functional requirements (`requirements.md`) (2026-11-13)
@@ -164,6 +164,15 @@ Phase 0 closed 2026-11-13 with its exit criteria met. The open tasks above
 are optional or the owner's call (protect `main`, Dependabot and secret
 scanning), or wait until they're needed (a local `.env` for the token in
 Phase 1; recording the page's checklist in Phase 3).
+
+**Phase 1:** closed 2026-11-17 with its exit criteria met on real data
+(S1.4.2's first real run): all 17 in-scope repos listed, levels matching
+`check-compliance.ps1` on all 12 local clones, and the leak tests passing for
+output files and logs. Phase checklist: 262 tests pass, coverage 100% for
+`scan/` and `privacy/` (no untested logic to add), NFRs updated below,
+`pip-audit` clean, no open secret-scanning alerts, threat model still
+accurate (T2 now names the local `.env`). No manual tests and no UI yet, so
+no accessibility pass.
 
 **Phase 2:**
 - [ ] Decide how the output gets published (`decisions.md`), since committed output stays in public history
@@ -573,12 +582,12 @@ repos have no links.
 
 | ID | Category | Requirement (measurable) | How verified | Status |
 |---|---|---|---|---|
-| NFR1 | Performance | A full scan of all in-scope repos finishes in under 5 minutes on GitHub Actions and makes fewer than 1,000 GitHub API requests | Timed run and a request count in the run log, each phase end | Not met yet |
-| NFR2 | Security | No known high-severity vulnerabilities in dependencies | Dependency audit + Dependabot, each phase end (`security.md`) | Not met yet |
+| NFR1 | Performance | A full scan of all in-scope repos finishes in under 5 minutes on GitHub Actions and makes fewer than 1,000 GitHub API requests | Timed run and a request count in the run log, each phase end | Not met yet (local run 2026-11-17: 86 requests, 28.4 s for 17 repos; the Actions timing comes with F3.2) |
+| NFR2 | Security | No known high-severity vulnerabilities in dependencies | Dependency audit + Dependabot, each phase end (`security.md`) | Met (2026-11-17: `pip-audit` clean; Dependabot alerts are off, the owner's call) |
 | NFR3 | Accessibility | Meets WCAG 2.2 AA | Manual pass per `accessibility.md` | Not met yet |
 | NFR4 | Reliability | The page rebuilds daily with no manual steps for 30 days in a row; a failed run never replaces the last good page, and a partial run is published with the failed repos flagged | Forced-failure test (F3.3) in Phase 2; 30-day run log in Phase 4 | Not met yet |
-| NFR5 | Privacy | For private repos, only the allow-list fields reach anything published or the Action logs: the leak test's canary values appear in 0 output files and 0 log lines, and the token appears in none | Leak test (S2.1.2, S2.1.3, then F2.2) on every test run | Not met yet |
-| NFR6 | Cost | $0 per month: free tiers only (the standard's `cost.md` is not needed) | Any new cost needs a logged decision in `decisions.md` | Not met yet |
+| NFR5 | Privacy | For private repos, only the allow-list fields reach anything published or the Action logs: the leak test's canary values appear in 0 output files and 0 log lines, and the token appears in none | Leak test (S2.1.2, S2.1.3, then F2.2) on every test run | Met for scan output and logs (2026-11-17: leak tests pass; first real run's logs and private rows checked); the report and page come with F2.2 |
+| NFR6 | Cost | $0 per month: free tiers only (the standard's `cost.md` is not needed) | Any new cost needs a logged decision in `decisions.md` | Met (2026-11-17: no paid service or dependency; no cost decisions logged) |
 | NFR7 | Performance | The dashboard page loads in under 2 seconds on a typical connection, with a total page weight under 500 KB | Lighthouse run on the published page, Phase 3 end | Not met yet |
 
 **Statuses:** `Not met yet` · `Met` (with date last verified) · `At risk`

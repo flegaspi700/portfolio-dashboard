@@ -17,7 +17,7 @@ ones included, with a read-only token.
 | # | Asset (worth protecting) | Entry point (how it could be reached) | What could go wrong | Likelihood | Impact |
 |---|---|---|---|---|---|
 | T1 | Private repo details | Published output, the report, the page, the Action logs (public on a public repo), error messages | A field off the allow-list, or file content in an exception, gets published or logged | Med | High |
-| T2 | The read token | Logs, commits, pull requests from forks, a compromised third-party Action | Someone gets read access to the owner's private repos | Low | High |
+| T2 | The read token | Logs, commits, pull requests from forks, a compromised third-party Action, the local `.env` (git-ignored) | Someone gets read access to the owner's private repos | Low | High |
 | T3 | People viewing the page | Text from public repos' `portfolio.json` (summary, risks, call-outs) rendered as HTML | Script injected into the owner's public site | Low | Med |
 | T4 | The scan run | A malformed or huge `portfolio.json`, or unexpected API responses | The run crashes, or shows made-up values | Med | Low |
 | T5 | Trust in the page | Scheduled workflows switched off after 60 days without activity, an expired token, owners who stop reporting | The page looks current but isn't | Med | Med |
