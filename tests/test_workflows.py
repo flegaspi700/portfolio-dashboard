@@ -111,3 +111,59 @@ def test_only_one_publish_run_at_a_time():
     body = text()
     assert "concurrency:" in body
     assert "cancel-in-progress: false" in body
+
+
+# --- Failure alert (S3.3.1) ---
+
+
+def test_manual_run_can_force_a_failure_off_by_default():
+    body = text()
+    dispatch = body[body.index("workflow_dispatch:") : body.index("\npermissions:")]
+    assert "force_failure:" in dispatch
+    assert "type: boolean" in dispatch
+    assert "default: false" in dispatch
+
+
+def test_forced_failure_stops_before_the_scan_so_nothing_deploys():
+    scan = job("scan")
+    forced = scan.index("- name: Forced failure")
+    step = scan[forced : scan.index("\n      - ", forced + 1)]
+    assert "if: inputs.force_failure" in step
+    assert "exit 1" in step
+    assert forced < scan.index("- name: Scan")
+
+
+def test_deploy_runs_only_after_a_successful_scan_job():
+    # An `if:` with no status function implies success(): a failed scan
+    # job, forced or not, skips the deploy, so the last good page stays.
+    condition = re.search(r"\n    if: (.*)\n", job("deploy")).group(1)
+    assert "always()" not in condition
+    assert "failure()" not in condition
+
+
+# --- Keep-alive (S3.3.2) ---
+
+
+def test_keep_alive_re_enables_this_workflow_through_the_api():
+    keep = job("keep-alive")
+    assert 'gh api -X PUT "repos/$REPO/actions/workflows/publish.yml/enable"' in keep
+    assert "GH_TOKEN: ${{ github.token }}" in keep
+    assert "PORTFOLIO_READ_TOKEN" not in keep
+
+
+def test_keep_alive_alone_may_write_actions():
+    keep = job("keep-alive")
+    permissions = keep[keep.index("permissions:") : keep.index("steps:")]
+    assert permissions.split() == ["permissions:", "actions:", "write"]
+    assert text().count("actions: write") == 1
+
+
+def test_a_failed_keep_alive_fails_the_run():
+    keep = job("keep-alive")
+    assert "continue-on-error" not in keep
+    assert "|| true" not in keep
+    assert "if:" not in keep  # runs on every run, forced failures included
+
+
+def test_keep_alive_uses_no_third_party_action():
+    assert "uses:" not in job("keep-alive")

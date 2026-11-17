@@ -218,9 +218,9 @@ no accessibility pass.
 | F3.2 | Scheduled Action | Feature | 2 | Backlog |
 | S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | In progress |
 | F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
-| S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | Ready |
-| S3.3.2 | Keep the schedule alive | Story | 2 | Ready |
-| S3.3.3 | Token renewal reminder | Story | 2 | Ready |
+| S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | In progress |
+| S3.3.2 | Keep the schedule alive | Story | 2 | Done |
+| S3.3.3 | Token renewal reminder | Story | 2 | Done |
 | E4 | Dashboard page | Epic | 3 | Backlog |
 | F4.1 | Portfolio summary | Feature | 3 | Backlog |
 | F4.2 | Sortable table | Feature | 3 | Backlog |
@@ -580,42 +580,42 @@ exists, and the 60-day workflow shutoff is handled.
 **Story:** As the owner, I want to hear when the daily run fails, so that a broken page doesn't go unnoticed.
 
 **Component:** `.github/workflows/`
-**Status:** Ready
+**Status:** In progress
 
 **Acceptance criteria:**
-- [ ] Given a failed or partial run, when it ends, then the job fails, so GitHub sends the owner its failed-workflow email
-- [ ] Given a manual run with `force_failure` set, when it runs, then it fails before deploying, and the last good page stays
+- [x] Given a failed or partial run, when it ends, then the job fails, so GitHub sends the owner its failed-workflow email
+- [x] Given a manual run with `force_failure` set, when it runs, then it fails before deploying, and the last good page stays
 - [ ] Given the forced failure, when it runs, then the owner receives the alert (manual check, recorded in `docs/manual-tests.md`; NFR4's forced-failure test)
 
-**Notes:** Uses GitHub's own notifications, so no new permission or service. The owner's notification settings must send failed-workflow emails.
+**Notes:** Uses GitHub's own notifications, so no new permission or service. The owner's notification settings must send failed-workflow emails. Built in `publish.yml`: a `force_failure` input (off by default; scheduled runs never set it) and a first step in the `scan` job that exits 1 when it's on, so the scan job fails and the deploy is skipped. The alert check is a live run after the merge (`docs/manual-tests.md`, F3.3).
 
 #### S3.3.2 — Keep the schedule alive
 
 **Story:** Technical — stop GitHub switching off the daily schedule after 60 days without a commit, since publishing commits nothing.
 
 **Component:** `.github/workflows/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a run, when it ends, then it re-enables its own workflow through the GitHub API with the workflow's own token (`actions: write` on that job only), which resets the 60-day timer
-- [ ] Given the keep-alive call fails, when the run ends, then the job fails, so the alert fires before the schedule can lapse
-- [ ] Given the workflow file, when checked by a test, then the keep-alive uses no third-party action
+- [x] Given a run, when it ends, then it re-enables its own workflow through the GitHub API with the workflow's own token (`actions: write` on that job only), which resets the 60-day timer
+- [x] Given the keep-alive call fails, when the run ends, then the job fails, so the alert fires before the schedule can lapse
+- [x] Given the workflow file, when checked by a test, then the keep-alive uses no third-party action
 
-**Notes:** Check during the story that re-enabling an enabled workflow does reset the timer (it's what the common keep-alive actions do); if not, choose another way then.
+**Notes:** Checked 2026-11-17: the common keep-alive actions (liskin/gh-workflow-keepalive, gautamkrishnar/keepalive-workflow v2) work this way, calling the enable API with `actions: write` and no dummy commits, and users report it resets the 60-day counter. GitHub doesn't document the reset directly, so it rests on that report; if the schedule is ever switched off anyway, GitHub's warning email and the missing daily runs show it. Built as the `keep-alive` job in `publish.yml`, using the runner's `gh` CLI. Whether the call succeeds on a real run is checked live (`docs/manual-tests.md`, F3.3, step 5).
 
 #### S3.3.3 — Token renewal reminder
 
 **Story:** As the owner, I want a warning before the read token expires, so that the page doesn't silently stop updating (T5).
 
 **Component:** `scan/`, `main.py`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given GitHub's token-expiry header on the `GET /user` answer, when the scan runs, then it logs the expiry date (a date, never the token)
-- [ ] Given the token expires within 14 days, when the run ends, then the report is still deployed and the job then fails, so the alert reminds the owner
-- [ ] Given no expiry header (a token that never expires), when the scan runs, then it logs that and carries on
+- [x] Given GitHub's token-expiry header on the `GET /user` answer, when the scan runs, then it logs the expiry date (a date, never the token)
+- [x] Given the token expires within 14 days, when the run ends, then the report is still deployed and the job then fails, so the alert reminds the owner
+- [x] Given no expiry header (a token that never expires), when the scan runs, then it logs that and carries on
 
-**Notes:** The read token expires about mid-February 2026 (90 days from 2026-11-13).
+**Notes:** The read token was renewed on 2026-11-17 and now expires on 2027-02-11 (read from GitHub's header through the new code that day: 86 days left). Built in `scan/github.py` (`token_expiry`, and the fetch function keeps the last response's headers) and `main.py` (logs the date; with 14 days or fewer left, exits 1 after writing, so the report still deploys and the run fails). The header's two formats, `UTC` and a numeric offset, are both read; an unreadable value counts as no expiry rather than a guess.
 
 ---
 

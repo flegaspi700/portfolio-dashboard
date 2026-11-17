@@ -50,7 +50,8 @@ ones included, with a read-only token.
   publish (`decisions.md`, "Scan failure").
 - **T5:** the page shows when it was last updated; stale reports are
   flagged (S1, in S1.2.3); a failure alert, a keep-alive and the token
-  renewal reminder (F3.3). NFR4.
+  renewal reminder (F3.3: each run logs the token's expiry date and fails
+  within 14 days of it, so the failure email is the reminder). NFR4.
 - **T6:** only filtered scan output may ever be committed or deployed.
   Decided 2026-11-17 (`decisions.md`, "How the output gets published"): the
   `publish` workflow builds the report into a Pages artifact and deploys it,
