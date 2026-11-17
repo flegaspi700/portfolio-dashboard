@@ -13,6 +13,35 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-17 — Phase 1 closed; E3 built and live; Phase 3 prepared
+
+**Worked on:** S1.4.2, Phase 1 close, Phase 2 (S3.1.1, S3.2.1, S3.3.1, S3.3.2, S3.3.3), Phase 3 prep
+
+**Time spent:** about 1h, estimated from commit times (after the earlier entry today). Correct it if that's off.
+
+**Changed:**
+- `scan/github.py`, `main.py`, `.env.example` — S1.4.2: the real fetch function and `main.py`; `.env` read with the standard library. The token needed Pull requests: read (GitHub refused all 13 private PR lists without it); the owner added it. First real run: 17 of 58 repos in scope, none failed, 86 requests, 28 s; levels matched `check-compliance.ps1` on 12 of 12 local clones. E1 done. PR #24
+- `docs/requirements.md`, `portfolio.json` — Phase 1 closed (exit criteria met on real data; NFR2, NFR5 for output and logs, NFR6 met); `portfolio.json` set to active, phase 2, health green by the owner. PR #25
+- `docs/decisions.md` — "How the output gets published": deploy a Pages artifact, nothing committed. Phase 2 stories written and approved. PR #26
+- `report/` — S3.1.1: Markdown report from `output/scan.json` only, no free text, everything escaped; `python -m report`. PR #27
+- `.github/workflows/publish.yml`, `tests/test_workflows.py`, `docs/manual-tests.md` — S3.2.1: daily 06:00 UTC scan, report and Pages deploy; partial deploys then fails, failed deploys nothing. PR #28
+- `publish.yml`, `scan/github.py`, `main.py` — S3.3.1 forced-failure input; S3.3.2 keep-alive job (re-enables the workflow through the API); S3.3.3 token-expiry reminder (fails the run within 14 days of expiry). PR #29 merged into F3.2's branch by mistake (I said GitHub would retarget it; it only does when the base branch is deleted); the same commit was cherry-picked to `main` as PR #30
+- `docs/manual-tests.md` — live checks passed: run 44142627009 deployed https://flegaspi700.github.io/portfolio-dashboard/ with counts-only logs (84 requests, 20.6 s: NFR1 met on Actions); forced-failure run 44142953144 skipped the deploy, kept the last good page, and the owner got the email. E3 done. PR #31
+- `docs/decisions.md`, `docs/requirements.md` — "Needs attention first" ranking: fixed tiers on allow-list fields, with the reason shown. Seven Phase 3 stories approved and Ready; Phase 4 timing notes. PR #32
+- `portfolio.json` — progress 17 of 24 stories
+
+**Stopped at:** E1, E2's F2.1 and E3 done and live; 319 tests pass, Ruff clean. Phase 2 is still Active: its last exit criterion ("the daily run needs no manual steps") waits for the first scheduled run, 2026-11-18 06:00 UTC. Phase 3 is ready to build (S4.1.1 to S4.4.1, S2.2.1).
+
+**Next step:** check the 2026-11-18 06:00 UTC scheduled `publish` run passed on its own (`gh run list --workflow publish.yml`); if so, close Phase 2 (NFR statuses, `pip-audit`, Phases table, `portfolio.json` phase 3). Then `/story E4` (Jinja2 gets pinned and audited at S4.1.1), then F2.2.
+
+**Open questions:**
+- Phase 4 rollout can start now and is the owner's: run `/report` in four of the five Level 3 repos so they report real health (also gives the Phase 3 page real data).
+- Dependabot alerts are still off (secret scanning is on); turning them on is the owner's call.
+- Risks, blockers and call-outs in `portfolio.json` are empty; say if any should be listed.
+- Carried over: `check-compliance.ps1` also passes top-level type errors, so C4 differs from it in a second way. Widen the logged exception, or raise a fix in `pmo-project-standardization`?
+
+---
+
 ## 2026-11-17 — S1.2.2 to S2.1.3 done: scan, filter, output and safe logs
 
 **Worked on:** S1.2.2, S1.2.3, S1.2.4, S1.3.1, S1.4.1, S2.1.1, S2.1.2, S2.1.3; added S1.4.2

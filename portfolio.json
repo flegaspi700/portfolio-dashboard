@@ -10,7 +10,7 @@
   "health": "green",
   "health_reason": "Phase 1 done on 2026-11-17: a real scan of all 17 in-scope repos, filtered and leak-tested.",
   "phase": { "current": 2, "name": "Report and daily run" },
-  "progress": { "stories_done": 17, "stories_total": 17, "open_bugs": 0, "as_of": "2026-11-17" },
+  "progress": { "stories_done": 17, "stories_total": 24, "open_bugs": 0, "as_of": "2026-11-17" },
   "next_milestone": null,
   "risks": [],
   "blockers": [],
