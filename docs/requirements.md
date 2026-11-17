@@ -218,7 +218,7 @@ no accessibility pass.
 | F3.2 | Scheduled Action | Feature | 2 | Backlog |
 | S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | In progress |
 | F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
-| S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | Ready |
+| S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | In progress |
 | S3.3.2 | Keep the schedule alive | Story | 2 | Ready |
 | S3.3.3 | Token renewal reminder | Story | 2 | Ready |
 | E4 | Dashboard page | Epic | 3 | Backlog |
@@ -580,14 +580,14 @@ exists, and the 60-day workflow shutoff is handled.
 **Story:** As the owner, I want to hear when the daily run fails, so that a broken page doesn't go unnoticed.
 
 **Component:** `.github/workflows/`
-**Status:** Ready
+**Status:** In progress
 
 **Acceptance criteria:**
-- [ ] Given a failed or partial run, when it ends, then the job fails, so GitHub sends the owner its failed-workflow email
-- [ ] Given a manual run with `force_failure` set, when it runs, then it fails before deploying, and the last good page stays
+- [x] Given a failed or partial run, when it ends, then the job fails, so GitHub sends the owner its failed-workflow email
+- [x] Given a manual run with `force_failure` set, when it runs, then it fails before deploying, and the last good page stays
 - [ ] Given the forced failure, when it runs, then the owner receives the alert (manual check, recorded in `docs/manual-tests.md`; NFR4's forced-failure test)
 
-**Notes:** Uses GitHub's own notifications, so no new permission or service. The owner's notification settings must send failed-workflow emails.
+**Notes:** Uses GitHub's own notifications, so no new permission or service. The owner's notification settings must send failed-workflow emails. Built in `publish.yml`: a `force_failure` input (off by default; scheduled runs never set it) and a first step in the `scan` job that exits 1 when it's on, so the scan job fails and the deploy is skipped. The alert check is a live run after the merge (`docs/manual-tests.md`, F3.3).
 
 #### S3.3.2 — Keep the schedule alive
 

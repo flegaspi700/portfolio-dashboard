@@ -111,3 +111,31 @@ def test_only_one_publish_run_at_a_time():
     body = text()
     assert "concurrency:" in body
     assert "cancel-in-progress: false" in body
+
+
+# --- Failure alert (S3.3.1) ---
+
+
+def test_manual_run_can_force_a_failure_off_by_default():
+    body = text()
+    dispatch = body[body.index("workflow_dispatch:") : body.index("\npermissions:")]
+    assert "force_failure:" in dispatch
+    assert "type: boolean" in dispatch
+    assert "default: false" in dispatch
+
+
+def test_forced_failure_stops_before_the_scan_so_nothing_deploys():
+    scan = job("scan")
+    forced = scan.index("- name: Forced failure")
+    step = scan[forced : scan.index("\n      - ", forced + 1)]
+    assert "if: inputs.force_failure" in step
+    assert "exit 1" in step
+    assert forced < scan.index("- name: Scan")
+
+
+def test_deploy_runs_only_after_a_successful_scan_job():
+    # An `if:` with no status function implies success(): a failed scan
+    # job, forced or not, skips the deploy, so the last good page stays.
+    condition = re.search(r"\n    if: (.*)\n", job("deploy")).group(1)
+    assert "always()" not in condition
+    assert "failure()" not in condition

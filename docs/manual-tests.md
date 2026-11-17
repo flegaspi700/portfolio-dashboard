@@ -30,3 +30,27 @@ is the run itself (S3.2.1).
 
 | Date | Commit | Result | Notes |
 |---|---|---|---|
+
+---
+
+## F3.3 — Failure alert and keep-alive
+
+**What to check:** a failed run reaches the owner as an alert, the last good
+page stays up, and the keep-alive step works on a real run (S3.3.1, S3.3.2,
+NFR4's forced-failure test).
+
+**Steps:**
+1. Check your GitHub notification settings send failed-workflow emails:
+   github.com → Settings → Notifications → System → Actions →
+   "Only notify for failed workflows" (or all), by email.
+2. After a good `publish` run (F3.2's check), open **Actions** → **publish**
+   → **Run workflow**, tick **force_failure**, and run it.
+3. Check the run fails at the `scan` job's **Forced failure** step, the
+   `deploy` job is skipped, and the page still shows the earlier scan time.
+4. Check the failure email arrives.
+5. On any run, check the **keep-alive** job succeeded.
+
+**Results:**
+
+| Date | Commit | Result | Notes |
+|---|---|---|---|

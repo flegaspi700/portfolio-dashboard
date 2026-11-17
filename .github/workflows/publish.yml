@@ -10,6 +10,8 @@
 #   fails so GitHub's failure email goes out ("Scan failure" decision).
 # - Failed scan: no scan output, so nothing is built or deployed, the last
 #   good page stays up, and the run fails.
+# - Forced failure (manual run with force_failure): the scan job fails at
+#   once, nothing is deployed, and the run fails, to test the alert.
 #
 # Security (T2): nothing is granted by default and each job asks only for
 # what it needs; the token reaches the scan step alone; every action is
@@ -23,6 +25,11 @@ on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      force_failure:
+        description: "Fail on purpose before scanning, to test the failure alert (S3.3.1)"
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -42,6 +49,12 @@ jobs:
       exit_code: ${{ steps.scan.outputs.exit_code }}
       has_output: ${{ steps.scan.outputs.has_output }}
     steps:
+      - name: Forced failure
+        if: inputs.force_failure
+        run: |
+          echo "Failing on purpose (force_failure): nothing is scanned or deployed."
+          exit 1
+
       - name: Check out the code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
