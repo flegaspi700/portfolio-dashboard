@@ -313,17 +313,33 @@ this exception.
 
 ## 2026-11-02 — How the output gets published
 
-**Status:** Proposed
+**Status:** Accepted (2026-11-17)
 
 **Context:** Output committed to the repo stays in public history, and the
 publishing method also affects GitHub's 60-day shutoff of scheduled workflows.
-
-**Decision:** _Pending. Settle at the start of Phase 2._
+Each run makes filtered `output/scan.json` (S2.1.2) and, from Phase 2, a
+Markdown report from it (F3.1).
 
 **Constraint (threat model T6, added 2026-11-13):** only filtered scan
 output may ever be committed or deployed. Deploying a Pages artifact is
 preferred over committing output, because anything committed stays in the
 public history.
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. Build the report into a site with GitHub's own Pages actions and deploy it as an artifact; nothing committed | Stable link; nothing in git history (T6); a failed run doesn't deploy, so the last good page stays; Phase 3's page uses the same deploy | No commits, so the 60-day shutoff needs a keep-alive (F3.3); the owner switches Pages to "GitHub Actions" once | $0 |
+| B. Commit `report.md` daily | Simplest; GitHub renders it; the commit keeps the schedule alive | Every day's report, private repos' names, health and levels included, stays in public history | $0 |
+| C. Job summary on each run only, Pages from Phase 3 | Least to build | No stable link; summaries expire after 90 days; keep-alive still needed | $0 |
+
+**Decision:** A.
+
+**Why:** It keeps public history clean (T6), gives one current link, and is
+the same deploy Phase 3 needs.
+
+**Trade-offs accepted:** A keep-alive step and a one-time Pages setting;
+GitHub's Pages actions are pinned to full commit SHAs (T2).
 
 ---
 
