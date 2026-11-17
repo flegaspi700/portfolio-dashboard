@@ -199,7 +199,7 @@ Phase 1; recording the page's checklist in Phase 3).
 | S1.4.2 | Run a real scan | Story | 1 | Backlog |
 | E2 | Private data protection | Epic | 1, 3 | Backlog |
 | F2.1 | Allow-list and leak test | Feature | 1 | Backlog |
-| S2.1.1 | Allow-list filter | Story | 1 | Ready |
+| S2.1.1 | Allow-list filter | Story | 1 | Done |
 | S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Ready |
 | S2.1.3 | Keep logs safe | Story | 1 | Ready |
 | F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
@@ -438,15 +438,15 @@ or log.
 **Story:** As the owner, I want private rows cut to approved fields, so that details can't reach the page.
 
 **Component:** `privacy/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a private row, when filtered, then only these remain: name, visibility, lifecycle, health, compliance level, last activity date, risk count, blocker count, scan status
-- [ ] Given a new field no one has listed, when filtered, then it is dropped
-- [ ] Given a failed private row, when filtered, then only name and scan status remain, with no error text
-- [ ] Given a public row, when filtered, then it passes unchanged
+- [x] Given a private row, when filtered, then only these remain: name, visibility, lifecycle, health, compliance level, last activity date, risk count, blocker count, scan status
+- [x] Given a new field no one has listed, when filtered, then it is dropped
+- [x] Given a failed private row, when filtered, then only name and scan status remain, with no error text
+- [x] Given a public row, when filtered, then it passes unchanged
 
-**Notes:** Allow-list: `decisions.md` → "Private repos: real name plus signals". Private rows show the level only, not which checks failed.
+**Notes:** Allow-list: `decisions.md` → "Private repos: real name plus signals". Private rows show the level only, not which checks failed. Built in `privacy/allow_list.py`. Each allow-listed field is built by name (`last_activity` is the last push date; `risk_count` and `blocker_count` are `null` when a repo didn't report the list, 0 when the list is empty), so a new field can't get through. A visibility other than exactly `public` counts as private. Beyond the criteria: a public row also gets the same signal fields, so the report and page read one shape.
 
 #### S2.1.2 — Write only filtered output, with a leak test
 
