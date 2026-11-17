@@ -212,13 +212,13 @@ no accessibility pass.
 | S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Done |
 | S2.1.3 | Keep logs safe | Story | 1 | Done |
 | F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
-| E3 | Daily publishing | Epic | 2 | Backlog |
+| E3 | Daily publishing | Epic | 2 | Done |
 | F3.1 | Markdown report | Feature | 2 | Done |
 | S3.1.1 | Render the Markdown report | Story | 2 | Done |
-| F3.2 | Scheduled Action | Feature | 2 | Backlog |
-| S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | In progress |
-| F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
-| S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | In progress |
+| F3.2 | Scheduled Action | Feature | 2 | Done |
+| S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | Done |
+| F3.3 | Failure alert and keep-alive | Feature | 2 | Done |
+| S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | Done |
 | S3.3.2 | Keep the schedule alive | Story | 2 | Done |
 | S3.3.3 | Token renewal reminder | Story | 2 | Done |
 | E4 | Dashboard page | Epic | 3 | Backlog |
@@ -550,22 +550,23 @@ last good version up.
 minimal `permissions:`, never run on `pull_request_target`, and pin
 third-party Actions to a full commit SHA. These become acceptance criteria
 when the stories are written.
+**Status:** Done 2026-11-17: S3.2.1 done; the live run deployed the report with no manual step beyond starting it, and the forced failure left the last good page up. The first scheduled run is the next 06:00 UTC.
 
 #### S3.2.1 — Daily workflow: scan, report, deploy
 
 **Story:** As the owner, I want the report rebuilt every day by itself, so that it stays current with no manual steps.
 
 **Component:** `.github/workflows/` (new workflow)
-**Status:** In progress
+**Status:** Done
 
 **Acceptance criteria:**
 - [x] Given the daily schedule (06:00 UTC) or a manual run, when the workflow runs, then it runs `main.py` with `PORTFOLIO_READ_TOKEN` from the repo secret, renders the report (S3.1.1), builds it with GitHub's Pages actions and deploys it
 - [x] Given a complete or partial result, when the run ends, then the report is deployed; a partial run then fails the job, after deploying (`decisions.md`, "Scan failure")
 - [x] Given a failed result (no scan output), when the run ends, then nothing is deployed, the last good page stays, and the job fails
 - [x] Given the workflow file, when checked by a test, then it sets minimal `permissions:` per job, has no `pull_request_target` trigger, pins every action to a full commit SHA, and passes the token only to the scan step (T2)
-- [ ] Given the first Action run, when the owner reads its public log, then it shows counts only, with the token masked, and the run time and request count meet NFR1 (manual check, recorded in `docs/manual-tests.md`)
+- [x] Given the first Action run, when the owner reads its public log, then it shows counts only, with the token masked, and the run time and request count meet NFR1 (manual check, recorded in `docs/manual-tests.md`)
 
-**Notes:** Owner setup, once: Settings → Pages → Source: GitHub Actions. Adds `docs/manual-tests.md` (the standard's extra doc for checks only a person can do). A test reads the workflow file as text, so no YAML library is added. Built as `.github/workflows/publish.yml`: a `scan` job (checkout, Python 3.13, `main.py`, `python -m report`, Jekyll build, upload), a `deploy` job with the Pages permissions only, and a `result` job that fails the run unless the scan was complete and deployed. GitHub's own actions are pinned to the commit SHAs of their latest releases on 2026-11-17. The workflow also parsed as valid YAML (checked with a throwaway PyYAML outside the project). The last criterion needs the workflow on `main`, so it is run after the merge.
+**Notes:** Owner setup, once: Settings → Pages → Source: GitHub Actions. Adds `docs/manual-tests.md` (the standard's extra doc for checks only a person can do). A test reads the workflow file as text, so no YAML library is added. Built as `.github/workflows/publish.yml`: a `scan` job (checkout, Python 3.13, `main.py`, `python -m report`, Jekyll build, upload), a `deploy` job with the Pages permissions only, and a `result` job that fails the run unless the scan was complete and deployed. GitHub's own actions are pinned to the commit SHAs of their latest releases on 2026-11-17. The workflow also parsed as valid YAML (checked with a throwaway PyYAML outside the project). The last criterion needs the workflow on `main`, so it is run after the merge. Live run 2026-11-17 (run 44142627009) passed: see `docs/manual-tests.md`, F3.2.
 
 ### F3.3 — Failure alert and keep-alive
 
@@ -574,20 +575,21 @@ when the stories are written.
 **Depends on:** F3.2
 **Done when:** a forced failure sends an alert, the token renewal reminder
 exists, and the 60-day workflow shutoff is handled.
+**Status:** Done 2026-11-17: a forced failure sent the alert email; the token reminder logs the expiry (2027-02-11) and fails within 14 days of it; the keep-alive call passed on both live runs.
 
 #### S3.3.1 — Failure alert, with a forced-failure test
 
 **Story:** As the owner, I want to hear when the daily run fails, so that a broken page doesn't go unnoticed.
 
 **Component:** `.github/workflows/`
-**Status:** In progress
+**Status:** Done
 
 **Acceptance criteria:**
 - [x] Given a failed or partial run, when it ends, then the job fails, so GitHub sends the owner its failed-workflow email
 - [x] Given a manual run with `force_failure` set, when it runs, then it fails before deploying, and the last good page stays
-- [ ] Given the forced failure, when it runs, then the owner receives the alert (manual check, recorded in `docs/manual-tests.md`; NFR4's forced-failure test)
+- [x] Given the forced failure, when it runs, then the owner receives the alert (manual check, recorded in `docs/manual-tests.md`; NFR4's forced-failure test)
 
-**Notes:** Uses GitHub's own notifications, so no new permission or service. The owner's notification settings must send failed-workflow emails. Built in `publish.yml`: a `force_failure` input (off by default; scheduled runs never set it) and a first step in the `scan` job that exits 1 when it's on, so the scan job fails and the deploy is skipped. The alert check is a live run after the merge (`docs/manual-tests.md`, F3.3).
+**Notes:** Uses GitHub's own notifications, so no new permission or service. The owner's notification settings must send failed-workflow emails. Built in `publish.yml`: a `force_failure` input (off by default; scheduled runs never set it) and a first step in the `scan` job that exits 1 when it's on, so the scan job fails and the deploy is skipped. The alert check is a live run after the merge (`docs/manual-tests.md`, F3.3). Forced-failure run 2026-11-17 (run 44142953144) passed, and the owner received the email: see `docs/manual-tests.md`, F3.3.
 
 #### S3.3.2 — Keep the schedule alive
 
@@ -664,10 +666,10 @@ repos have no links.
 
 | ID | Category | Requirement (measurable) | How verified | Status |
 |---|---|---|---|---|
-| NFR1 | Performance | A full scan of all in-scope repos finishes in under 5 minutes on GitHub Actions and makes fewer than 1,000 GitHub API requests | Timed run and a request count in the run log, each phase end | Not met yet (local run 2026-11-17: 86 requests, 28.4 s for 17 repos; the Actions timing comes with F3.2) |
+| NFR1 | Performance | A full scan of all in-scope repos finishes in under 5 minutes on GitHub Actions and makes fewer than 1,000 GitHub API requests | Timed run and a request count in the run log, each phase end | Met (2026-11-17, on GitHub Actions: 84 requests, 20.6 s for 17 repos) |
 | NFR2 | Security | No known high-severity vulnerabilities in dependencies | Dependency audit + Dependabot, each phase end (`security.md`) | Met (2026-11-17: `pip-audit` clean; Dependabot alerts are off, the owner's call) |
 | NFR3 | Accessibility | Meets WCAG 2.2 AA | Manual pass per `accessibility.md` | Not met yet |
-| NFR4 | Reliability | The page rebuilds daily with no manual steps for 30 days in a row; a failed run never replaces the last good page, and a partial run is published with the failed repos flagged | Forced-failure test (F3.3) in Phase 2; 30-day run log in Phase 4 | Not met yet |
+| NFR4 | Reliability | The page rebuilds daily with no manual steps for 30 days in a row; a failed run never replaces the last good page, and a partial run is published with the failed repos flagged | Forced-failure test (F3.3) in Phase 2; 30-day run log in Phase 4 | Not met yet (forced-failure test passed 2026-11-17; the 30-day run log is Phase 4) |
 | NFR5 | Privacy | For private repos, only the allow-list fields reach anything published or the Action logs: the leak test's canary values appear in 0 output files and 0 log lines, and the token appears in none | Leak test (S2.1.2, S2.1.3, then F2.2) on every test run | Met for scan output and logs (2026-11-17: leak tests pass; first real run's logs and private rows checked); the report and page come with F2.2 |
 | NFR6 | Cost | $0 per month: free tiers only (the standard's `cost.md` is not needed) | Any new cost needs a logged decision in `decisions.md` | Met (2026-11-17: no paid service or dependency; no cost decisions logged) |
 | NFR7 | Performance | The dashboard page loads in under 2 seconds on a typical connection, with a total page weight under 500 KB | Lighthouse run on the published page, Phase 3 end | Not met yet |
