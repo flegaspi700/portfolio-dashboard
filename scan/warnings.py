@@ -15,9 +15,8 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
-from urllib.error import HTTPError
 
-from scan.facts import FailedRead, RepoFacts
+from scan.facts import FailedRead, RepoFacts, failed_read
 from scan.levels import ComplianceLevel
 from scan.repos import PAGE_SIZE, Fetch
 
@@ -65,14 +64,7 @@ def work_out_warnings(
         try:
             adopted_on = read_adopted()
         except OSError as error:
-            reason = (
-                f"HTTP {error.code}"
-                if isinstance(error, HTTPError)
-                else "network error"
-            )
-            # No repo name: private names stay out of the Action logs (NFR5).
-            logger.warning("Could not read a repo's adoption date: %s", reason)
-            return FailedRead(name=facts.name, reason=reason)
+            return failed_read(facts.name, error, "adoption date")
         # No commit found: fall back to the created date (the spec's
         # "created or adopted"), never a guess.
         start = max(facts.created_at.date(), adopted_on or date.min)

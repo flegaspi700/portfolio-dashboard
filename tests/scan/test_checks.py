@@ -111,6 +111,41 @@ def test_contains_without_if_exists_fails_when_the_file_is_missing():
     assert evaluate_check(CHECKS["CT"], {}, SCHEMAS) is False
 
 
+# --- Present but unreadable files (None): nothing unverified passes ---
+# docs/decisions.md, "Unreadable files don't pass content checks" (S1.2.4).
+
+
+def test_unreadable_file_passes_exists():
+    files = {"a.md": None, "docs/b.md": None}
+
+    assert evaluate_check(CHECKS["EX"], files, SCHEMAS) is True
+
+
+def test_unreadable_file_fails_contains():
+    assert evaluate_check(CHECKS["CT"], {"AGENTS.md": None}, SCHEMAS) is False
+
+
+def test_unreadable_file_fails_contains_even_with_if_exists():
+    # The file is there, so `if_exists` doesn't excuse it.
+    check = CHECKS["CT_IF_EXISTS"]
+
+    assert evaluate_check(check, {"CLAUDE.md": None}, SCHEMAS) is False
+
+
+def test_unreadable_file_fails_absent():
+    files = {"docs/requirements.md": None}
+
+    assert evaluate_check(CHECKS["AB"], files, SCHEMAS) is False
+
+
+def test_unreadable_file_fails_schema():
+    assert evaluate_check(CHECKS["SC"], {"portfolio.json": None}, SCHEMAS) is False
+
+
+def test_unreadable_applies_if_file_gives_n_a():
+    assert evaluate_check(CHECKS["AI_CONTAINS"], {"AGENTS.md": None}, SCHEMAS) is None
+
+
 # --- Unknown kinds stop the run ---
 
 

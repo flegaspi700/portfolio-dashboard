@@ -7,7 +7,7 @@ or, when GitHub can't be read, a `FailedRead` with no made-up values. The
 scan result (S1.4.1) turns a `FailedRead` into a "could not scan" row
 (docs/decisions.md -> "Scan failure: publish partial and flag it").
 
-Built for S1.1.2.
+Built for S1.1.2; `failed_read` is shared with S1.2.3 and S1.2.4.
 """
 
 import logging
@@ -66,12 +66,7 @@ def read_facts(fetch: Fetch, owner: str, name: str) -> RepoFacts | FailedRead:
         repo = fetch(f"/repos/{owner}/{name}")
         open_prs = _count_open_prs(fetch, owner, name)
     except OSError as error:
-        reason = (
-            f"HTTP {error.code}" if isinstance(error, HTTPError) else "network error"
-        )
-        # No repo name: private names stay out of the Action logs (NFR5).
-        logger.warning("Could not read a repo's facts: %s", reason)
-        return FailedRead(name=name, reason=reason)
+        return failed_read(name, error, "facts")
 
     return RepoFacts(
         name=name,
@@ -85,6 +80,16 @@ def read_facts(fetch: Fetch, owner: str, name: str) -> RepoFacts | FailedRead:
         open_issues=max(repo["open_issues_count"] - open_prs, 0),
         open_prs=open_prs,
     )
+
+
+def failed_read(name: str, error: OSError, what: str) -> FailedRead:
+    """Turn a network or API error (urllib raises both as OSError) into a
+    `FailedRead`, logging `what` couldn't be read and a generic reason.
+    Used by every reader in `scan/` that reads one repo."""
+    reason = f"HTTP {error.code}" if isinstance(error, HTTPError) else "network error"
+    # No repo name: private names stay out of the Action logs (NFR5).
+    logger.warning("Could not read a repo's %s: %s", what, reason)
+    return FailedRead(name=name, reason=reason)
 
 
 def _count_open_prs(fetch: Fetch, owner: str, name: str) -> int:

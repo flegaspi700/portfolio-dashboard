@@ -6,15 +6,16 @@ pmo-project-standardization's default branch (docs/decisions.md, 2026-11-14)
 through the scan's fetch function. If that fails, the scan stops: there is
 no local copy to fall back on (AGENTS.md, "the standard is read, never
 copied"). `evaluate_checks` then runs every check against one repo's files
-(path -> text, a missing path being a missing file) and returns pass, fail
-or n/a per check ID. The compliance level (S1.2.2) and warnings (S1.2.3)
+(path -> text, from `scan/files.py`; a missing path is a missing file, None
+a present file that wasn't read) and returns pass, fail or n/a per check
+ID. The compliance level (S1.2.2) and warnings (S1.2.3)
 are worked out from those results.
 
 The four kinds follow the spec (`spec/compliance.md` -> Checks) and
 `check-compliance.ps1`, the reference implementation, with one exception:
 `schema` validates the whole document, where the script checks only the
 top level (docs/decisions.md, "Reuse or reimplement the compliance checks").
-Built for S1.2.1.
+Built for S1.2.1; unread files handled for S1.2.4.
 """
 
 import base64
@@ -85,7 +86,7 @@ def load_registry(fetch: Fetch) -> Registry:
 
 
 def evaluate_checks(
-    registry: Registry, files: Mapping[str, str]
+    registry: Registry, files: Mapping[str, str | None]
 ) -> dict[str, bool | None]:
     """Evaluate every check on one repo's files: check ID -> True (pass),
     False (fail) or None (n/a). Raises UnknownCheckKind on a kind this
@@ -98,12 +99,14 @@ def evaluate_checks(
 
 def evaluate_check(
     check: dict[str, Any],
-    files: Mapping[str, str],
+    files: Mapping[str, str | None],
     schemas: Mapping[str, dict[str, Any]],
 ) -> bool | None:
     """Evaluate one check on a repo's files (path -> text; missing paths are
-    missing files). Returns True, False, or None when `applies_if` doesn't
-    match. An unknown kind raises UnknownCheckKind even when `applies_if`
+    missing files; None is a file that is present but wasn't read). Returns
+    True, False, or None when `applies_if` doesn't match. An unread file
+    passes `exists` and nothing else (docs/decisions.md, "Unreadable files
+    don't pass content checks"); an `applies_if` on it gives None. An unknown kind raises UnknownCheckKind even when `applies_if`
     wouldn't match: the scanner is out of date either way."""
     kind = check.get("kind")
     if kind not in KINDS:
@@ -119,15 +122,16 @@ def evaluate_check(
     if kind == "exists":
         return all(path in files for path in check["paths"])
     if kind == "contains":
-        text = files.get(check["path"])
-        if text is None:
+        if check["path"] not in files:
             return bool(check.get("if_exists"))
-        return _matches(text, check["pattern"])
+        return _matches(files[check["path"]], check["pattern"])
     if kind == "absent":
-        # Missing files are skipped: they can't contain the pattern.
-        return not any(
-            _matches(files.get(path), check["pattern"]) for path in check["paths"]
-        )
+        # Missing files are skipped: they can't contain the pattern. An
+        # unreadable one can't be shown not to, so it fails.
+        present = [path for path in check["paths"] if path in files]
+        if any(files[path] is None for path in present):
+            return False
+        return not any(_matches(files[path], check["pattern"]) for path in present)
     return _fits_schema(files.get(check["path"]), schemas[check["schema"]])
 
 

@@ -191,7 +191,7 @@ Phase 1; recording the page's checklist in Phase 3).
 | S1.2.1 | Evaluate check kinds | Story | 1 | Done |
 | S1.2.2 | Work out the compliance level | Story | 1 | Done |
 | S1.2.3 | Work out scan warnings | Story | 1 | Done |
-| S1.2.4 | Read repo files | Story | 1 | Ready |
+| S1.2.4 | Read repo files | Story | 1 | Done |
 | F1.3 | Read reported status | Feature | 1 | Backlog |
 | S1.3.1 | Read `portfolio.json` | Story | 1 | Ready |
 | F1.4 | Assemble the scan result | Feature | 1 | Backlog |
@@ -331,16 +331,19 @@ where a nested schema error makes C4 fail here (the spec wins over the script).
 **Story:** Technical — fetch the files the check registry names from each repo, so the checks (S1.2.1) get their input with as few requests as possible (NFR1).
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the check registry, when reading a repo, then only the paths the checks and their `applies_if` name are fetched, and only those that exist in the repo's file tree (one tree request per repo)
-- [ ] Given a path not in the tree, when read, then it counts as missing, with no request for it
-- [ ] Given an empty repo (no default branch, or GitHub says the repository is empty), when read, then every file counts as missing and the read doesn't fail
-- [ ] Given a file over 1 MB, when read, then its content isn't fetched and it counts as present but unreadable
-- [ ] Given an API error or rate limit, when read, then that repo is reported as failed, with no made-up values
+- [x] Given the check registry, when reading a repo, then only the paths the checks and their `applies_if` name are fetched, and only those that exist in the repo's file tree (one tree request per repo)
+- [x] Given a path not in the tree, when read, then it counts as missing, with no request for it
+- [x] Given an empty repo (no default branch, or GitHub says the repository is empty), when read, then every file counts as missing and the read doesn't fail
+- [x] Given a file over 1 MB, when read, then its content isn't fetched and it counts as present but unreadable
+- [x] Given an API error or rate limit, when read, then that repo is reported as failed, with no made-up values
+- [x] Given a path that only `exists` checks name, when read, then it counts as present from the tree alone, with no request for its content
+- [x] Given GitHub returns a truncated file tree, when read, then that repo is reported as failed, rather than counting files as missing
+- [x] Given a present but unreadable file, when the checks run, then `exists` passes, `contains`, `schema` and `absent` fail, and an `applies_if` on it gives n/a
 
-**Notes:** Split out of S1.2.1 on 2026-11-14, which stays a pure function of the registry plus files. How a present-but-unreadable file affects each check kind is decided when this story starts.
+**Notes:** Split out of S1.2.1 on 2026-11-14, which stays a pure function of the registry plus files. The owner reviewed the criteria on 2026-11-17 and added the `exists`-only and truncated-tree ones. A present but unreadable file counts as not passing: `decisions.md`, "Unreadable files don't pass content checks" (2026-11-17). Built in `scan/files.py`, with the unread-file rule in `scan/checks.py`; file content comes from the blob the tree names, so files and tree are the same snapshot. A live read-only check on 2026-11-17 against two public repos gave the same level and check results as `check-compliance.ps1`; this repo took 4 requests.
 
 ### F1.3 — Read reported status
 

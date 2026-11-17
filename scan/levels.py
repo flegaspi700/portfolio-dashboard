@@ -47,7 +47,7 @@ class ComplianceLevel:
 def work_out_level(
     registry: Registry,
     results: Mapping[str, bool | None],
-    files: Mapping[str, str],
+    files: Mapping[str, str | None],
     today: date,
 ) -> ComplianceLevel:
     """Work out one repo's level on `today` from its check results.

@@ -13,6 +13,32 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-17 — Unreadable files don't pass content checks
+
+**Status:** Accepted
+
+**Context:** The file reader (S1.2.4) doesn't download a named file over
+1 MB, so the file is present but its content is unknown. The check kinds
+(S1.2.1) needed a rule for that case.
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. Counts as not passing: `exists` passes; `contains`, `schema` and `absent` fail; `applies_if` gives n/a | Nothing unverified passes | A few lines more in `scan/checks.py` | $0 |
+| B. Treat it as empty text | No change to the checks | `absent` passes on a file nobody read | $0 |
+| C. The whole repo can't be scanned | Simplest; guesses nothing | Hides the repo's other results for a file that's merely big | $0 |
+
+**Decision:** A.
+
+**Why:** The scan never reports a pass it didn't verify, and the rest of the
+repo's results still show.
+
+**Trade-offs accepted:** A repo with a huge `AGENTS.md` loses checks it
+might really pass. No such repo is known.
+
+---
+
 ## 2026-11-17 — Read the S2 adoption date only when S2 could fire
 
 **Status:** Accepted
