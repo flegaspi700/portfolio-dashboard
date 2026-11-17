@@ -244,3 +244,17 @@ def test_sixty_repos_with_a_few_failures():
     assert result.status == "partial"
     assert len(result.rows) == 60
     assert sum(row.scan_status == COULD_NOT_SCAN for row in result.rows) == 3
+
+
+def test_registry_that_is_not_json_fails_with_a_generic_reason():
+    class Garbled(FakeGitHub):
+        def __call__(self, path):
+            if path.endswith("compliance-checks.json"):
+                self.requested.append(path)
+                return {"content": "bm90IGpzb24="}  # base64 of "not json"
+            return super().__call__(path)
+
+    result = run_scan(Garbled({"good": {}}), OWNER, NOW)
+
+    assert result.status == "failed"
+    assert result.failure == "could not read the check registry: invalid"

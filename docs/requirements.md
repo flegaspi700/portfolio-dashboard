@@ -198,10 +198,10 @@ Phase 1; recording the page's checklist in Phase 3).
 | S1.4.1 | Assemble the scan result | Story | 1 | Done |
 | S1.4.2 | Run a real scan | Story | 1 | Backlog |
 | E2 | Private data protection | Epic | 1, 3 | Backlog |
-| F2.1 | Allow-list and leak test | Feature | 1 | Backlog |
+| F2.1 | Allow-list and leak test | Feature | 1 | Done |
 | S2.1.1 | Allow-list filter | Story | 1 | Done |
 | S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Done |
-| S2.1.3 | Keep logs safe | Story | 1 | Ready |
+| S2.1.3 | Keep logs safe | Story | 1 | Done |
 | F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
 | E3 | Daily publishing | Epic | 2 | Backlog |
 | F3.1 | Markdown report | Feature | 2 | Backlog |
@@ -432,6 +432,7 @@ result, and prove it for output files and logs.
 **Depends on:** F1.4
 **Done when:** canary values planted in a private repo appear in no output file
 or log.
+**Status:** Done 2026-11-17: all three stories done; the leak tests run the whole scan, filter, write and logging together on `tests/fake_github.py`, which is the integration test, and show the Done when line on fixtures.
 
 #### S2.1.1 — Allow-list filter
 
@@ -469,12 +470,14 @@ or log.
 **Story:** As the owner, I want safe logs, so that nothing private appears in Action logs, which are public on a public repo.
 
 **Component:** `privacy/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the canary fixture, when the scan runs at every log level, then no canary appears in captured logs
-- [ ] Given an exception carrying a private file's content or a URL, when logged, then only the repo name and error type are logged
-- [ ] Given a run with a token, when the scan runs, then the token appears nowhere in logs
+- [x] Given the canary fixture, when the scan runs at every log level, then no canary appears in captured logs
+- [x] Given an exception carrying a private file's content or a URL, when logged, then only the repo name and error type are logged
+- [x] Given a run with a token, when the scan runs, then the token appears nowhere in logs
+
+**Notes:** Built in `privacy/safe_logging.py`: `configure_logging` (for `main.py`, S1.4.2) routes every record through a formatter that shows a logged exception's type and the types it was raised from, never its text or traceback, and drops stack info. The scan logs no repo names at all, which meets "only the repo name and error type" with room to spare. Found while building: an unreadable registry put the error's own text into the result's failure reason, which `write_output` logs; it is now a generic reason (`could not read the check registry: HTTP 401`). The token check uses a made-up token in error text and headers; S1.4.2 checks the real one.
 
 ### F2.2 — Leak test covers everything published
 

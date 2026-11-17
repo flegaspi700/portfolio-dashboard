@@ -30,8 +30,9 @@ ones included, with a read-only token.
   writes scan output (S2.1.1, S2.1.2). A leak test plants canary values in
   a fixture private repo and fails if any reach output files or logs, at
   every log level (S2.1.2, S2.1.3), later extended to the report and the
-  page (F2.2). Errors log only the repo name and the error type (S2.1.3).
-  NFR5.
+  page (F2.2). Errors log only a generic reason or the error type, never
+  the error's text; the scan logs no repo names at all, which is stricter
+  than the allow-list needs (S2.1.3, `privacy/safe_logging.py`). NFR5.
 - **T2:** a fine-grained, read-only token (Contents and Metadata: read)
   limited to the selected repos, with an expiry date, stored as an
   encrypted Actions secret; it never appears in logs (S2.1.3); a renewal
@@ -61,8 +62,11 @@ Action (HTTP 200, valid JSON). The public run log shows the token masked
 (`***`), and none of the file's text values appear in it (6 checked, 0
 found; the repo's name appears, which the allow-list publishes anyway).
 The first run had failed safely because the secret had been stored empty.
-The leak test for scan output and logs arrives in Phase 1 (S2.1.2,
-S2.1.3).
+The leak test for scan output and logs is in place (S2.1.2, S2.1.3,
+2026-11-17), on fixtures: canaries in 19 places of a private repo, and in
+the text of API errors, plus a made-up token, reach no output file and no
+log line at DEBUG, INFO or WARNING. The first real run (S1.4.2) checks the
+real token's logs.
 
 ## Personal data
 

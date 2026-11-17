@@ -35,7 +35,8 @@ repo and assembles the scan result; the real fetch function and `main.py`
 are S1.4.2. `privacy/allow_list.py` (S2.1.1) turns the scan result into
 the scan output, cutting private rows to the allow-list, and
 `privacy/output.py` (S2.1.2) writes it to `output/scan.json` and gives the
-exit code. The rest is the
+exit code; `privacy/safe_logging.py` (S2.1.3) sets up logging so an
+exception shows only its type. The rest is the
 planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
