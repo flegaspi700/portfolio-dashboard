@@ -95,8 +95,13 @@ def run_scan(fetch: Fetch, owner: str, now: datetime) -> ScanResult:
     try:
         registry = load_registry(fetch)
     except RegistryError as error:
-        logger.error("Scan failed: could not read the check registry")
-        return _failed(now, None, f"could not read the check registry ({error})")
+        # A generic reason only: the error's own text can hold a URL or a
+        # response reason, and the failure is logged (S2.1.3).
+        cause = error.__cause__
+        reason = error_reason(cause) if isinstance(cause, OSError) else "invalid"
+        failure = f"could not read the check registry: {reason}"
+        logger.error("Scan failed: %s", failure)
+        return _failed(now, None, failure)
 
     try:
         repos = select_in_scope(list_repos(fetch))
