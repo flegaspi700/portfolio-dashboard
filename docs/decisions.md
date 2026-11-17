@@ -345,12 +345,33 @@ GitHub's Pages actions are pinned to full commit SHAs (T2).
 
 ## 2026-11-02 — "Needs attention first" ranking
 
-**Status:** Proposed
+**Status:** Accepted (2026-11-17)
 
 **Context:** The page must name which project needs attention first, using only
-reported and scanned data, never a guessed judgment.
+reported and scanned data, never a guessed judgment. Private repos publish
+only the allow-list fields, so a ranking that treats every repo alike can
+use only those: health, level, lifecycle, last activity, risk and blocker
+counts, and scan status.
 
-**Decision:** _Pending. Settle at the start of Phase 3._
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. Fixed tiers, with the reason shown | Easy to follow and to test; the reader sees why a repo is listed | Coarse: two repos in one tier are ordered only by the tie-breakers | $0 |
+| B. Weighted score | More nuance | The weights are judgment calls; the order is hard to explain | $0 |
+| C. Owner-reported signals only | Most faithful to owners | Today 16 of 17 repos report nothing, so most would tie | $0 |
+
+**Decision:** A. Tiers, first match wins: could not scan → health red → has
+blockers → health amber → health not reported → below Level 2 → the rest.
+Ties: lifecycle `active` first, then the most recent activity, then the
+name. Repos whose lifecycle is `done` or `archived` aren't ranked. Each
+ranked repo shows its tier as the reason.
+
+**Why:** A reader can check the order against the rule, and it uses only
+data the page may show for every repo.
+
+**Trade-offs accepted:** Signals only public rows carry (scan warnings,
+risk severity) don't count, so public and private repos rank alike.
 
 ---
 

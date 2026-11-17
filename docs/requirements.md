@@ -179,12 +179,13 @@ no accessibility pass.
 - [x] Write the stories for F3.1, F3.2, F3.3 (2026-11-17, approved by the owner)
 
 **Phase 3:**
-- [ ] Decide the "needs attention first" ranking (`decisions.md`)
-- [ ] Write the stories for F4.1, F4.2, F4.3, F4.4, F2.2
+- [x] Decide the "needs attention first" ranking (`decisions.md`) (2026-11-17: fixed tiers, with the reason shown)
+- [x] Write the stories for F4.1, F4.2, F4.3, F4.4, F2.2 (2026-11-17, approved by the owner)
+- [ ] Record what applies to the page in `accessibility.md`, then run the accessibility pass and a Lighthouse check (NFR3, NFR7) before closing the phase
 
 **Phase 4:**
-- [ ] Rollout: get at least 4 repos to Level 2 or higher with real status data (done by hand in those repos, not by the dashboard)
-- [ ] Run the daily rebuild for 30 days straight with no manual steps
+- [ ] Rollout: get at least 4 repos to Level 2 or higher with real status data (done by hand in those repos, not by the dashboard). Can start any time: on 2026-11-17, 5 repos were at Level 3 but only this one reported health, so `/report` in 4 of them meets it
+- [ ] Run the daily rebuild for 30 days straight with no manual steps (the count can start with the first scheduled run, 2026-11-18, while Phase 3 is built)
 - [ ] First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first
 - [ ] Check the page at least weekly for a month
 
@@ -212,6 +213,7 @@ no accessibility pass.
 | S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Done |
 | S2.1.3 | Keep logs safe | Story | 1 | Done |
 | F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
+| S2.2.1 | Leak test on the built site | Story | 3 | Ready |
 | E3 | Daily publishing | Epic | 2 | Done |
 | F3.1 | Markdown report | Feature | 2 | Done |
 | S3.1.1 | Render the Markdown report | Story | 2 | Done |
@@ -223,9 +225,15 @@ no accessibility pass.
 | S3.3.3 | Token renewal reminder | Story | 2 | Done |
 | E4 | Dashboard page | Epic | 3 | Backlog |
 | F4.1 | Portfolio summary | Feature | 3 | Backlog |
+| S4.1.1 | Build the page from the scan output | Story | 3 | Ready |
+| S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Ready |
+| S4.1.3 | Needs attention first | Story | 3 | Ready |
 | F4.2 | Sortable table | Feature | 3 | Backlog |
+| S4.2.1 | Sortable, accessible repo table | Story | 3 | Ready |
 | F4.3 | Per-repo pages | Feature | 3 | Backlog |
+| S4.3.1 | A page per repo | Story | 3 | Ready |
 | F4.4 | Request links | Feature | 3 | Backlog |
+| S4.4.1 | Request links for public repos | Story | 3 | Ready |
 
 Component folders in the stories below are provisional until `/stack` and
 the standard's `coding.md` settle the layout. All tests use fixtures, with no
@@ -505,6 +513,18 @@ or log.
 **Depends on:** F2.1, F3.1, F4.3
 **Done when:** the same test also runs on the report and the built page.
 
+
+#### S2.2.1 — Leak test on the built site
+
+**Story:** As the owner, I want proof that nothing private reaches the published site, so that I can share the link safely.
+
+**Component:** `tests/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the canary fixture, when the whole scan, filter, report and site build run, then no canary appears in any file of the built site, HTML and Markdown alike
+- [ ] Given the filter is bypassed, when the leak test runs, then it fails
+- [ ] Given the built site, when checked, then private repos' pages and rows contain the allow-list fields only
 ---
 
 ## E3 — Daily publishing
@@ -636,6 +656,52 @@ old-data flag, and an explanation of the compliance levels.
 **Done when:** a first-time reader can name the project needing attention
 within 3 minutes.
 
+#### S4.1.1 — Build the page from the scan output
+
+**Story:** Technical — generate the site as our own static HTML from the scan output, replacing the Jekyll build and its default theme, so the page has no third-party code and every value is escaped.
+
+**Component:** `site/` (new), `.github/workflows/publish.yml`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given `output/scan.json`, when the site is built, then `output/site/index.html` is written from that file alone, with Jinja2 auto-escaping on, and the Markdown report stays at `output/site/report.md`
+- [ ] Given the workflow, when it runs, then it uploads `output/site` as it is, with no Jekyll step
+- [ ] Given the built site, when checked, then it loads no script, style or font from another site, and its total size is under 500 KB (NFR7's weight)
+- [ ] Given the same scan output, when built twice, then the files are identical
+- [ ] Given no scan output, when building, then it stops with a clear message and a non-zero exit code
+
+**Notes:** Jinja2 was chosen in "Language and stack" for Phase 3; it is pinned and audited (`pip-audit`) when this story starts. Removes `actions/jekyll-build-pages` and the default theme's anchor-js script seen on 2026-11-17.
+
+#### S4.1.2 — Summary tiles, freshness and levels
+
+**Story:** As a reviewer, I want the portfolio's state at a glance, so that I understand it within a few minutes.
+
+**Component:** `site/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the scan output, when the page is built, then tiles show the number of repos, the count per health value, per compliance level, and could not scan
+- [ ] Given the page, when read, then it shows when the data was scanned (UTC), and a partial scan is flagged at the top
+- [ ] Given data more than 36 hours old when the page is opened, when it loads, then a notice says the data may be out of date (a small script compares the scan time with the reader's clock; without scripts, the scan time is still shown)
+- [ ] Given the page, when read, then the four compliance levels are explained in a sentence each, with a link to the standard's compliance spec
+- [ ] Given counts and states, when shown, then none rely on colour alone (text labels on every state)
+
+#### S4.1.3 — Needs attention first
+
+**Story:** As the owner, I want the repos that need attention listed first, with the reason, so that I know where to look this week.
+
+**Component:** `site/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the scan output, when ranking, then repos are ordered by tier, first match wins: could not scan, health red, has blockers, health amber, health not reported, below Level 2, the rest
+- [ ] Given repos in the same tier, when ranking, then lifecycle `active` comes first, then the most recent activity, then the name
+- [ ] Given a repo whose lifecycle is `done` or `archived`, when ranking, then it isn't listed
+- [ ] Given the page, when read, then a "Needs attention first" section lists the top 5 with their reason, private and public alike
+- [ ] Given a public row, when ranking, then only the allow-list fields count, so it ranks exactly as it would if it were private
+
+**Notes:** Criteria approved by the owner on 2026-11-17, with the rest of Phase 3's stories. `decisions.md`, "Needs attention first" ranking (2026-11-17).
+
 ### F4.2 — Sortable table
 
 **Description:** All in-scope repos in one table that can be sorted.
@@ -643,6 +709,19 @@ within 3 minutes.
 **Depends on:** F4.1
 **Done when:** all repos can be sorted by keyboard, and status isn't shown by
 colour alone.
+
+#### S4.2.1 — Sortable, accessible repo table
+
+**Story:** As a reviewer, I want every in-scope repo in one table I can sort, so that I can compare them my way.
+
+**Component:** `site/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the page, when read without scripts, then the table lists every repo in attention order, with name, visibility, level, health, lifecycle, last activity, risks, blockers and scan status
+- [ ] Given a column header, when activated by mouse or keyboard (Tab, then Enter or Space), then the table sorts by it, toggling ascending and descending, and `aria-sort` says which
+- [ ] Given a state such as health or level, when shown, then it has a text label, never colour alone
+- [ ] Given the table, when checked, then headers are real table headers and the page meets the table checks in `accessibility.md`
 
 ### F4.3 — Per-repo pages
 
@@ -652,6 +731,20 @@ colour alone.
 **Done when:** public repos show full detail and private repos show
 allow-listed fields only.
 
+#### S4.3.1 — A page per repo
+
+**Story:** As a reviewer, I want to drill into one repo, so that I can see the detail behind its row.
+
+**Component:** `site/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a repo, when the site is built, then it has its own page, linked from its table row, at a path made from its name with only safe characters
+- [ ] Given a public repo, when its page is built, then it shows its facts, level, each check's result with the standard's fix for failures, scan warnings, and its reported status: summary, health reason, risks, blockers, call-outs, next milestone
+- [ ] Given a private repo, when its page is built, then it shows the allow-list fields only
+- [ ] Given a repo that could not be scanned, when its page is built, then it says so, with no other values
+- [ ] Given text from a public repo containing markup, when shown, then it is escaped and displayed as text (T3)
+
 ### F4.4 — Request links
 
 **Description:** Links that open a pre-filled GitHub issue for the owner.
@@ -660,6 +753,21 @@ allow-listed fields only.
 **Done when:** a link opens a pre-filled issue in public repos, and private
 repos have no links.
 
+
+#### S4.4.1 — Request links for public repos
+
+**Story:** As the owner, I want a link that asks a project's owner for what's missing, so that gaps get fixed without me writing each request.
+
+**Component:** `site/`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a public repo whose health isn't reported or whose report is stale (S1, S2), when its page is built, then it has a "Request a status update" link
+- [ ] Given a public repo below Level 2, when its page is built, then it has a "Request standard adoption" link
+- [ ] Given a link, when followed, then it opens GitHub's new-issue form in that repo with a title and body from a fixed template, URL-encoded, and changes nothing by itself
+- [ ] Given a private repo, when its page is built, then it has no request links
+
+**Notes:** Non-goals: the dashboard never changes other repos; a link only opens a pre-filled issue that the reader submits.
 ---
 
 ## Non-functional requirements
