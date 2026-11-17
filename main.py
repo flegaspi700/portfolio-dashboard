@@ -8,8 +8,9 @@ code this returns. Run it with `.venv\\Scripts\\python main.py`; the
 scheduled Action will run it the same way (Phase 2).
 
 Logs carry counts only. The token goes nowhere but the fetch function,
-and an unexpected crash is logged as its type only (S2.1.3). Built for
-S1.4.2.
+and an unexpected crash is logged as its type only (S2.1.3). The token's
+expiry date is logged, and within 14 days of it the run exits 1 after
+writing, as a renewal reminder (S3.3.3). Built for S1.4.2.
 """
 
 import logging
@@ -23,13 +24,16 @@ from pathlib import Path
 from privacy.output import OUTPUT_FILE, write_output
 from privacy.safe_logging import configure_logging
 from scan.facts import error_reason
-from scan.github import make_fetch
+from scan.github import make_fetch, token_expiry
 from scan.repos import Fetch
 from scan.result import COULD_NOT_SCAN, run_scan
 
 logger = logging.getLogger("main")
 
 TOKEN_VARIABLE = "PORTFOLIO_READ_TOKEN"
+
+# From the story (S3.3.3): two weeks is time enough to renew the token.
+RENEW_WITHIN_DAYS = 14
 ENV_FILE = Path(".env")
 
 
@@ -89,6 +93,7 @@ def _run(
     except OSError as error:
         logger.error("Could not read the token's user: %s", error_reason(error))
         return 1
+    days_left = _log_token_expiry(getattr(real_fetch, "last_headers", None), now)
 
     result = run_scan(fetch, owner, now)
     code = write_output(result, output)
@@ -102,7 +107,30 @@ def _run(
         requests,
         time.monotonic() - started,
     )
+    if days_left is not None and days_left <= RENEW_WITHIN_DAYS:
+        # The output is written and will be deployed; failing the run now
+        # makes GitHub's failure email the reminder (S3.3.3, T5).
+        logger.warning(
+            "Renew the read token: it expires in %d days. The run is marked "
+            "failed so the alert reminds you (docs/security.md, T2).",
+            days_left,
+        )
+        return 1
     return code
+
+
+def _log_token_expiry(headers, now: datetime) -> int | None:
+    """Log when the read token expires; return the whole days left, or
+    None when it has no expiry date."""
+    expires = token_expiry(headers)
+    if expires is None:
+        logger.info("The read token has no expiry date")
+        return None
+    days_left = (expires.date() - now.date()).days
+    logger.info(
+        "The read token expires on %s (%d days left)", f"{expires:%Y-%m-%d}", days_left
+    )
+    return days_left
 
 
 def _read_env_file(path: Path) -> dict[str, str]:
