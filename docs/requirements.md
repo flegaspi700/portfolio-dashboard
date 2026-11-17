@@ -216,7 +216,7 @@ no accessibility pass.
 | F3.1 | Markdown report | Feature | 2 | Done |
 | S3.1.1 | Render the Markdown report | Story | 2 | Done |
 | F3.2 | Scheduled Action | Feature | 2 | Backlog |
-| S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | Ready |
+| S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | In progress |
 | F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
 | S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | Ready |
 | S3.3.2 | Keep the schedule alive | Story | 2 | Ready |
@@ -556,16 +556,16 @@ when the stories are written.
 **Story:** As the owner, I want the report rebuilt every day by itself, so that it stays current with no manual steps.
 
 **Component:** `.github/workflows/` (new workflow)
-**Status:** Ready
+**Status:** In progress
 
 **Acceptance criteria:**
-- [ ] Given the daily schedule (06:00 UTC) or a manual run, when the workflow runs, then it runs `main.py` with `PORTFOLIO_READ_TOKEN` from the repo secret, renders the report (S3.1.1), builds it with GitHub's Pages actions and deploys it
-- [ ] Given a complete or partial result, when the run ends, then the report is deployed; a partial run then fails the job, after deploying (`decisions.md`, "Scan failure")
-- [ ] Given a failed result (no scan output), when the run ends, then nothing is deployed, the last good page stays, and the job fails
-- [ ] Given the workflow file, when checked by a test, then it sets minimal `permissions:` per job, has no `pull_request_target` trigger, pins every action to a full commit SHA, and passes the token only to the scan step (T2)
+- [x] Given the daily schedule (06:00 UTC) or a manual run, when the workflow runs, then it runs `main.py` with `PORTFOLIO_READ_TOKEN` from the repo secret, renders the report (S3.1.1), builds it with GitHub's Pages actions and deploys it
+- [x] Given a complete or partial result, when the run ends, then the report is deployed; a partial run then fails the job, after deploying (`decisions.md`, "Scan failure")
+- [x] Given a failed result (no scan output), when the run ends, then nothing is deployed, the last good page stays, and the job fails
+- [x] Given the workflow file, when checked by a test, then it sets minimal `permissions:` per job, has no `pull_request_target` trigger, pins every action to a full commit SHA, and passes the token only to the scan step (T2)
 - [ ] Given the first Action run, when the owner reads its public log, then it shows counts only, with the token masked, and the run time and request count meet NFR1 (manual check, recorded in `docs/manual-tests.md`)
 
-**Notes:** Owner setup, once: Settings → Pages → Source: GitHub Actions. Adds `docs/manual-tests.md` (the standard's extra doc for checks only a person can do). A test reads the workflow file as text, so no YAML library is added.
+**Notes:** Owner setup, once: Settings → Pages → Source: GitHub Actions. Adds `docs/manual-tests.md` (the standard's extra doc for checks only a person can do). A test reads the workflow file as text, so no YAML library is added. Built as `.github/workflows/publish.yml`: a `scan` job (checkout, Python 3.13, `main.py`, `python -m report`, Jekyll build, upload), a `deploy` job with the Pages permissions only, and a `result` job that fails the run unless the scan was complete and deployed. GitHub's own actions are pinned to the commit SHAs of their latest releases on 2026-11-17. The workflow also parsed as valid YAML (checked with a throwaway PyYAML outside the project). The last criterion needs the workflow on `main`, so it is run after the merge.
 
 ### F3.3 — Failure alert and keep-alive
 

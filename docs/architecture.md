@@ -19,7 +19,7 @@ flowchart LR
     gh[("GitHub API")] -- "repo facts, files" --> scan["scan/"]
     scan -- "scan result, unfiltered" --> privacy["privacy/"]
     privacy -- "scan output, allow-listed" --> report["report/"]
-    report -- "index.md" --> pages["GitHub Pages (F3.2)"]
+    report -- "index.md" --> pages["GitHub Pages, deployed by the publish workflow"]
 ```
 
 So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
@@ -39,7 +39,8 @@ the scan output, cutting private rows to the allow-list, and
 `privacy/output.py` (S2.1.2) writes it to `output/scan.json` and gives the
 exit code; `privacy/safe_logging.py` (S2.1.3) sets up logging so an
 exception shows only its type. `report/markdown.py` (S3.1.1) reads that file,
-never the scan result, and writes `output/site/index.md` for the Pages build. The rest is the
+never the scan result, and writes `output/site/index.md` for the Pages build. `.github/workflows/publish.yml` (S3.2.1) runs
+it all daily and deploys the site, committing nothing. The rest is the
 planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
@@ -49,6 +50,7 @@ portfolio-dashboard/
   scan/            # reads repos; works out facts, compliance and status; assembles the scan result
   privacy/         # allow-list filter; the only component that writes scan output
   report/          # renders the Markdown report from the scan output file (`python -m report`)
+  .github/workflows/  # publish.yml: the daily scan, report and Pages deploy; token-check.yml (Phase 0)
   tests/           # mirrors the module structure above
   docs/            # these planning docs
   main.py          # wires the components together

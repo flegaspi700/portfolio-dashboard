@@ -1,0 +1,121 @@
+# Daily publish (S3.2.1; docs/decisions.md, "How the output gets published")
+#
+# Once a day, and by hand: scan the in-scope repos with the read token,
+# render the Markdown report from the filtered scan output, build it into
+# a site with GitHub's own Pages actions, and deploy it. Nothing is
+# committed (threat model T6).
+#
+# - Complete scan: deploy, and the run passes.
+# - Partial scan: deploy (failed repos show "could not scan"), then the run
+#   fails so GitHub's failure email goes out ("Scan failure" decision).
+# - Failed scan: no scan output, so nothing is built or deployed, the last
+#   good page stays up, and the run fails.
+#
+# Security (T2): nothing is granted by default and each job asks only for
+# what it needs; the token reaches the scan step alone; every action is
+# pinned to a full commit SHA; no pull-request triggers. The run log is
+# public: the scan logs counts only (S2.1.3). tests/test_workflows.py
+# checks these rules.
+
+name: publish
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+# One publish at a time; a second run waits rather than cancelling a
+# deploy halfway.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      exit_code: ${{ steps.scan.outputs.exit_code }}
+      has_output: ${{ steps.scan.outputs.has_output }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Scan
+        id: scan
+        env:
+          PORTFOLIO_READ_TOKEN: ${{ secrets.PORTFOLIO_READ_TOKEN }}
+        run: |
+          set +e
+          python main.py
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          if [ -f output/scan.json ]; then
+            echo "has_output=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_output=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Render the report
+        if: steps.scan.outputs.has_output == 'true'
+        run: python -m report
+
+      - name: Build the site
+        if: steps.scan.outputs.has_output == 'true'
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1.0.13
+        with:
+          source: ./output/site
+          destination: ./_site
+
+      - name: Upload the site
+        if: steps.scan.outputs.has_output == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./_site
+
+  deploy:
+    needs: scan
+    if: needs.scan.outputs.has_output == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  result:
+    needs: [scan, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Fail unless the scan was complete and deployed
+        env:
+          EXIT_CODE: ${{ needs.scan.outputs.exit_code }}
+          DEPLOY: ${{ needs.deploy.result }}
+        run: |
+          echo "Scan exit code: ${EXIT_CODE:-none}. Deploy: ${DEPLOY}."
+          if [ "$EXIT_CODE" != "0" ] || [ "$DEPLOY" != "success" ]; then
+            echo "The run is marked failed so the failure alert goes out."
+            exit 1
+          fi
