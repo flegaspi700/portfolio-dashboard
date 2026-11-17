@@ -238,9 +238,22 @@ def test_registry_and_schemas_are_read_from_the_standards_default_branch():
         levels=REGISTRY_DOCUMENT["levels"],
         checks=FIXTURES["checks"],
         schemas=SCHEMAS,
+        version=2,
     )
     # No ?ref=: the default branch (docs/decisions.md, 2026-11-14).
     assert fetch.requested == [REGISTRY_PATH, SCHEMA_PATH]
+
+
+def test_registry_without_a_version_has_version_none():
+    document = {k: v for k, v in REGISTRY_DOCUMENT.items() if k != "version"}
+    fetch = fake_fetch(
+        {
+            REGISTRY_PATH: contents(document),
+            SCHEMA_PATH: contents(SCHEMAS["portfolio.schema.json"]),
+        }
+    )
+
+    assert load_registry(fetch).version is None
 
 
 def test_each_schema_is_read_once_however_many_checks_use_it():

@@ -187,15 +187,16 @@ Phase 1; recording the page's checklist in Phase 3).
 | F1.1 | Find in-scope repos | Feature | 1 | Backlog |
 | S1.1.1 | Select in-scope repos | Story | 1 | Done |
 | S1.1.2 | Read repo facts | Story | 1 | Done |
-| F1.2 | Work out compliance | Feature | 1 | Backlog |
+| F1.2 | Work out compliance | Feature | 1 | Done |
 | S1.2.1 | Evaluate check kinds | Story | 1 | Done |
 | S1.2.2 | Work out the compliance level | Story | 1 | Done |
 | S1.2.3 | Work out scan warnings | Story | 1 | Done |
 | S1.2.4 | Read repo files | Story | 1 | Done |
-| F1.3 | Read reported status | Feature | 1 | Backlog |
+| F1.3 | Read reported status | Feature | 1 | Done |
 | S1.3.1 | Read `portfolio.json` | Story | 1 | Done |
 | F1.4 | Assemble the scan result | Feature | 1 | Backlog |
-| S1.4.1 | Assemble the scan result | Story | 1 | Ready |
+| S1.4.1 | Assemble the scan result | Story | 1 | Done |
+| S1.4.2 | Run a real scan | Story | 1 | Backlog |
 | E2 | Private data protection | Epic | 1, 3 | Backlog |
 | F2.1 | Allow-list and leak test | Feature | 1 | Backlog |
 | S2.1.1 | Allow-list filter | Story | 1 | Ready |
@@ -274,6 +275,7 @@ results into a compliance level and warnings.
 **Depends on:** F1.1
 **Done when:** levels match `check-compliance.ps1` on the same repos, except
 where a nested schema error makes C4 fail here (the spec wins over the script).
+**Status:** Done 2026-11-17: all four stories done; integration test in `tests/scan/test_result.py`; the Done when line shown by the `check-compliance.ps1` cross-checks in S1.2.2 and S1.2.4.
 
 #### S1.2.1 — Evaluate check kinds
 
@@ -353,6 +355,7 @@ reporting contract.
 **Depends on:** F1.1
 **Done when:** a missing or broken `portfolio.json` shows as not reported and
 doesn't stop the run.
+**Status:** Done 2026-11-17: S1.3.1 done; `test_broken_portfolio_json_is_not_reported_and_the_scan_goes_on` shows the Done when line through the whole scan.
 
 #### S1.3.1 — Read `portfolio.json`
 
@@ -384,16 +387,33 @@ complete.
 **Story:** Technical — combine the parts into one structure the filter and later the report and page can read.
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given all repos succeed, when assembling, then there is one row per repo, sorted by name, plus the scan time and spec version
-- [ ] Given one repo fails, when assembling, then its row says "could not scan", its other fields are `null`, and the result is marked partial
-- [ ] Given a bad token or every repo failing, when assembling, then the result is marked failed
-- [ ] Given zero in-scope repos, when assembling, then the result is marked failed, because this repo is always in scope, so zero means something broke
-- [ ] Given the same inputs, when assembling twice, then the output is identical apart from the scan time
+- [x] Given all repos succeed, when assembling, then there is one row per repo, sorted by name, plus the scan time and spec version
+- [x] Given one repo fails, when assembling, then its row says "could not scan", its other fields are `null`, and the result is marked partial
+- [x] Given a bad token or every repo failing, when assembling, then the result is marked failed
+- [x] Given zero in-scope repos, when assembling, then the result is marked failed, because this repo is always in scope, so zero means something broke
+- [x] Given the same inputs, when assembling twice, then the output is identical apart from the scan time
 
-**Notes:** Failure behaviour: `decisions.md` → "Scan failure: publish partial and flag it". `work_out_warnings` (S1.2.3) can return a `FailedRead` when the adoption date can't be read; pass it `lambda: read_adoption_date(fetch, owner, name)` so the read happens only when needed.
+**Notes:** Failure behaviour: `decisions.md` → "Scan failure: publish partial and flag it". Built in `scan/result.py`: `run_scan` reads the registry, lists the repos, and for each in-scope repo runs facts, files, checks, level, status and warnings, so `tests/scan/test_result.py` is also the integration test for F1.2 and F1.3. The spec version is the registry's `version`. Rows sort by name ignoring case. An unreadable registry also gives a failed result, before any repo is read, which is how S1.2.1's "the run stops" shows up in the result. `work_out_warnings` (S1.2.3) can return a `FailedRead` when the adoption date can't be read; pass it `lambda: read_adoption_date(fetch, owner, name)` so the read happens only when needed.
+
+#### S1.4.2 — Run a real scan
+
+**Story:** Technical — a real fetch function and `main.py`, so the scan runs against GitHub with the read-only token and the assembled result (S1.4.1) is built from real data.
+
+**Component:** `scan/`, `main.py`
+**Status:** Backlog
+
+**Acceptance criteria (draft, for the owner to review):**
+- [ ] Given `PORTFOLIO_READ_TOKEN` is set, when `main.py` runs, then it scans the owner's repos over the GitHub API with that token and logs only counts: repos in scope, scanned, failed, API requests made, time taken
+- [ ] Given the token is missing, when `main.py` runs, then it stops before any request, with a message naming the variable and `.env.example`
+- [ ] Given a request takes too long, when fetching, then it times out and counts as a network error
+- [ ] Given a rate-limit or other API error, when fetching, then it is raised as an HTTP error, with no retry loop, so the repo or run fails as S1.1.2 and S1.4.1 say
+- [ ] Given a partial or failed result, when `main.py` ends, then the exit code is non-zero
+- [ ] Given any run, when `main.py` ends, then nothing has been written to disk (writing filtered output is S2.1.2)
+
+**Notes:** Added 2026-11-17: the owner chose a separate story for the real run over folding it into S1.4.1 or S2.1.2. The first real run is the end of F1.4. Check then whether the token needs Pull requests: read, since `read_facts` lists open PRs (`security.md` lists Contents and Metadata only). `.env.example` gets the variable name in this story.
 
 ---
 
