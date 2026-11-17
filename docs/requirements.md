@@ -213,8 +213,8 @@ no accessibility pass.
 | S2.1.3 | Keep logs safe | Story | 1 | Done |
 | F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
 | E3 | Daily publishing | Epic | 2 | Backlog |
-| F3.1 | Markdown report | Feature | 2 | Backlog |
-| S3.1.1 | Render the Markdown report | Story | 2 | Ready |
+| F3.1 | Markdown report | Feature | 2 | Done |
+| S3.1.1 | Render the Markdown report | Story | 2 | Done |
 | F3.2 | Scheduled Action | Feature | 2 | Backlog |
 | S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | Ready |
 | F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
@@ -519,24 +519,25 @@ or log.
 **Phase:** 2
 **Depends on:** F2.1
 **Done when:** the report is generated from the scan output alone.
+**Status:** Done 2026-11-17: S3.1.1 done; the leak test runs scan, filter, write and report together on the fake GitHub, and the report reads only `output/scan.json`.
 
 #### S3.1.1 — Render the Markdown report
 
 **Story:** As a reviewer, I want one readable report of the portfolio, so that I can see every project's state without opening each repo.
 
 **Component:** `report/` (new)
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given `output/scan.json`, when rendering, then `output/site/index.md` has the scan time (UTC), the spec version, summary counts (repos per level, per health, could not scan), and one table row per repo, sorted by name: name, visibility, level, health, lifecycle, last activity, risks, blockers, scan status
-- [ ] Given a partial result, when rendering, then a line at the top says the scan was partial and how many repos could not be scanned, and those rows say "could not scan"
-- [ ] Given any run, when rendering, then the report reads only the scan output file, never the scan result (F3.1's Done when)
-- [ ] Given repo text, when rendering, then no free text from any repo appears (names, fixed values, numbers and dates only), and a name with Markdown or HTML characters is escaped (T3)
-- [ ] Given the canary fixture, when the report is rendered, then no canary appears in it (NFR5, ahead of F2.2)
-- [ ] Given the same scan output, when rendering twice, then the reports are identical
-- [ ] Given no `output/scan.json`, when rendering, then it stops with a clear message and a non-zero exit code
+- [x] Given `output/scan.json`, when rendering, then `output/site/index.md` has the scan time (UTC), the spec version, summary counts (repos per level, per health, could not scan), and one table row per repo, sorted by name: name, visibility, level, health, lifecycle, last activity, risks, blockers, scan status
+- [x] Given a partial result, when rendering, then a line at the top says the scan was partial and how many repos could not be scanned, and those rows say "could not scan"
+- [x] Given any run, when rendering, then the report reads only the scan output file, never the scan result (F3.1's Done when)
+- [x] Given repo text, when rendering, then no free text from any repo appears (names, fixed values, numbers and dates only), and a name with Markdown or HTML characters is escaped (T3)
+- [x] Given the canary fixture, when the report is rendered, then no canary appears in it (NFR5, ahead of F2.2)
+- [x] Given the same scan output, when rendering twice, then the reports are identical
+- [x] Given no `output/scan.json`, when rendering, then it stops with a clear message and a non-zero exit code
 
-**Notes:** Criteria approved by the owner on 2026-11-17. Free text is left out on purpose: the scan output is already filtered, but public repos' text would be rendered as HTML by the Pages build (T3). Ranking by "needs attention first" is Phase 3.
+**Notes:** Criteria approved by the owner on 2026-11-17. Free text is left out on purpose: the scan output is already filtered, but public repos' text would be rendered as HTML by the Pages build (T3). Ranking by "needs attention first" is Phase 3. Built in `report/markdown.py`, run as `python -m report`. Every cell is escaped: HTML entities for `& < > { }` (the braces stop Jekyll's Liquid), a backslash before Markdown's backslash, backtick, `*`, `_`, `[`, `]` and `|`. The canary fixture moved to `tests/canaries.py` so the report's leak test can share it. On the real scan output of 2026-11-17 it rendered all 17 repos.
 
 ### F3.2 — Scheduled Action
 

@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from canaries import CANARIES, PRIVATE_REPO, PUBLIC_REPO
 from fake_github import OWNER, FakeGitHub, http_error
 
 import privacy.output
@@ -24,77 +25,6 @@ from privacy.output import write_output
 from scan.result import ScanResult, run_scan
 
 NOW = datetime(2026, 12, 1, 6, 0, tzinfo=UTC)
-
-# One canary per field, so a hit says exactly what leaked.
-CANARIES = {
-    field: f"CANARY-{field}-9d2c"
-    for field in (
-        "description",
-        "language",
-        "branch",
-        "topic",
-        "agents",
-        "summary",
-        "owner",
-        "sponsor",
-        "program",
-        "health_reason",
-        "phase",
-        "risk",
-        "mitigation",
-        "blocker",
-        "needs",
-        "callout",
-        "milestone",
-        "requirements",
-        "claude",
-    )
-}
-
-
-def leaky_portfolio():
-    return json.dumps(
-        {
-            "schema": 1,
-            "name": "private-repo",
-            "summary": CANARIES["summary"],
-            "owner": CANARIES["owner"],
-            "sponsor": CANARIES["sponsor"],
-            "program": CANARIES["program"],
-            "health": "red",
-            "health_reason": CANARIES["health_reason"],
-            "phase": {"name": CANARIES["phase"]},
-            "risks": [
-                {"title": CANARIES["risk"], "mitigation": CANARIES["mitigation"]}
-            ],
-            "blockers": [{"title": CANARIES["blocker"], "needs": CANARIES["needs"]}],
-            "callouts": [CANARIES["callout"]],
-            "next_milestone": {"name": CANARIES["milestone"]},
-            "updated": "2026-11-20",
-        }
-    )
-
-
-AGENTS = (
-    "**Standard:** pmo-project-standardization v2.0.0\n**Hosting: github**\n"
-    + CANARIES["agents"]
-)
-
-PRIVATE_REPO = {
-    "visibility": "private",
-    "description": CANARIES["description"],
-    "language": CANARIES["language"],
-    "branch": CANARIES["branch"],
-    "topics": [CANARIES["topic"]],
-    "files": {
-        "AGENTS.md": AGENTS,
-        "portfolio.json": leaky_portfolio(),
-        "docs/requirements.md": CANARIES["requirements"],
-        "CLAUDE.md": CANARIES["claude"],
-    },
-}
-
-PUBLIC_REPO = {"files": {"AGENTS.md": "**Hosting: github**\n"}}
 
 
 def canaries_in(folder: Path) -> list[str]:
