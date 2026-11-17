@@ -219,7 +219,7 @@ no accessibility pass.
 | S3.2.1 | Daily workflow: scan, report, deploy | Story | 2 | In progress |
 | F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
 | S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | In progress |
-| S3.3.2 | Keep the schedule alive | Story | 2 | Ready |
+| S3.3.2 | Keep the schedule alive | Story | 2 | Done |
 | S3.3.3 | Token renewal reminder | Story | 2 | Ready |
 | E4 | Dashboard page | Epic | 3 | Backlog |
 | F4.1 | Portfolio summary | Feature | 3 | Backlog |
@@ -594,14 +594,14 @@ exists, and the 60-day workflow shutoff is handled.
 **Story:** Technical — stop GitHub switching off the daily schedule after 60 days without a commit, since publishing commits nothing.
 
 **Component:** `.github/workflows/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a run, when it ends, then it re-enables its own workflow through the GitHub API with the workflow's own token (`actions: write` on that job only), which resets the 60-day timer
-- [ ] Given the keep-alive call fails, when the run ends, then the job fails, so the alert fires before the schedule can lapse
-- [ ] Given the workflow file, when checked by a test, then the keep-alive uses no third-party action
+- [x] Given a run, when it ends, then it re-enables its own workflow through the GitHub API with the workflow's own token (`actions: write` on that job only), which resets the 60-day timer
+- [x] Given the keep-alive call fails, when the run ends, then the job fails, so the alert fires before the schedule can lapse
+- [x] Given the workflow file, when checked by a test, then the keep-alive uses no third-party action
 
-**Notes:** Check during the story that re-enabling an enabled workflow does reset the timer (it's what the common keep-alive actions do); if not, choose another way then.
+**Notes:** Checked 2026-11-17: the common keep-alive actions (liskin/gh-workflow-keepalive, gautamkrishnar/keepalive-workflow v2) work this way, calling the enable API with `actions: write` and no dummy commits, and users report it resets the 60-day counter. GitHub doesn't document the reset directly, so it rests on that report; if the schedule is ever switched off anyway, GitHub's warning email and the missing daily runs show it. Built as the `keep-alive` job in `publish.yml`, using the runner's `gh` CLI. Whether the call succeeds on a real run is checked live (`docs/manual-tests.md`, F3.3, step 5).
 
 #### S3.3.3 — Token renewal reminder
 

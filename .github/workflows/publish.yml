@@ -115,6 +115,23 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
+  # Publishing commits nothing, so without this GitHub would switch the
+  # schedule off after 60 days with no repo activity. Re-enabling the
+  # workflow through the API resets that timer: the approach of the common
+  # keep-alive actions, done here with the runner's own gh CLI (S3.3.2).
+  # If it fails, the run fails, so the alert goes out first.
+  keep-alive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Re-enable this workflow so the 60-day timer resets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh api -X PUT "repos/$REPO/actions/workflows/publish.yml/enable"
+
   result:
     needs: [scan, deploy]
     if: always()

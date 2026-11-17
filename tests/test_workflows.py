@@ -139,3 +139,31 @@ def test_deploy_runs_only_after_a_successful_scan_job():
     condition = re.search(r"\n    if: (.*)\n", job("deploy")).group(1)
     assert "always()" not in condition
     assert "failure()" not in condition
+
+
+# --- Keep-alive (S3.3.2) ---
+
+
+def test_keep_alive_re_enables_this_workflow_through_the_api():
+    keep = job("keep-alive")
+    assert 'gh api -X PUT "repos/$REPO/actions/workflows/publish.yml/enable"' in keep
+    assert "GH_TOKEN: ${{ github.token }}" in keep
+    assert "PORTFOLIO_READ_TOKEN" not in keep
+
+
+def test_keep_alive_alone_may_write_actions():
+    keep = job("keep-alive")
+    permissions = keep[keep.index("permissions:") : keep.index("steps:")]
+    assert permissions.split() == ["permissions:", "actions:", "write"]
+    assert text().count("actions: write") == 1
+
+
+def test_a_failed_keep_alive_fails_the_run():
+    keep = job("keep-alive")
+    assert "continue-on-error" not in keep
+    assert "|| true" not in keep
+    assert "if:" not in keep  # runs on every run, forced failures included
+
+
+def test_keep_alive_uses_no_third_party_action():
+    assert "uses:" not in job("keep-alive")
