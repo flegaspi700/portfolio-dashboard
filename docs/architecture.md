@@ -22,7 +22,9 @@ flowchart LR
 ```
 
 So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
-`facts.py` (S1.1.2: each repo's facts, or a failed read), `checks.py`
+`facts.py` (S1.1.2: each repo's facts, or a failed read), `files.py`
+(S1.2.4: the files the checks name, one tree request plus one per file
+whose content is checked), `checks.py`
 (S1.2.1: the check registry, read from the standard, and the four check
 kinds), `levels.py` (S1.2.2: the compliance level from check
 results) and `warnings.py` (S1.2.3: scan warnings S1-S3, reading the
