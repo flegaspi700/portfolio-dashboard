@@ -18,7 +18,8 @@ filtered output: a Markdown report (Phase 2) and a static GitHub Pages site
 flowchart LR
     gh[("GitHub API")] -- "repo facts, files" --> scan["scan/"]
     scan -- "scan result, unfiltered" --> privacy["privacy/"]
-    privacy -- "scan output, allow-listed" --> out["Report and page, later phases"]
+    privacy -- "scan output, allow-listed" --> report["report/"]
+    report -- "index.md" --> pages["GitHub Pages (F3.2)"]
 ```
 
 So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
@@ -37,7 +38,8 @@ it all together. `privacy/allow_list.py` (S2.1.1) turns the scan result into
 the scan output, cutting private rows to the allow-list, and
 `privacy/output.py` (S2.1.2) writes it to `output/scan.json` and gives the
 exit code; `privacy/safe_logging.py` (S2.1.3) sets up logging so an
-exception shows only its type. The rest is the
+exception shows only its type. `report/markdown.py` (S3.1.1) reads that file,
+never the scan result, and writes `output/site/index.md` for the Pages build. The rest is the
 planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
@@ -46,6 +48,7 @@ planned flow from the requirements and the glossary. Check it against the code a
 portfolio-dashboard/
   scan/            # reads repos; works out facts, compliance and status; assembles the scan result
   privacy/         # allow-list filter; the only component that writes scan output
+  report/          # renders the Markdown report from the scan output file (`python -m report`)
   tests/           # mirrors the module structure above
   docs/            # these planning docs
   main.py          # wires the components together

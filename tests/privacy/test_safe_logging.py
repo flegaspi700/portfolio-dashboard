@@ -10,17 +10,19 @@ URLs and response reasons are the usual way content reaches a log.
 
 import io
 import logging
+from datetime import UTC, datetime
 from email.message import Message
 from urllib.error import HTTPError, URLError
 
 import pytest
+from canaries import CANARIES, PRIVATE_REPO, PUBLIC_REPO
 from fake_github import OWNER, FakeGitHub
-from test_output import CANARIES, NOW, PRIVATE_REPO, PUBLIC_REPO
 
 from privacy.output import write_output
 from privacy.safe_logging import configure_logging
 from scan.result import run_scan
 
+NOW = datetime(2026, 12, 1, 6, 0, tzinfo=UTC)
 TOKEN = "github_pat_FAKE0TOKEN0FOR0TESTS0ONLY"
 SECRETS = [*CANARIES.values(), TOKEN]
 URL_CANARY = f"https://api.github.com/repos/{OWNER}/{CANARIES['description']}"
