@@ -27,7 +27,8 @@ So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
 whose content is checked), `checks.py`
 (S1.2.1: the check registry, read from the standard, and the four check
 kinds), `levels.py` (S1.2.2: the compliance level from check
-results) and `warnings.py` (S1.2.3: scan warnings S1-S3, reading the
+results), `status.py` (S1.3.1: the validated `portfolio.json`, or
+`not-reported`) and `warnings.py` (S1.2.3: scan warnings S1-S3, reading the
 adoption date only when S2 could fire), all taking a fetch function or
 fetched data; the rest is the planned flow from the requirements and the glossary. Check it against the code as stories land.
 

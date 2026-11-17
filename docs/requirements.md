@@ -193,7 +193,7 @@ Phase 1; recording the page's checklist in Phase 3).
 | S1.2.3 | Work out scan warnings | Story | 1 | Done |
 | S1.2.4 | Read repo files | Story | 1 | Done |
 | F1.3 | Read reported status | Feature | 1 | Backlog |
-| S1.3.1 | Read `portfolio.json` | Story | 1 | Ready |
+| S1.3.1 | Read `portfolio.json` | Story | 1 | Done |
 | F1.4 | Assemble the scan result | Feature | 1 | Backlog |
 | S1.4.1 | Assemble the scan result | Story | 1 | Ready |
 | E2 | Private data protection | Epic | 1, 3 | Backlog |
@@ -359,14 +359,16 @@ doesn't stop the run.
 **Story:** As a reviewer, I want each project's reported status, so that I can see how it is doing, and can tell when it hasn't said.
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a valid file, when read, then its fields are returned unchanged
-- [ ] Given a missing file, when read, then health is `not-reported` and the run continues
-- [ ] Given invalid JSON, a schema mismatch or an unknown `schema` version, when read, then health is `not-reported`, and the problem is recorded without quoting the file's content
-- [ ] Given a file over 1 MB, when read, then it is treated as invalid and not parsed
-- [ ] Given any input, when read, then health, risks and call-outs are never inferred
+- [x] Given a valid file, when read, then its fields are returned unchanged
+- [x] Given a missing file, when read, then health is `not-reported` and the run continues
+- [x] Given invalid JSON, a schema mismatch or an unknown `schema` version, when read, then health is `not-reported`, and the problem is recorded without quoting the file's content
+- [x] Given a file over 1 MB, when read, then it is treated as invalid and not parsed
+- [x] Given any input, when read, then health, risks and call-outs are never inferred
+
+**Notes:** Built in `scan/status.py`. The schema is the one the registry's `portfolio.json` schema check names, so it comes from the standard like C4's. A rejected file's problem gives the validator and JSON path only (such as `enum at $.risks[0].severity`), never values. Beyond the criteria: an `updated` that fits the pattern but isn't a real date (`2026-13-45`) is invalid too. On 2026-11-17 the reader accepted exactly the files C4 passes on all 9 local `portfolio.json` files.
 
 ### F1.4 — Assemble the scan result
 
