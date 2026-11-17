@@ -7,7 +7,7 @@ where `configure_logging` sends them.
 """
 
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from email.message import Message
 from urllib.error import HTTPError
 
@@ -196,3 +196,52 @@ def test_only_the_scan_output_file_is_written(paths):
         p.relative_to(env_file.parent).as_posix() for p in env_file.parent.rglob("*")
     )
     assert written == ["output", "output/scan.json"]
+
+
+# --- Token renewal reminder (S3.3.3) ---
+
+EXPIRY = "github-authentication-token-expiration"
+
+
+def expiring(days, **repos):
+    """A fake GitHub whose token expires `days` days after NOW."""
+    github = FakeGitHub(repos or {"a": GOOD_REPO})
+    github.last_headers = {
+        EXPIRY: f"{(NOW + timedelta(days=days)):%Y-%m-%d %H:%M:%S} UTC"
+    }
+    return github
+
+
+def test_token_expiry_date_is_logged(paths, capsys):
+    code = run(paths, expiring(86))
+
+    logged = capsys.readouterr().err
+    assert code == 0
+    assert "The read token expires on 2027-02-25 (86 days left)" in logged
+    assert TOKEN not in logged
+
+
+def test_token_expiring_within_14_days_still_writes_then_exits_non_zero(paths, capsys):
+    code = run(paths, expiring(14))
+
+    logged = capsys.readouterr().err
+    assert code == 1
+    assert paths[1].exists()
+    assert "Renew the read token" in logged
+
+
+def test_token_with_15_days_left_is_fine(paths):
+    assert run(paths, expiring(15)) == 0
+
+
+def test_token_without_an_expiry_header_carries_on(paths, capsys):
+    code = run(paths, FakeGitHub({"a": GOOD_REPO}))
+
+    assert code == 0
+    assert "The read token has no expiry date" in capsys.readouterr().err
+
+
+def test_expiring_token_on_a_partial_run_still_exits_1(paths):
+    github = expiring(3, a=GOOD_REPO, b={"fail": "pulls"})
+
+    assert run(paths, github) == 1

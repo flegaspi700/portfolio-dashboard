@@ -220,7 +220,7 @@ no accessibility pass.
 | F3.3 | Failure alert and keep-alive | Feature | 2 | Backlog |
 | S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | In progress |
 | S3.3.2 | Keep the schedule alive | Story | 2 | Done |
-| S3.3.3 | Token renewal reminder | Story | 2 | Ready |
+| S3.3.3 | Token renewal reminder | Story | 2 | Done |
 | E4 | Dashboard page | Epic | 3 | Backlog |
 | F4.1 | Portfolio summary | Feature | 3 | Backlog |
 | F4.2 | Sortable table | Feature | 3 | Backlog |
@@ -608,14 +608,14 @@ exists, and the 60-day workflow shutoff is handled.
 **Story:** As the owner, I want a warning before the read token expires, so that the page doesn't silently stop updating (T5).
 
 **Component:** `scan/`, `main.py`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given GitHub's token-expiry header on the `GET /user` answer, when the scan runs, then it logs the expiry date (a date, never the token)
-- [ ] Given the token expires within 14 days, when the run ends, then the report is still deployed and the job then fails, so the alert reminds the owner
-- [ ] Given no expiry header (a token that never expires), when the scan runs, then it logs that and carries on
+- [x] Given GitHub's token-expiry header on the `GET /user` answer, when the scan runs, then it logs the expiry date (a date, never the token)
+- [x] Given the token expires within 14 days, when the run ends, then the report is still deployed and the job then fails, so the alert reminds the owner
+- [x] Given no expiry header (a token that never expires), when the scan runs, then it logs that and carries on
 
-**Notes:** The read token expires about mid-February 2026 (90 days from 2026-11-13).
+**Notes:** The read token was renewed on 2026-11-17 and now expires on 2027-02-11 (read from GitHub's header through the new code that day: 86 days left). Built in `scan/github.py` (`token_expiry`, and the fetch function keeps the last response's headers) and `main.py` (logs the date; with 14 days or fewer left, exits 1 after writing, so the report still deploys and the run fails). The header's two formats, `UTC` and a numeric offset, are both read; an unreadable value counts as no expiry rather than a guess.
 
 ---
 
