@@ -49,11 +49,13 @@ class UnknownCheckKind(Exception):
 @dataclass(frozen=True)
 class Registry:
     """The check registry: the check IDs each level needs, the checks as
-    the registry states them, and each schema they name, by file name."""
+    the registry states them, each schema they name, by file name, and the
+    spec version the registry declares (None if it declares none)."""
 
     levels: dict[str, list[str]]
     checks: list[dict[str, Any]]
     schemas: dict[str, dict[str, Any]]
+    version: int | None = None
 
 
 def load_registry(fetch: Fetch) -> Registry:
@@ -82,7 +84,12 @@ def load_registry(fetch: Fetch) -> Registry:
     logger.info(
         "Read the check registry: %d checks, %d schemas", len(checks), len(schemas)
     )
-    return Registry(levels=document["levels"], checks=checks, schemas=schemas)
+    return Registry(
+        levels=document["levels"],
+        checks=checks,
+        schemas=schemas,
+        version=document.get("version"),
+    )
 
 
 def evaluate_checks(

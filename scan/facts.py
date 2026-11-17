@@ -86,10 +86,16 @@ def failed_read(name: str, error: OSError, what: str) -> FailedRead:
     """Turn a network or API error (urllib raises both as OSError) into a
     `FailedRead`, logging `what` couldn't be read and a generic reason.
     Used by every reader in `scan/` that reads one repo."""
-    reason = f"HTTP {error.code}" if isinstance(error, HTTPError) else "network error"
+    reason = error_reason(error)
     # No repo name: private names stay out of the Action logs (NFR5).
     logger.warning("Could not read a repo's %s: %s", what, reason)
     return FailedRead(name=name, reason=reason)
+
+
+def error_reason(error: OSError) -> str:
+    """A short, generic reason for a network or API error, such as
+    "HTTP 403" or "network error": no URL, no response body."""
+    return f"HTTP {error.code}" if isinstance(error, HTTPError) else "network error"
 
 
 def _count_open_prs(fetch: Fetch, owner: str, name: str) -> int:
