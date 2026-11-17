@@ -189,7 +189,7 @@ Phase 1; recording the page's checklist in Phase 3).
 | S1.1.2 | Read repo facts | Story | 1 | Done |
 | F1.2 | Work out compliance | Feature | 1 | Backlog |
 | S1.2.1 | Evaluate check kinds | Story | 1 | Done |
-| S1.2.2 | Work out the compliance level | Story | 1 | Ready |
+| S1.2.2 | Work out the compliance level | Story | 1 | Done |
 | S1.2.3 | Work out scan warnings | Story | 1 | Ready |
 | S1.2.4 | Read repo files | Story | 1 | Ready |
 | F1.3 | Read reported status | Feature | 1 | Backlog |
@@ -297,16 +297,18 @@ where a nested schema error makes C4 fail here (the spec wins over the script).
 **Story:** As a reviewer, I want one level per repo, so that I can compare them.
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given C1–C3 pass and all due checks pass, when working out the level, then it is Level 3
-- [ ] Given C1–C3 pass and a due required check fails, when working out the level, then it is Level 2
-- [ ] Given only C4 passes, when working out the level, then it is Level 1
-- [ ] Given nothing passes, when working out the level, then it is Level 0
-- [ ] Given a required check fails before its `required_from` date, when working out the level, then it is a warning and the level doesn't drop
-- [ ] Given a required check fails on its `required_from` date, when working out the level, then it counts as due
-- [ ] Given a template version stamp, when working out the level, then it is reported but never affects the level
+- [x] Given every check in the registry's `levels.adopted` passes and all due checks pass, when working out the level, then it is Level 3
+- [x] Given every check in `levels.adopted` passes and a due required check fails, when working out the level, then it is Level 2
+- [x] Given only `levels.reporting` (C4) passes, when working out the level, then it is Level 1
+- [x] Given nothing passes, when working out the level, then it is Level 0
+- [x] Given a required check fails before its `required_from` date, when working out the level, then it is a warning and the level doesn't drop
+- [x] Given a required check fails on its `required_from` date, when working out the level, then it counts as due
+- [x] Given a template version stamp, when working out the level, then it is reported but never affects the level
+
+**Notes:** The criteria first named spec v1 IDs ("C1–C3"); on 2026-11-17 the owner changed them to the registry's `levels` sets, which spec v2 defines as reporting = C4 and adopted = C4, C2, C8, C9, so the level follows the registry and not a copy of it. As in `check-compliance.ps1`, n/a doesn't count as a pass for a level set, and grace-period warnings are listed only for repos at Adopted or higher (`spec/compliance.md` → Grace period, since v2.1.0). Built in `scan/levels.py`, which also reports the version from the Standard line or a v1 Template version stamp. Cross-checked with `check-compliance.ps1` on 2026-11-17: 11 local repos, each as of 2026-11-17 and 2026-12-20, matched on level and grace-period warnings in all 22 comparisons.
 
 #### S1.2.3 — Work out scan warnings
 

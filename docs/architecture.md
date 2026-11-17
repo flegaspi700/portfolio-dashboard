@@ -24,7 +24,8 @@ flowchart LR
 So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
 `facts.py` (S1.1.2: each repo's facts, or a failed read) and `checks.py`
 (S1.2.1: the check registry, read from the standard, and the four check
-kinds), all taking a fetch function or fetched data; the rest is the
+kinds) and `levels.py` (S1.2.2: the compliance level from check
+results), all taking a fetch function or fetched data; the rest is the
 planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
