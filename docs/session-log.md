@@ -13,6 +13,37 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-17 — S1.2.2 to S2.1.3 done: scan, filter, output and safe logs
+
+**Worked on:** S1.2.2, S1.2.3, S1.2.4, S1.3.1, S1.4.1, S2.1.1, S2.1.2, S2.1.3; added S1.4.2
+
+**Time spent:** about 1h, estimated from commit times. Correct it if that's off.
+
+**Changed:**
+- `scan/levels.py` — S1.2.2: compliance level from check results, using the registry's `levels` sets (criteria reworded from v1 IDs, owner's choice). Matched `check-compliance.ps1` in 22 of 22 local comparisons. PR #15
+- `scan/warnings.py` — S1.2.3: scan warnings S1-S3; the S2 adoption date is read only when S2 could fire (decision logged). PR #16
+- `scan/files.py`, `scan/checks.py` — S1.2.4: one tree request plus one per content-checked file; unread files pass `exists` only (decision logged); two criteria added by the owner. Live read-only check on 2 public repos matched the script. PR #17
+- `scan/status.py` — S1.3.1: validated `portfolio.json` or `not-reported`, problems without content. Agreed with C4 on 9 local files. PR #18
+- `scan/result.py` — S1.4.1: `run_scan` and the scan result (complete, partial, failed); F1.2 and F1.3 marked Done. PR #19
+- `privacy/allow_list.py` — S2.1.1: private rows cut to the nine allow-list fields. PR #20
+- `privacy/output.py`, `tests/fake_github.py` — S2.1.2: `output/scan.json` (git-ignored, decision logged), exit code, leak test with canaries in 19 places. PR #21
+- `privacy/safe_logging.py` — S2.1.3: exceptions log only their type; fixed a registry error's text reaching the logs; F2.1 marked Done. PR #22
+- `docs/requirements.md` — new story S1.4.2 (real fetch function and `main.py`), draft criteria; its exit-code criterion defers to S2.1.2
+- `docs/decisions.md` — four entries: S2 adoption date read only when needed; unreadable files don't pass content checks; scan output as one JSON file (plus the S1.4.2/S2.1.2 split)
+- `docs/security.md`, `docs/architecture.md` — kept in step with the code
+- `portfolio.json` — progress 11 of 12 stories
+
+**Stopped at:** all eight stories merged on `main`; 233 tests pass, coverage 100% for `scan/` and `privacy/`, Ruff clean. Nothing has run against real GitHub yet: there is no real fetch function and no `main.py`. Phase 1's only open story is S1.4.2.
+
+**Next step:** the owner reviews S1.4.2's draft criteria (`docs/requirements.md` -> S1.4.2), puts `PORTFOLIO_READ_TOKEN` in `.env`, and decides on Pull requests: read for the token; then `/story S1.4.2` and the first real run. After that, close Phase 1 (exit criteria, `pip-audit`, NFR statuses), then the Phase 2 publishing decision, E3's stories, and `/story E3`.
+
+**Open questions:**
+- Does the token need Pull requests: read? `read_facts` lists open PRs, and `security.md` lists Contents and Metadata only; without it, private repos would likely be "could not scan".
+- S1.4.2's criteria are an agent draft: review before it starts. Also open: where the owner login comes from (config or `GET /user`).
+- Carried over: `check-compliance.ps1` also passes top-level type errors, so C4 differs from it in a second way. Widen the logged exception, or raise a fix in `pmo-project-standardization`?
+
+---
+
 ## 2026-11-14 — S1.1.2 and S1.2.1 done: repo facts and check kinds
 
 **Worked on:** S1.1.2, S1.2.1
