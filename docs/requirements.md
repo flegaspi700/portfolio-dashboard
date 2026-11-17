@@ -190,7 +190,7 @@ Phase 1; recording the page's checklist in Phase 3).
 | F1.2 | Work out compliance | Feature | 1 | Backlog |
 | S1.2.1 | Evaluate check kinds | Story | 1 | Done |
 | S1.2.2 | Work out the compliance level | Story | 1 | Done |
-| S1.2.3 | Work out scan warnings | Story | 1 | Ready |
+| S1.2.3 | Work out scan warnings | Story | 1 | Done |
 | S1.2.4 | Read repo files | Story | 1 | Ready |
 | F1.3 | Read reported status | Feature | 1 | Backlog |
 | S1.3.1 | Read `portfolio.json` | Story | 1 | Ready |
@@ -315,16 +315,16 @@ where a nested schema error makes C4 fail here (the spec wins over the script).
 **Story:** As the owner, I want stale reports flagged, so that the page doesn't look confident while wrong.
 
 **Component:** `scan/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given `updated` is over 30 days old or `null`, and there were pushes in the last 30 days, when scanning, then spec warning S1 fires
-- [ ] Given `updated` is exactly 30 days old, when scanning, then spec warning S1 doesn't fire
-- [ ] Given `health` is `not-reported` more than 14 days after the repo was created or adopted, when scanning, then spec warning S2 fires
-- [ ] Given no `portfolio.json`, when scanning, then spec warning S2 doesn't fire, because Level 0 is already the finding
-- [ ] Given a required check fails with `required_from` within 14 days, when scanning, then spec warning S3 fires
+- [x] Given `updated` is over 30 days old or `null`, and there were pushes in the last 30 days, when scanning, then spec warning S1 fires
+- [x] Given `updated` is exactly 30 days old, when scanning, then spec warning S1 doesn't fire
+- [x] Given `health` is `not-reported` more than 14 days after the repo was created or adopted, when scanning, then spec warning S2 fires
+- [x] Given no `portfolio.json`, when scanning, then spec warning S2 doesn't fire, because Level 0 is already the finding
+- [x] Given a required check fails with `required_from` within 14 days, when scanning, then spec warning S3 fires
 
-**Notes:** These are warnings S1, S2 and S3 in `spec/compliance.md`, not story IDs. The adoption date for S2 isn't recorded anywhere, so it is the date of the first commit that touched `portfolio.json`; this stops a newly adopted old repo being flagged immediately.
+**Notes:** These are warnings S1, S2 and S3 in `spec/compliance.md`, not story IDs. The adoption date for S2 isn't recorded anywhere, so it is the date of the first commit that touched `portfolio.json`; this stops a newly adopted old repo being flagged immediately. Built in `scan/warnings.py`. The adoption date is read only when S2 could fire (`decisions.md`, 2026-11-17); if it can't be read, the repo is a failed read. Beyond the criteria, following `spec/compliance.md`: S1 doesn't fire without a `portfolio.json` either, and S3 applies only at Adopted or higher, since it is built from S1.2.2's grace-period warnings. Boundaries chosen while building: a push exactly 30 days ago counts as recent for S1, and a check due in exactly 14 days counts as due soon for S3.
 
 #### S1.2.4 — Read repo files
 
@@ -388,7 +388,7 @@ complete.
 - [ ] Given zero in-scope repos, when assembling, then the result is marked failed, because this repo is always in scope, so zero means something broke
 - [ ] Given the same inputs, when assembling twice, then the output is identical apart from the scan time
 
-**Notes:** Failure behaviour: `decisions.md` → "Scan failure: publish partial and flag it".
+**Notes:** Failure behaviour: `decisions.md` → "Scan failure: publish partial and flag it". `work_out_warnings` (S1.2.3) can return a `FailedRead` when the adoption date can't be read; pass it `lambda: read_adoption_date(fetch, owner, name)` so the read happens only when needed.
 
 ---
 

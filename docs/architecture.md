@@ -22,11 +22,12 @@ flowchart LR
 ```
 
 So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
-`facts.py` (S1.1.2: each repo's facts, or a failed read) and `checks.py`
+`facts.py` (S1.1.2: each repo's facts, or a failed read), `checks.py`
 (S1.2.1: the check registry, read from the standard, and the four check
-kinds) and `levels.py` (S1.2.2: the compliance level from check
-results), all taking a fetch function or fetched data; the rest is the
-planned flow from the requirements and the glossary. Check it against the code as stories land.
+kinds), `levels.py` (S1.2.2: the compliance level from check
+results) and `warnings.py` (S1.2.3: scan warnings S1-S3, reading the
+adoption date only when S2 could fire), all taking a fetch function or
+fetched data; the rest is the planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
 
@@ -136,6 +137,7 @@ ruled out: if one shows up in code or docs, rename it.
 
 | Term | Meaning | Use instead of |
 |---|---|---|
+| adoption date | The date of the first commit that touched a repo's `portfolio.json`, used for scan warning S2. Read only when S2 could fire. | "onboarding date" |
 | allow-list | The fields a private repo may publish: name, visibility, lifecycle, health, compliance level, last activity date, risk count, blocker count, scan status. Anything else is dropped. | "blacklist", "redaction list" |
 | canary value | A unique made-up string planted in a fixture private repo. If it shows up in output or logs, something leaked. | "marker", "secret" |
 | check registry | `spec/compliance-checks.json` in `pmo-project-standardization`: the machine-readable compliance checks. Read at scan time, never copied here. | "rules file" |

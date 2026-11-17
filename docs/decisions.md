@@ -13,6 +13,33 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-17 — Read the S2 adoption date only when S2 could fire
+
+**Status:** Accepted
+
+**Context:** Spec warning S2 needs each repo's adoption date: the first
+commit that touched `portfolio.json` ("S2 adoption date", 2026-11-02). No
+story fetched it, and reading commit history costs GitHub API requests
+(NFR1: under 1,000 per scan).
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. Read it only when S2 could fire: health `not-reported` and the repo more than 14 days old | Few extra requests: most repos report health | The read sits behind a condition | $0 |
+| B. Use the created date only | No extra requests, no fetch code | An old repo that adopts the standard is flagged S2 straight away | $0 |
+| C. Read it for every repo | Plain control flow | 1-2 more requests per repo on every run | $0 |
+
+**Decision:** A, built in S1.2.3 (`scan/warnings.py`).
+
+**Why:** Keeps the 2026-11-02 rule without spending requests on repos where
+S2 can't fire.
+
+**Trade-offs accepted:** If the commit history can't be read, the repo is a
+failed read for that run, as with repo facts, so no date is guessed.
+
+---
+
 ## 2026-11-14 — Read the check registry from the standard's default branch
 
 **Status:** Accepted
