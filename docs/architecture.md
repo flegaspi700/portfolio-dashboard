@@ -32,7 +32,9 @@ results), `status.py` (S1.3.1: the validated `portfolio.json`, or
 adoption date only when S2 could fire), all taking a fetch function or
 fetched data. `result.py` (S1.4.1) runs them in order for each in-scope
 repo and assembles the scan result; the real fetch function and `main.py`
-are S1.4.2. The rest is the planned flow from the requirements and the glossary. Check it against the code as stories land.
+are S1.4.2. `privacy/allow_list.py` (S2.1.1) turns the scan result into
+the scan output, cutting private rows to the allow-list. The rest is the
+planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
 
