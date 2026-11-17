@@ -30,6 +30,7 @@ is the run itself (S3.2.1).
 
 | Date | Commit | Result | Notes |
 |---|---|---|---|
+| 2026-11-17 | 780faee | Pass | Run 44142627009 (manual): scan, deploy, keep-alive and result all passed. The page showed this run's scan (17:57 UTC) and all 17 repos. The Scan step logged counts only, the token showed as `***` and its value was nowhere in the full log. 84 API requests, 20.6 s (NFR1). The default Pages theme loads one helper script (anchor-js) from cdnjs, with an integrity hash; Phase 3 replaces the theme. |
 
 ---
 
@@ -54,3 +55,4 @@ NFR4's forced-failure test).
 
 | Date | Commit | Result | Notes |
 |---|---|---|---|
+| 2026-11-17 | 780faee | Pass | Run 44142953144 (manual, force_failure): scan failed at Forced failure, deploy skipped, result failed, keep-alive passed. The page kept the earlier scan (17:57 UTC). The owner received GitHub's failure email. |
