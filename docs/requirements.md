@@ -208,7 +208,7 @@ which needs someone who hasn't seen the page, so it moves to Phase 4 (where
 it is already a task) and F4.1 and E4 stay In progress until it runs.
 
 **Phase 4:**
-- [ ] Rollout: get at least 4 repos to Level 2 or higher with real status data (done by hand in those repos, not by the dashboard). Can start any time: on 2026-11-17, 5 repos were at Level 3 but only this one reported health, so `/report` in 4 of them meets it
+- [x] Rollout: get at least 4 repos to Level 2 or higher with real status data (done by hand in those repos, not by the dashboard). Done 2026-11-18: the owner ran `/report` in 3 private Level 3 repos, so 5 repos are at Level 3 with real health (with one other public repo and this one); a scan that day counted 5, and run 44363519631 put it live
 - [ ] Run the daily rebuild for 30 days straight with no manual steps (counting from the first scheduled run, 2026-11-18, run 44333809359; manual runs don't break the count)
 - [ ] First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first. Also F4.1's Done when: passing it marks F4.1 and E4 Done (`docs/manual-tests.md`, F4.1, step 5). Best after the rollout, so the ranking has real health to work with
 - [ ] Check the page at least weekly for a month
