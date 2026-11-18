@@ -8,13 +8,13 @@
   "program": "PMO Standardization",
   "lifecycle": "active",
   "health": "green",
-  "health_reason": "Phase 1 done on 2026-11-17: a real scan of all 17 in-scope repos, filtered and leak-tested.",
-  "phase": { "current": 2, "name": "Report and daily run" },
-  "progress": { "stories_done": 17, "stories_total": 24, "open_bugs": 0, "as_of": "2026-11-17" },
+  "health_reason": "Phase 2 closed 2026-11-18 with the daily run live; Phase 3's page is built and waiting on the leak test and the accessibility pass.",
+  "phase": { "current": 3, "name": "Dashboard page" },
+  "progress": { "stories_done": 23, "stories_total": 24, "open_bugs": 0, "as_of": "2026-11-18" },
   "next_milestone": null,
   "risks": [],
   "blockers": [],
   "callouts": [],
   "budget": null,
-  "updated": "2026-11-17"
+  "updated": "2026-11-18"
 }

@@ -21,7 +21,7 @@ ones included, with a read-only token.
 | T3 | People viewing the page | Text from public repos' `portfolio.json` (summary, risks, call-outs) rendered as HTML | Script injected into the owner's public site | Low | Med |
 | T4 | The scan run | A malformed or huge `portfolio.json`, or unexpected API responses | The run crashes, or shows made-up values | Med | Low |
 | T5 | Trust in the page | Scheduled workflows switched off after 60 days without activity, an expired token, owners who stop reporting | The page looks current but isn't | Med | Med |
-| T6 | Private details in public git history | How the output gets published (`decisions.md`, still open) | Committed output stays in the repo's history for good | Med | High |
+| T6 | Private details in public git history | How the output gets published (`decisions.md`, "How the output gets published") | Committed output stays in the repo's history for good | Med | High |
 | T7 | The owner's machine and the Action | Dependencies | A vulnerable or look-alike package runs with our permissions | Low | High |
 
 **3. What are we doing about it?**
@@ -42,8 +42,11 @@ ones included, with a read-only token.
   `permissions:`, never run on `pull_request_target`, and pin third-party
   Actions to a full commit SHA.
 - **T3:** pages are rendered with Jinja2 and auto-escaping on (tech stack,
-  `architecture.md`), never as raw HTML; request links are built from a
-  fixed template with URL encoding (F4.4).
+  `architecture.md`), never as raw HTML (S4.1.1); the page is our own HTML
+  with its scripts inline and one same-site stylesheet, so no third-party
+  code runs on it (S4.1.1, S4.3.1); request links are built from a fixed
+  template with URL encoding and carry no repo text (S4.4.1). Tests feed
+  markup through every place public text shows.
 - **T4:** `portfolio.json` is validated against the schema, files over 1 MB
   aren't parsed, and problems are recorded without quoting the content
   (S1.3.1). A repo that fails shows as "could not scan" while the others
@@ -57,7 +60,9 @@ ones included, with a read-only token.
   `publish` workflow builds the report into a Pages artifact and deploys it,
   committing nothing, and `output/` is git-ignored.
 - **T7:** pinned requirements, `pip-audit` at each phase end (NFR2),
-  Dependabot alerts (a Phase 0 setup task).
+  Dependabot alerts (a Phase 0 setup task, still off: the owner's call).
+  Jinja2 3.1.6 (and MarkupSafe under it) added in S4.1.1, audited clean on
+  2026-11-18.
 
 **4. Did it work?** Token test, 2026-11-13 (closes Phase 0, T1 and T2):
 the `token-check` workflow read a private repo's `portfolio.json` from an
@@ -71,12 +76,19 @@ the text of API errors, plus a made-up token, reach no output file and no
 log line at DEBUG, INFO or WARNING. The first real run (S1.4.2) checks the
 real token's logs. First real run, 2026-11-17 (S1.4.2): the log lines
 carried counts only, no repo names or token, and the 9 private rows in
-`output/scan.json` held only allow-list fields.
+`output/scan.json` held only allow-list fields. Phase 2 review, 2026-11-18:
+the first scheduled run's public log carried counts only (T1, T2); the
+scan output now also carries the standard's check text and the owner's
+account name, both public and holding no repo data (S4.3.1, S4.4.1); no
+open secret-scanning alerts.
 
 ## Personal data
 
-The owner's name (the `owner` and `sponsor` fields) appears on the page for
-public repos, by the owner's choice. Private rows don't carry it (the
+The owner's name (the `owner` and `sponsor` fields) is in public repos'
+scan output by the owner's choice, but the repo pages don't show it (S4.3.1
+lists the reported fields they show). The owner's GitHub account name is in
+the scan output for request links, and is already public in the site's
+address. Private rows don't carry it (the
 allow-list in `decisions.md`). Nothing else personal is stored: there is no
 database, and each scan starts fresh.
 
@@ -86,5 +98,5 @@ Turning these on is the user's call. Record what's on:
 
 - [ ] Dependabot alerts
 - [ ] Dependabot security updates
-- [ ] Secret scanning and push protection
+- [x] Secret scanning and push protection (on; checked 2026-11-17, no open alerts 2026-11-18)
 - [ ] `main` protected (PR required, no force pushes)

@@ -30,6 +30,7 @@ is the run itself (S3.2.1).
 
 | Date | Commit | Result | Notes |
 |---|---|---|---|
+| 2026-11-18 | 5b3eaae | Pass | Run 44333809359, the first scheduled run, with no manual steps: all jobs passed and the page deployed. GitHub started it at 15:16 UTC for the 06:00 slot. The Scan step logged counts only: 17 repos, 0 could not be scanned, 84 API requests, 24.2 s (NFR1). |
 | 2026-11-17 | 780faee | Pass | Run 44142627009 (manual): scan, deploy, keep-alive and result all passed. The page showed this run's scan (17:57 UTC) and all 17 repos. The Scan step logged counts only, the token showed as `***` and its value was nowhere in the full log. 84 API requests, 20.6 s (NFR1). The default Pages theme loads one helper script (anchor-js) from cdnjs, with an integrity hash; Phase 3 replaces the theme. |
 
 ---
