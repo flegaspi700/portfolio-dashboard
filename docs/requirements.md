@@ -214,6 +214,7 @@ it is already a task) and F4.1 and E4 stay In progress until it runs.
 - [ ] Run the daily rebuild for 30 days straight with no manual steps (counting from the first scheduled run, 2026-11-18, run 44333809359; manual runs don't break the count)
 - [x] ~~First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first.~~ Dropped 2026-11-18 by the owner: no first-time reader is available (`decisions.md`, "Drop the first-reader test"). F4.1 and E4 are Done on their other evidence
 - [ ] Check the page at least weekly for a month
+- [x] Write the stories for E5, report details and owner shortcuts (2026-11-18, approved by the owner; the owner's choices: richer pages, progress and charts, a better Markdown report, a refresh link, smarter request links; status updates stay with `/report`)
 
 ## Epics, features and stories
 
@@ -260,6 +261,19 @@ it is already a task) and F4.1 and E4 stay In progress until it runs.
 | S4.3.1 | A page per repo | Story | 3 | Done |
 | F4.4 | Request links | Feature | 3 | Done |
 | S4.4.1 | Request links for public repos | Story | 3 | Done |
+| E5 | Report details and owner shortcuts | Epic | 4 | Backlog |
+| F5.1 | Richer repo pages | Feature | 4 | Backlog |
+| S5.1.1 | Phase, progress, program and report age on public repo pages | Story | 4 | Ready |
+| S5.1.2 | How to update, on every repo page | Story | 4 | Ready |
+| F5.2 | Dashboard progress and charts | Feature | 4 | Backlog |
+| S5.2.1 | Progress and report-age columns in the table | Story | 4 | Ready |
+| S5.2.2 | Health and level bar charts | Story | 4 | Ready |
+| S5.2.3 | Progress bars | Story | 4 | Ready |
+| F5.3 | Markdown report | Feature | 4 | Backlog |
+| S5.3.1 | Attention, links and progress in the Markdown report | Story | 4 | Ready |
+| F5.4 | Owner shortcuts and smarter requests | Feature | 4 | Backlog |
+| S5.4.1 | Refresh the dashboard now | Story | 4 | Ready |
+| S5.4.2 | Smarter request links | Story | 4 | Ready |
 
 Component folders in the stories below are provisional until `/stack` and
 the standard's `coding.md` settle the layout. All tests use fixtures, with no
@@ -817,6 +831,160 @@ links through the whole scan, and the owner followed one on the live page
 - [x] Given a private repo, when its page is built, then it has no request links
 
 **Notes:** Non-goals: the dashboard never changes other repos; a link only opens a pre-filled issue that the reader submits. The links need the owner's account name, so the scan output now carries `owner` (the token's user, already public in the site's address), passed by the filter like the checks list. Without it, no links are shown. Titles and bodies are fixed text in `report/page.py`; nothing from a repo goes into them, and the query is URL-encoded (`%20` for spaces). "Health not reported" includes a repo with no valid `portfolio.json`. On a real scan on 2026-11-18, 6 of the 8 public repos got both links and no private page had any.
+---
+
+## E5 — Report details and owner shortcuts
+
+**Goal:** The page shows more of what public repos report, with simple
+charts, and saves the owner steps: a refresh link, update hints and
+smarter request links.
+**Serves:** G1, G2, G3
+**Out of scope:** Editing status on the page (each repo keeps `/report`),
+history and trends, auto-opened issues or drafted PRs, new fields for
+private repos (the allow-list is unchanged), new dependencies or tokens.
+
+### F5.1 — Richer repo pages
+
+**Description:** Public repo pages show the reported phase, progress,
+program and how old the report is; every repo page says how its owner
+updates it.
+**Phase:** 4
+**Depends on:** F4.3
+**Done when:** a public repo page shows its phase, progress, program and
+report age, and every page that needs an update says how.
+
+#### S5.1.1 — Phase, progress, program and report age on public repo pages
+
+**Story:** As a reviewer, I want a public repo's phase, progress and program, and how fresh its report is, so that I can judge how far along it is and how much to trust its status.
+
+**Component:** `report/` (`page.py`, `templates/repo.html`)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a public repo whose `portfolio.json` reports `phase`, `progress`, `program` and `updated`, when its page is built, then it shows the phase as "Phase 3 · Dashboard page", progress as "24 of 24 stories, 0 open bugs (as of YYYY-MM-DD)", the program, and "Report updated YYYY-MM-DD, N days before the scan"
+- [ ] Given a public repo missing any of these (or with no valid `portfolio.json`), when its page is built, then each missing value shows a dash, with nothing guessed
+- [ ] Given text in these fields containing markup, when shown, then it is escaped (T3)
+- [ ] Given a private repo, when its page is built, then it is unchanged: the allow-list fields only
+
+#### S5.1.2 — How to update, on every repo page
+
+**Story:** As the owner, I want each repo page to say what to run when it needs an update, so that I don't have to remember the steps.
+
+**Component:** `report/` (`page.py`, `templates/repo.html`)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a repo whose health isn't reported, or a public repo with scan warning S1 or S2, when its page is built, then it says "Owner: run `/report` in this repo to update its status"
+- [ ] Given a repo below Level 2, when its page is built, then it says "Owner: run `/new-project` in this repo (the existing-repo option) to adopt the standard"
+- [ ] Given a private repo, when its page is built, then the hints come from its allow-list fields only and are fixed text, and the page still shows exactly the allow-list fields (the leak test's labels are unchanged)
+- [ ] Given a repo that needs neither, or one that could not be scanned, when its page is built, then it shows no hint
+
+### F5.2 — Dashboard progress and charts
+
+**Description:** The dashboard shows progress and report age for public
+repos, and draws the health, level and progress counts as simple charts.
+**Phase:** 4
+**Depends on:** F4.2
+**Done when:** the table sorts by progress and report age by keyboard, and
+each chart can be read without colour and without seeing it.
+
+#### S5.2.1 — Progress and report-age columns in the table
+
+**Story:** As a reviewer, I want progress and report age in the repo table, so that I can compare how far along and how current the projects are.
+
+**Component:** `report/` (`page.py`, `templates/index.html`)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a public repo that reports `progress` and `updated`, when the table is built, then it has a Progress cell ("24 / 24") and a Report age cell ("3 days"), sorting by percent done and by days
+- [ ] Given a private repo, or a public one without these values, when the table is built, then the cells show "—", sort last, and the caption says private repos don't publish them
+- [ ] Given the new columns, when a header is activated by keyboard, then they sort like the others (S4.2.1)
+- [ ] Given the ranking, when built, then it is unchanged: it still reads the allow-list fields only (S4.1.3)
+
+#### S5.2.2 — Health and level bar charts
+
+**Story:** As a reviewer, I want the health and level counts drawn as bars, so that I can see the shape of the portfolio at a glance.
+
+**Component:** `report/` (`page.py`, `templates/index.html`, `style.css`)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the scan output, when the page is built, then the summary has two stacked horizontal bars as inline SVG: repos by health and repos by compliance level, each segment as wide as its share
+- [ ] Given a chart, when read, then every segment's value and count is in text (a legend or labels), and the chart is a `<figure>` with a `<figcaption>`, so it never relies on colour or on seeing it
+- [ ] Given a value with no repos, when drawn, then it has no segment but still appears in the text with 0
+- [ ] Given no repos, when built, then the charts show "No repos" instead of empty bars, and nothing crashes
+
+#### S5.2.3 — Progress bars
+
+**Story:** As a reviewer, I want a small progress bar for each public repo that reports progress, so that I can see how far along it is without reading numbers.
+
+**Component:** `report/` (`page.py`, `templates/index.html`, `templates/repo.html`)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a public repo that reports progress, when the table and its page are built, then each shows a small inline-SVG bar filled to its share, with the "24 / 24" text beside it
+- [ ] Given progress with 0 stories in total, or more done than total, when drawn, then the bar is empty or full, never outside its box, and nothing crashes
+- [ ] Given a private repo or no progress, when built, then there is no bar
+- [ ] Given 300 repos, when the site is built, then it stays under 500 KB (S4.1.1's size test)
+
+### F5.3 — Markdown report
+
+**Description:** The Markdown report leads with what needs attention and
+links to the repo pages.
+**Phase:** 4
+**Depends on:** F3.1, F4.3
+**Done when:** `report.md` lists the attention ranking with reasons and each
+repo links to its page.
+
+#### S5.3.1 — Attention, links and progress in the Markdown report
+
+**Story:** As a reviewer reading `report.md`, I want what needs attention first and a way into each repo, so that the report is as useful as the page.
+
+**Component:** `report/markdown.py`
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the scan output, when the report is rendered, then a "Needs attention first" section lists the top 5 with their reasons, in the page's order (S4.1.3)
+- [ ] Given a repo row, when rendered, then its name links to its page (`repos/<slug>.html`, the same path as the table)
+- [ ] Given a public repo that reports progress, when rendered, then a Progress column shows "24 / 24"; other rows show a dash
+- [ ] Given any value, when rendered, then it is escaped as now, and no free text from a repo appears (T3)
+
+### F5.4 — Owner shortcuts and smarter requests
+
+**Description:** A link to refresh the dashboard now, and request links that
+label their issues, give a checklist and point to requests already open.
+**Phase:** 4
+**Depends on:** F4.4
+**Done when:** the refresh link opens the publish workflow, and a request
+link opens a labelled issue with a checklist next to a link to open
+requests.
+
+#### S5.4.1 — Refresh the dashboard now
+
+**Story:** As the owner, I want a link that refreshes the dashboard now, so that I don't wait for the 06:00 UTC run after updating a repo.
+
+**Component:** `report/` (`page.py`, `templates/`)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given the scan output names an owner, when the dashboard and any repo page are built, then each has a "Refresh the dashboard now" link to `https://github.com/<owner>/portfolio-dashboard/actions/workflows/publish.yml`, with text saying only the owner can run it
+- [ ] Given a private repo's page, when built, then it has the same link: it points to the dashboard's own public repo, so it adds nothing about the private repo
+- [ ] Given no owner in the scan output, when built, then there is no refresh link
+
+#### S5.4.2 — Smarter request links
+
+**Story:** As the owner, I want request issues to be labelled, to carry a checklist, and not to be opened twice, so that requests are easy to track.
+
+**Component:** `report/` (`page.py`, `templates/repo.html`)
+**Status:** Ready
+
+**Acceptance criteria:**
+- [ ] Given a request link, when followed, then GitHub's new-issue form opens with `labels=portfolio-request` and a body that is a checklist (for a status update: run `/report`, check health, risks and call-outs, merge; for adoption: run `/new-project`, then `/report`), fixed text only and URL-encoded
+- [ ] Given a public repo page with request links, when built, then it also links to "See open requests" (`/issues?q=is:open+label:portfolio-request` in that repo)
+- [ ] Given a private repo, when its page is built, then it still has no request links (S4.4.1)
+
+**Notes:** GitHub applies the label only if it exists in the repo and the person can set labels; otherwise the issue opens without it. Whether a request is already open isn't detected: the read token has no Issues permission, and that stays so.
+
 ---
 
 ## Non-functional requirements

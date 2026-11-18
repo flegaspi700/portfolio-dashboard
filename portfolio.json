@@ -10,7 +10,7 @@
   "health": "green",
   "health_reason": "Phase 3 closed 2026-11-18 with the page live, accessible and leak-tested; Phase 4 is the rollout, the first-reader test and 30 unattended days.",
   "phase": { "current": 4, "name": "Launch and tuning" },
-  "progress": { "stories_done": 24, "stories_total": 24, "open_bugs": 0, "as_of": "2026-11-18" },
+  "progress": { "stories_done": 24, "stories_total": 32, "open_bugs": 0, "as_of": "2026-11-18" },
   "next_milestone": null,
   "risks": [],
   "blockers": [],
