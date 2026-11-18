@@ -13,6 +13,40 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-18 — Drop the first-reader test
+
+**Status:** Accepted
+
+**Context:** The Vision's first success criterion, F4.1's Done when and a
+Phase 4 task all ask for a first-time reader to say, within 3 minutes and
+without help, how healthy the portfolio is and which project needs
+attention first. It needs someone who hasn't seen the page, and the owner
+has no one available to do it.
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. Drop it, recorded here | The project can finish on criteria it can actually meet | No evidence from a real first-time reader that the page reads quickly | $0 |
+| B. Keep it open until someone is available | Keeps the criterion | F4.1, E4 and Phase 4 stay open with no date | $0 |
+| C. A proxy, such as an AI agent reading the page cold | Some evidence | Not a person; a weak stand-in for the criterion | $0 |
+
+**Decision:** A. The first-reader test is dropped: the success criterion
+and the Phase 4 task are marked Dropped, and F4.1's Done when is waived, so
+F4.1 and E4 are Done on their other evidence.
+
+**Why:** The owner's call: no first-time reader is available, and the
+other checks cover most of what it was for. The page states its ranking
+rule, explains the levels, passed an accessibility pass (Lighthouse
+Accessibility 100, a Narrator pass), and the owner reads it weekly.
+
+**Trade-offs accepted:** Whether a newcomer understands the page in 3
+minutes is untested. If a first-time reader does turn up (a hiring manager
+reading the link, say), their reaction is worth noting in
+`docs/manual-tests.md`, F4.1.
+
+---
+
 ## 2026-11-18 — Check titles and fixes in the scan output
 
 **Status:** Accepted
