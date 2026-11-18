@@ -276,3 +276,6 @@ def test_the_page_built_from_a_real_shaped_scan_ranks_and_counts_every_repo(tmp_
     assert "private-repo" in attention
     assert "public-repo" in attention
     assert '<span class="count">2</span> <span class="label">Repos</span>' in page
+    table = page[page.index('<table id="repos"') : page.index("</table>")]
+    assert "private-repo" in table
+    assert "public-repo" in table

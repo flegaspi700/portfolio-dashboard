@@ -300,3 +300,141 @@ def test_a_public_row_ranks_exactly_as_it_would_if_private():
 
     assert names_and_reasons([public, *others]) == names_and_reasons([private, *others])
     assert ("open", "Nothing flagged") in names_and_reasons([public, *others])
+
+
+# --- S4.2.1: the repo table ---
+
+COLUMN_TITLES = [
+    "Repo",
+    "Visibility",
+    "Level",
+    "Health",
+    "Lifecycle",
+    "Last activity",
+    "Risks",
+    "Blockers",
+    "Scan",
+]
+
+
+def repo_table(page):
+    """The repo table's HTML."""
+    return page[page.index('<table id="repos"') : page.index("</table>") + 8]
+
+
+def body_rows(page):
+    """The table body's rows, as lists of cell texts."""
+    body = repo_table(page).split("<tbody>", 1)[1]
+    rows = re.findall(r"<tr>(.*?)</tr>", body, re.DOTALL)
+    return [re.findall(r"<t[hd][^>]*>([^<]*)</t[hd]>", row) for row in rows]
+
+
+def test_table_lists_every_repo_in_attention_order_then_done_and_archived():
+    rows = [
+        *TIER_ROWS,
+        private_row("finished", lifecycle="done", health="red"),
+        private_row("Archived", lifecycle="archived"),
+    ]
+
+    table = body_rows(render_page(output(rows, status="partial")))
+
+    assert [row[0] for row in table] == [
+        "broken",
+        "red",
+        "blocked",
+        "amber",
+        "unreported",
+        "low-level",
+        "rest",
+        "Archived",
+        "finished",
+    ]
+
+
+def test_table_row_has_the_listed_columns_with_text_labels():
+    row = private_row("Alpha", health="not-reported", level=2, risk_count=None)
+
+    table = body_rows(render_page(output([row])))
+
+    assert table == [
+        [
+            "Alpha",
+            "private",
+            "2 · Adopted",
+            "Not reported",
+            "active",
+            "2026-11-28",
+            "—",
+            "0",
+            "ok",
+        ]
+    ]
+
+
+def test_a_repo_that_could_not_scan_shows_dashes_and_says_so():
+    table = body_rows(render_page(output([COULD_NOT], status="partial")))
+
+    assert table == [["broken", *["—"] * 7, "could not scan"]]
+
+
+def test_table_has_a_caption_and_real_column_headers():
+    table = repo_table(render_page(output(ROWS)))
+
+    assert "<caption>" in table
+    head = table[table.index("<thead>") : table.index("</thead>")]
+    titles = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', head)
+    assert titles == COLUMN_TITLES
+
+
+def test_row_headers_name_each_repo():
+    table = repo_table(render_page(output(ROWS)))
+
+    names = re.findall(r'<th scope="row"[^>]*>([^<]*)</th>', table)
+    assert names == ["beta", "zeta", "Alpha"]  # amber, not reported, the rest
+
+
+def test_cells_carry_a_sort_value_and_missing_values_carry_none():
+    row = private_row("Alpha", health="red", level=0, risk_count=None)
+
+    table = repo_table(render_page(output([row])))
+
+    body = table.split("<tbody>", 1)[1]
+    values = re.findall(r'<t[hd][^>]*?(?: data-value="([^"]*)")?>', body)
+    # Repo, visibility, level, health (red sorts first), lifecycle,
+    # last activity, risks (missing), blockers, scan.
+    assert values == [
+        "alpha",
+        "private",
+        "0",
+        "0",
+        "active",
+        "2026-11-28",
+        "",
+        "0",
+        "ok",
+    ]
+
+
+def test_number_columns_are_marked_for_number_sorting():
+    table = repo_table(render_page(output(ROWS)))
+
+    numbers = re.findall(r'<th scope="col" data-type="number">([^<]*)</th>', table)
+    assert numbers == ["Level", "Health", "Risks", "Blockers"]
+
+
+def test_script_makes_each_header_a_button_and_sets_aria_sort():
+    page = render_page(output(ROWS))
+
+    script = page[page.rindex("<script>") :]
+    assert 'getElementById("repos")' in script
+    assert 'createElement("button")' in script
+    assert '"aria-sort"' in script
+    assert '"ascending"' in script
+    assert '"descending"' in script
+
+
+def test_names_in_the_table_are_escaped():
+    page = render_page(output([private_row("<img src=x onerror=alert(1)>")]))
+
+    assert "<img src=x" not in page
+    assert "&lt;img src=x onerror=alert(1)&gt;" in repo_table(page)

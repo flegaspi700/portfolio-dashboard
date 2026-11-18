@@ -228,8 +228,8 @@ no accessibility pass.
 | S4.1.1 | Build the page from the scan output | Story | 3 | Done |
 | S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Done |
 | S4.1.3 | Needs attention first | Story | 3 | Done |
-| F4.2 | Sortable table | Feature | 3 | Backlog |
-| S4.2.1 | Sortable, accessible repo table | Story | 3 | Ready |
+| F4.2 | Sortable table | Feature | 3 | Done |
+| S4.2.1 | Sortable, accessible repo table | Story | 3 | Done |
 | F4.3 | Per-repo pages | Feature | 3 | Backlog |
 | S4.3.1 | A page per repo | Story | 3 | Ready |
 | F4.4 | Request links | Feature | 3 | Backlog |
@@ -712,19 +712,24 @@ within 3 minutes.
 **Depends on:** F4.1
 **Done when:** all repos can be sorted by keyboard, and status isn't shown by
 colour alone.
+**Status:** Done 2026-11-18: S4.2.1 done; shown in Chrome by keyboard
+(`docs/manual-tests.md`, F4.2); the F4.1 integration test also checks the
+table.
 
 #### S4.2.1 — Sortable, accessible repo table
 
 **Story:** As a reviewer, I want every in-scope repo in one table I can sort, so that I can compare them my way.
 
-**Component:** `site/`
-**Status:** Ready
+**Component:** `report/` (`page.py`, `templates/index.html`)
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the page, when read without scripts, then the table lists every repo in attention order, with name, visibility, level, health, lifecycle, last activity, risks, blockers and scan status
-- [ ] Given a column header, when activated by mouse or keyboard (Tab, then Enter or Space), then the table sorts by it, toggling ascending and descending, and `aria-sort` says which
-- [ ] Given a state such as health or level, when shown, then it has a text label, never colour alone
-- [ ] Given the table, when checked, then headers are real table headers and the page meets the table checks in `accessibility.md`
+- [x] Given the page, when read without scripts, then the table lists every repo in attention order, with name, visibility, level, health, lifecycle, last activity, risks, blockers and scan status
+- [x] Given a column header, when activated by mouse or keyboard (Tab, then Enter or Space), then the table sorts by it, toggling ascending and descending, and `aria-sort` says which
+- [x] Given a state such as health or level, when shown, then it has a text label, never colour alone
+- [x] Given the table, when checked, then headers are real table headers and the page meets the table checks in `accessibility.md`
+
+**Notes:** The table is plain HTML; a small inline script turns each column header into a button, so without scripts there are no dead controls. Done and archived repos aren't ranked, so they follow the ranked ones, by name. Each cell carries a sort value: health sorts red, amber, not reported, green; a missing value has none and sorts last both ways. The table checks are recorded in `accessibility.md` → Repo table. The sorting was run in Chrome on fixture data, by mouse and keyboard (`manual-tests.md`, F4.2).
 
 ### F4.3 — Per-repo pages
 
