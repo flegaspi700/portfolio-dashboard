@@ -4,11 +4,11 @@ A public, read-only dashboard of my GitHub project portfolio, rebuilt daily
 as a static GitHub Pages site: each project's status, health, risks and
 compliance with the standard.
 
-**Standard:** pmo-project-standardization v2.0.0
+**Standard:** pmo-project-standardization v2.2.0
 **Hosting: github**
 
 This project follows the
-[standard](https://github.com/flegaspi700/pmo-project-standardization/tree/v2.0.0/standard)
+[standard](https://github.com/flegaspi700/pmo-project-standardization/tree/v2.2.0/standard)
 at that version: how work is broken down, coded, tested, secured and
 reported. Read this file first, every session. Where this file and the
 standard disagree, this file wins: it records the project's deliberate
@@ -38,7 +38,7 @@ The rules that always apply, even without opening the standard:
   end with an entry there (`/wrap-up`).
 - **Stories:** work from a story in `docs/requirements.md`, one at a time.
   One branch per story; never commit to `main`. Ask before committing or
-  pushing. The user merges.
+  pushing. Merge only when the user says so.
 - **Tests first:** see each new test fail, then pass. Show real output.
   Never delete, skip or weaken a test to get to green.
 - **Simple:** the simplest code that works. For a significant choice, give
