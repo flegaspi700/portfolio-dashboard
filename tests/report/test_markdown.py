@@ -1,72 +1,17 @@
 """Tests for report/markdown.py: the Markdown report (S3.1.1).
 
-The report is built from the scan output file alone. Tests write made-up
-scan output to a temporary folder, or run the whole scan, filter and write
-on the fake GitHub with canary values in a private and a public repo, then
-render the report and check it. No network, no clock.
+Tests render made-up scan output (`tests/scan_outputs.py`) and check the
+text. Reading the scan output file, writing the site and the leak test
+through the whole scan are in `test_site.py`. No network, no clock.
 """
 
-import json
-import logging
-import os
-import subprocess
-import sys
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-from canaries import CANARIES, PRIVATE_REPO
-from fake_github import OWNER, FakeGitHub
+from scan_outputs import ROWS, output, private_row, table_rows
 
 import report.markdown
-from privacy.output import write_output
-from report.markdown import render_report, write_report
-from scan.result import run_scan
-
-NOW = datetime(2026, 12, 1, 6, 0, tzinfo=UTC)
-
-
-def private_row(name, **overrides):
-    row = {
-        "name": name,
-        "visibility": "private",
-        "lifecycle": "active",
-        "health": "green",
-        "level": 3,
-        "last_activity": "2026-11-28",
-        "risk_count": 2,
-        "blocker_count": 0,
-        "scan_status": "ok",
-    }
-    row.update(overrides)
-    return row
-
-
-def output(rows, status="complete"):
-    return {
-        "status": status,
-        "scanned_at": "2026-12-01T06:00:00+00:00",
-        "spec_version": 2,
-        "failure": None,
-        "rows": rows,
-    }
-
-
-ROWS = [
-    private_row("zeta", level=0, health="not-reported", lifecycle=None),
-    private_row("Alpha"),
-    {**private_row("beta", visibility="public", level=1, health="amber")},
-]
-
-
-def table_rows(text):
-    """The repo table's body rows, as lists of cells."""
-    lines = text[text.index("## Repos") :].splitlines()
-    # Lines starting "| " are the header and the body; the separator
-    # ("|---|") doesn't match, so only the header is skipped.
-    rows = [line for line in lines if line.startswith("| ")][1:]
-    return [[cell.strip() for cell in line.strip("|").split("|")] for line in rows]
-
+from report.markdown import render_report
 
 # --- Content ---
 
@@ -186,20 +131,7 @@ def test_same_scan_output_gives_the_same_report():
     assert render_report(output(ROWS)) == render_report(output(list(reversed(ROWS))))
 
 
-# --- Reading only the scan output file ---
-
-
-def test_write_report_reads_the_scan_output_file_and_writes_index_md(tmp_path):
-    scan_file = tmp_path / "scan.json"
-    scan_file.write_text(json.dumps(output(ROWS)), encoding="utf-8")
-    site = tmp_path / "site"
-
-    code = write_report(scan_file, site)
-
-    assert code == 0
-    written = (site / "index.md").read_bytes()
-    assert written.decode("utf-8") == render_report(output(ROWS))
-    assert not written.startswith(b"\xef\xbb\xbf")
+# --- Reading only the scan output ---
 
 
 def test_report_module_never_imports_the_scan_result():
@@ -208,36 +140,6 @@ def test_report_module_never_imports_the_scan_result():
 
     assert "scan.result" not in text
     assert "run_scan" not in text
-
-
-def test_missing_scan_output_stops_with_a_clear_message(tmp_path, caplog):
-    with caplog.at_level(logging.INFO):
-        code = write_report(tmp_path / "missing.json", tmp_path / "site")
-
-    assert code != 0
-    assert "scan output" in caplog.text
-    assert "main.py" in caplog.text
-    assert not (tmp_path / "site").exists()
-
-
-# --- The leak test, through the whole scan ---
-
-
-def test_no_canary_reaches_the_report(tmp_path):
-    public = {
-        "description": CANARIES["description"],
-        "files": PRIVATE_REPO["files"],
-    }
-    repos = {"private-repo": PRIVATE_REPO, "public-repo": public}
-    result = run_scan(FakeGitHub(repos), OWNER, NOW)
-    scan_file = tmp_path / "output" / "scan.json"
-    write_output(result, scan_file)
-
-    write_report(scan_file, tmp_path / "output" / "site")
-
-    text = (tmp_path / "output" / "site" / "index.md").read_text(encoding="utf-8")
-    assert [c for c in CANARIES.values() if c in text] == []
-    assert [row[0] for row in table_rows(text)] == ["private-repo", "public-repo"]
 
 
 # --- Worst case ---
@@ -250,42 +152,3 @@ def test_many_repos_render_in_order():
 
     assert len(table) == 300
     assert table[0][0] == "repo-000"
-
-
-# --- Command line ---
-
-
-def test_python_m_report_renders_from_output_scan_json(tmp_path):
-    root = Path(__file__).resolve().parents[2]
-    (tmp_path / "output").mkdir()
-    (tmp_path / "output" / "scan.json").write_text(
-        json.dumps(output(ROWS)), encoding="utf-8"
-    )
-
-    done = subprocess.run(
-        [sys.executable, "-m", "report"],
-        check=False,
-        cwd=tmp_path,
-        env={**os.environ, "PYTHONPATH": str(root)},
-        capture_output=True,
-        text=True,
-    )
-
-    assert done.returncode == 0
-    assert (tmp_path / "output" / "site" / "index.md").exists()
-
-
-def test_python_m_report_without_scan_output_exits_non_zero(tmp_path):
-    root = Path(__file__).resolve().parents[2]
-
-    done = subprocess.run(
-        [sys.executable, "-m", "report"],
-        check=False,
-        cwd=tmp_path,
-        env={**os.environ, "PYTHONPATH": str(root)},
-        capture_output=True,
-        text=True,
-    )
-
-    assert done.returncode == 1
-    assert "No scan output" in done.stderr

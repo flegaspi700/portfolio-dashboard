@@ -22,7 +22,7 @@ Always use these exact commands.
 |---|---|
 | Set up the environment | `py -3.13 -m venv .venv`, then `.venv\Scripts\python -m pip install -r requirements.txt -r requirements-dev.txt` |
 | Run | `.venv\Scripts\python main.py` |
-| Render the report | `.venv\Scripts\python -m report` |
+| Build the site (page and report) | `.venv\Scripts\python -m report` |
 | Run all tests | `.venv\Scripts\python -m pytest` |
 | Run one test file | `.venv\Scripts\python -m pytest tests/scan/test_example.py` |
 | Coverage report | `.venv\Scripts\python -m pytest --cov=scan --cov=privacy --cov=report --cov=main --cov-report=term-missing` |

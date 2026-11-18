@@ -19,7 +19,7 @@ flowchart LR
     gh[("GitHub API")] -- "repo facts, files" --> scan["scan/"]
     scan -- "scan result, unfiltered" --> privacy["privacy/"]
     privacy -- "scan output, allow-listed" --> report["report/"]
-    report -- "index.md" --> pages["GitHub Pages, deployed by the publish workflow"]
+    report -- "index.html, report.md" --> pages["GitHub Pages, deployed by the publish workflow"]
 ```
 
 So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
@@ -38,9 +38,13 @@ it all together. `privacy/allow_list.py` (S2.1.1) turns the scan result into
 the scan output, cutting private rows to the allow-list, and
 `privacy/output.py` (S2.1.2) writes it to `output/scan.json` and gives the
 exit code; `privacy/safe_logging.py` (S2.1.3) sets up logging so an
-exception shows only its type. `report/markdown.py` (S3.1.1) reads that file,
-never the scan result, and writes `output/site/index.md` for the Pages build. `.github/workflows/publish.yml` (S3.2.1) runs
-it all daily and deploys the site, committing nothing. The rest is the
+exception shows only its type. `report/site.py` reads that file, never the
+scan result, and writes the site to `output/site/`: the page,
+`index.html`, from `report/page.py` and its Jinja2 template in
+`report/templates/` (S4.1.1), and the Markdown report, `report.md`, from
+`report/markdown.py` (S3.1.1). `.github/workflows/publish.yml` (S3.2.1) runs
+it all daily and uploads that folder as it is, with no Jekyll build, so the
+site has no third-party code; it commits nothing. The rest is the
 planned flow from the requirements and the glossary. Check it against the code as stories land.
 
 ## Layout
@@ -49,7 +53,7 @@ planned flow from the requirements and the glossary. Check it against the code a
 portfolio-dashboard/
   scan/            # reads repos; works out facts, compliance and status; assembles the scan result
   privacy/         # allow-list filter; the only component that writes scan output
-  report/          # renders the Markdown report from the scan output file (`python -m report`)
+  report/          # builds the site, the page and the Markdown report, from the scan output file (`python -m report`)
   .github/workflows/  # publish.yml: the daily scan, report and Pages deploy; token-check.yml (Phase 0)
   tests/           # mirrors the module structure above
   docs/            # these planning docs
@@ -59,7 +63,11 @@ portfolio-dashboard/
 ```
 
 One component per top-level folder. Later phases add their own folders when
-their stories start. `scan/` never writes to disk, and logic in `scan/` takes
+their stories start. The page is built in `report/`, not in a `site/`
+folder as the Phase 3 stories first said: `site` is a standard-library
+module Python imports at startup, so a package of that name can't be
+imported, and the page reads the same input and writes the same folder as
+the report (S4.1.1). `scan/` never writes to disk, and logic in `scan/` takes
 fetched data as input, so only one module there touches the network.
 
 ## Naming
@@ -104,7 +112,8 @@ decision first (the standard's `security.md` → Dependencies).
 | Language | Python 3.13 | Default for a batch job with no browser framework. See `decisions.md` → "Language and stack" |
 | GitHub API | Standard library `urllib` | Enough for the calls and paging the scan needs, with no dependency. Tests pass in a fake fetch function. Switch only if a story proves it isn't enough |
 | Schema validation | `jsonschema` | Full validation of `portfolio.json` against the standard's schema (check C4). See `decisions.md` → "Reuse or reimplement the compliance checks" |
-| Page | Generated static HTML with a little vanilla JS | Sorting needs no framework. The HTML templating library is added in Phase 3 (see Deferred) |
+| Page | Generated static HTML with a little vanilla JS, inline | Sorting needs no framework, and nothing loads from another site |
+| HTML templating | `Jinja2` 3.1.6 | Auto-escapes every value, against injected markup (threat model T3). Added in S4.1.1; `pip-audit` clean on 2026-11-18. Pulls in `MarkupSafe` (3.0.4 on 2026-11-18) |
 | Persistence | None between runs | No database (`requirements.md` → Non-goals). Each scan starts fresh |
 
 ### Dev environment
@@ -121,13 +130,14 @@ decision first (the standard's `security.md` → Dependencies).
 
 ### Starting dependencies
 
-Versions confirmed on PyPI on 2026-11-02. Packages these pull in, including the
+Versions confirmed on PyPI on 2026-11-02 (`Jinja2` on 2026-11-18, S4.1.1). Packages these pull in, including the
 compiled `rpds-py` under `jsonschema`, get checked when they are first installed.
 
 `requirements.txt`:
 
 ```
 jsonschema==4.26.0
+Jinja2==3.1.6
 ```
 
 `requirements-dev.txt`:
@@ -141,7 +151,6 @@ pip-audit==2.10.1
 
 ### Deferred / not needed yet
 
-- `Jinja2` — add in Phase 3 for the page, because it can auto-escape untrusted text. 3.1.6 is the latest on PyPI, released 2025-03, so run `pip-audit` on it again then.
 - `mypy` — `ruff` doesn't check types, so signatures are typed but not enforced. Revisit if type mistakes reach review.
 - `requests` and HTTP mocking libraries — not needed while `urllib` and a fake fetch function are enough.
 

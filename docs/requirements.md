@@ -133,7 +133,7 @@ show the size of the work, not dates.
 | 0 — Setup and go/no-go | Prove the toolchain and the riskiest assumptions, with no real logic yet | The go/no-go is decided and logged, and an Action has read a private repo with nothing private in its logs. If the mock is a no-go, the Phase 4 rollout tasks move ahead of Phase 1 | Done | 2-3 days | 2026-11-02 | 2026-11-13 |
 | 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all in-scope repos, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Done | 10 days at most (10 stories) | 2026-11-13 | 2026-11-17 |
 | 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Active | 5 days at most (5 stories) | 2026-11-17 | |
-| 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Planned | Set when its stories are written | | |
+| 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Active | 7 days at most (7 stories) | 2026-11-18 | |
 | 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met, and the link is good enough to send to a hiring manager | Planned | At least 30 days (the unattended run) | | |
 
 ### Phase tasks
@@ -223,11 +223,11 @@ no accessibility pass.
 | S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | Done |
 | S3.3.2 | Keep the schedule alive | Story | 2 | Done |
 | S3.3.3 | Token renewal reminder | Story | 2 | Done |
-| E4 | Dashboard page | Epic | 3 | Backlog |
-| F4.1 | Portfolio summary | Feature | 3 | Backlog |
-| S4.1.1 | Build the page from the scan output | Story | 3 | Ready |
-| S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Ready |
-| S4.1.3 | Needs attention first | Story | 3 | Ready |
+| E4 | Dashboard page | Epic | 3 | In progress |
+| F4.1 | Portfolio summary | Feature | 3 | In progress |
+| S4.1.1 | Build the page from the scan output | Story | 3 | Done |
+| S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Done |
+| S4.1.3 | Needs attention first | Story | 3 | Done |
 | F4.2 | Sortable table | Feature | 3 | Backlog |
 | S4.2.1 | Sortable, accessible repo table | Story | 3 | Ready |
 | F4.3 | Per-repo pages | Feature | 3 | Backlog |
@@ -655,52 +655,55 @@ old-data flag, and an explanation of the compliance levels.
 **Depends on:** F3.2
 **Done when:** a first-time reader can name the project needing attention
 within 3 minutes.
+**Status:** In progress 2026-11-18: all three stories done; the Done when line is the first-reader test in `docs/manual-tests.md` (F4.1), still to run.
 
 #### S4.1.1 — Build the page from the scan output
 
 **Story:** Technical — generate the site as our own static HTML from the scan output, replacing the Jekyll build and its default theme, so the page has no third-party code and every value is escaped.
 
-**Component:** `site/` (new), `.github/workflows/publish.yml`
-**Status:** Ready
+**Component:** `report/` (`site.py`, `page.py`, `templates/`), `.github/workflows/publish.yml`
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given `output/scan.json`, when the site is built, then `output/site/index.html` is written from that file alone, with Jinja2 auto-escaping on, and the Markdown report stays at `output/site/report.md`
-- [ ] Given the workflow, when it runs, then it uploads `output/site` as it is, with no Jekyll step
-- [ ] Given the built site, when checked, then it loads no script, style or font from another site, and its total size is under 500 KB (NFR7's weight)
-- [ ] Given the same scan output, when built twice, then the files are identical
-- [ ] Given no scan output, when building, then it stops with a clear message and a non-zero exit code
+- [x] Given `output/scan.json`, when the site is built, then `output/site/index.html` is written from that file alone, with Jinja2 auto-escaping on, and the Markdown report stays at `output/site/report.md`
+- [x] Given the workflow, when it runs, then it uploads `output/site` as it is, with no Jekyll step
+- [x] Given the built site, when checked, then it loads no script, style or font from another site, and its total size is under 500 KB (NFR7's weight)
+- [x] Given the same scan output, when built twice, then the files are identical
+- [x] Given no scan output, when building, then it stops with a clear message and a non-zero exit code
 
-**Notes:** Jinja2 was chosen in "Language and stack" for Phase 3; it is pinned and audited (`pip-audit`) when this story starts. Removes `actions/jekyll-build-pages` and the default theme's anchor-js script seen on 2026-11-17.
+**Notes:** Jinja2 was chosen in "Language and stack" for Phase 3; it is pinned and audited (`pip-audit`) when this story starts. Removes `actions/jekyll-build-pages` and the default theme's anchor-js script seen on 2026-11-17. Built in `report/`, not `site/`: `site` is a standard-library module, so a package of that name can't be imported (`architecture.md` → Layout). `python -m report` now builds the whole site. Jinja2 3.1.6 pinned, `pip-audit` clean on 2026-11-18. The page shows the scan time and links to the report; S4.1.2 onwards fill it in. Moving the report from `index.md` to `report.md` dropped one test's step name in `test_workflows.py` ("Render the report", a step that no longer exists); the remaining steps keep the same check.
 
 #### S4.1.2 — Summary tiles, freshness and levels
 
 **Story:** As a reviewer, I want the portfolio's state at a glance, so that I understand it within a few minutes.
 
-**Component:** `site/`
-**Status:** Ready
+**Component:** `report/` (`page.py`, `templates/index.html`)
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the scan output, when the page is built, then tiles show the number of repos, the count per health value, per compliance level, and could not scan
-- [ ] Given the page, when read, then it shows when the data was scanned (UTC), and a partial scan is flagged at the top
-- [ ] Given data more than 36 hours old when the page is opened, when it loads, then a notice says the data may be out of date (a small script compares the scan time with the reader's clock; without scripts, the scan time is still shown)
-- [ ] Given the page, when read, then the four compliance levels are explained in a sentence each, with a link to the standard's compliance spec
-- [ ] Given counts and states, when shown, then none rely on colour alone (text labels on every state)
+- [x] Given the scan output, when the page is built, then tiles show the number of repos, the count per health value, per compliance level, and could not scan
+- [x] Given the page, when read, then it shows when the data was scanned (UTC), and a partial scan is flagged at the top
+- [x] Given data more than 36 hours old when the page is opened, when it loads, then a notice says the data may be out of date (a small script compares the scan time with the reader's clock; without scripts, the scan time is still shown)
+- [x] Given the page, when read, then the four compliance levels are explained in a sentence each, with a link to the standard's compliance spec
+- [x] Given counts and states, when shown, then none rely on colour alone (text labels on every state)
+
+**Notes:** The counts leave out repos that could not be scanned, as the report does. The levels' sentences come from the Meaning column of the standard's `spec/compliance.md`, and the link goes to it on the default branch, where the scan reads the check registry. The old-data notice is a hidden paragraph that an inline script shows; its logic was run against fake clocks with Node (hidden at 35 h 59 min, shown at 36 h 1 min), and the in-browser check is in `docs/manual-tests.md` (F4.1). Health tiles carry a coloured edge as well as their label.
 
 #### S4.1.3 — Needs attention first
 
 **Story:** As the owner, I want the repos that need attention listed first, with the reason, so that I know where to look this week.
 
-**Component:** `site/`
-**Status:** Ready
+**Component:** `report/` (`page.py`, `templates/index.html`)
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the scan output, when ranking, then repos are ordered by tier, first match wins: could not scan, health red, has blockers, health amber, health not reported, below Level 2, the rest
-- [ ] Given repos in the same tier, when ranking, then lifecycle `active` comes first, then the most recent activity, then the name
-- [ ] Given a repo whose lifecycle is `done` or `archived`, when ranking, then it isn't listed
-- [ ] Given the page, when read, then a "Needs attention first" section lists the top 5 with their reason, private and public alike
-- [ ] Given a public row, when ranking, then only the allow-list fields count, so it ranks exactly as it would if it were private
+- [x] Given the scan output, when ranking, then repos are ordered by tier, first match wins: could not scan, health red, has blockers, health amber, health not reported, below Level 2, the rest
+- [x] Given repos in the same tier, when ranking, then lifecycle `active` comes first, then the most recent activity, then the name
+- [x] Given a repo whose lifecycle is `done` or `archived`, when ranking, then it isn't listed
+- [x] Given the page, when read, then a "Needs attention first" section lists the top 5 with their reason, private and public alike
+- [x] Given a public row, when ranking, then only the allow-list fields count, so it ranks exactly as it would if it were private
 
-**Notes:** Criteria approved by the owner on 2026-11-17, with the rest of Phase 3's stories. `decisions.md`, "Needs attention first" ranking (2026-11-17).
+**Notes:** Criteria approved by the owner on 2026-11-17, with the rest of Phase 3's stories. `decisions.md`, "Needs attention first" ranking (2026-11-17). Built as `rank_for_attention` in `report/page.py`: it copies each row's allow-list fields (`privacy/allow_list.py`, `PRIVATE_FIELDS`) before testing the tiers, so no other field can count. A missing health counts as not reported and a missing level as below Level 2. When fewer than 5 repos are flagged, the list fills from the last tier with the reason "Nothing flagged", since every ranked repo shows its tier. The page also states the rule in one sentence. On the real scan output of 2026-11-17 the top 5 were all "Health not reported", as expected while only this repo reports. Integration test for F4.1: `test_the_page_built_from_a_real_shaped_scan_ranks_and_counts_every_repo`.
 
 ### F4.2 — Sortable table
 
