@@ -20,6 +20,6 @@ thead th button { font: inherit; font-weight: bold; color: inherit; background: 
 thead th button:focus-visible, .table-wrap:focus-visible, a:focus-visible { outline: 3px solid #0b57d0; outline-offset: 2px; }
 th[aria-sort="ascending"] button::after { content: " ▲"; }
 th[aria-sort="descending"] button::after { content: " ▼"; }
-dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+dl { display: grid; grid-template-columns: fit-content(40%) minmax(0, 1fr); gap: 0.25rem 1rem; }  /* B1: the label column is capped so long labels wrap at 320 CSS px */
 dt { font-weight: bold; }
 dd { margin: 0; }
