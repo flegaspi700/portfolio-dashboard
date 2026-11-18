@@ -90,6 +90,7 @@ logic was also run against fake clocks with Node on 2026-11-18 (hidden at
 
 | Date | Commit | Result | Notes |
 |---|---|---|---|
+| 2026-11-18 | 77d81c5 (run 44355374079) | Pass (steps 1-4); step 5 not run | The owner, on the live page: tiles, levels and the spec link read well; the old-data notice showed when the page's own script ran with a scan time 48 hours back, was hidden on reload with today's scan, and with scripts off the scan time showed and the notice didn't. Step 5, the first-reader test, needs someone who hasn't seen the page: moved to Phase 4. |
 
 ---
 
@@ -113,6 +114,7 @@ signed-in browser.
 
 | Date | Commit | Result | Notes |
 |---|---|---|---|
+| 2026-11-18 | 77d81c5 (run 44355374079) | Pass | The owner, on the live page: a request link opened GitHub's new-issue form in that repo with the title and body filled in. Three private repos' pages had no Requests section. |
 
 ---
 

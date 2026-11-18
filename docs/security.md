@@ -81,7 +81,10 @@ carried counts only, no repo names or token, and the 9 private rows in
 the first scheduled run's public log carried counts only (T1, T2); the
 scan output now also carries the standard's check text and the owner's
 account name, both public and holding no repo data (S4.3.1, S4.4.1); no
-open secret-scanning alerts.
+open secret-scanning alerts. Phase 3 review, 2026-11-18: no new way in; the
+leak test now covers every file of the built site, and a filter that passes
+private rows as public makes it fail (S2.2.1); the live page loads nothing
+from another host; `pip-audit` clean; no open secret-scanning alerts.
 
 ## Personal data
 
