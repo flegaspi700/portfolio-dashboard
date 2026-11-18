@@ -1,9 +1,9 @@
 # Daily publish (S3.2.1; docs/decisions.md, "How the output gets published")
 #
 # Once a day, and by hand: scan the in-scope repos with the read token,
-# render the Markdown report from the filtered scan output, build it into
-# a site with GitHub's own Pages actions, and deploy it. Nothing is
-# committed (threat model T6).
+# build the site (our own HTML page and the Markdown report, S4.1.1) from
+# the filtered scan output, and deploy it as it is, with no other build.
+# Nothing is committed (threat model T6).
 #
 # - Complete scan: deploy, and the run passes.
 # - Partial scan: deploy (failed repos show "could not scan"), then the run
@@ -82,22 +82,15 @@ jobs:
             echo "has_output=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Render the report
-        if: steps.scan.outputs.has_output == 'true'
-        run: python -m report
-
       - name: Build the site
         if: steps.scan.outputs.has_output == 'true'
-        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1.0.13
-        with:
-          source: ./output/site
-          destination: ./_site
+        run: python -m report
 
       - name: Upload the site
         if: steps.scan.outputs.has_output == 'true'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: ./_site
+          path: ./output/site
 
   deploy:
     needs: scan

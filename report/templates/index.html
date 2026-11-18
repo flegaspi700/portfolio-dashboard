@@ -1,0 +1,21 @@
+<!doctype html>
+{# The dashboard page (S4.1.1), rendered by report/page.py with
+   auto-escaping on. Style and script stay inline: nothing from another site. #}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio dashboard</title>
+<style>
+body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 0 auto; max-width: 64rem; padding: 1rem; color: #1a1a1a; background: #fff; }
+a { color: #0b57d0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Portfolio dashboard</h1>
+<p>Scanned {{ scanned_at }} UTC · spec version {{ spec_version }} · {{ repo_count }} repos</p>
+<p><a href="report.md">The same data as a Markdown report</a></p>
+</main>
+</body>
+</html>

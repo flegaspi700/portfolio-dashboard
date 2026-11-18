@@ -1,4 +1,4 @@
-"""Tests for the GitHub Actions workflows (S3.2.1).
+"""Tests for the GitHub Actions workflows (S3.2.1, S4.1.1).
 
 Actions can't run here, so these read the workflow files as text and check
 the rules that keep them safe (threat model T2, docs/security.md) and the
@@ -82,12 +82,28 @@ def test_scan_runs_main_then_the_report():
     assert 'python-version: "3.13"' in scan
 
 
-def test_report_and_build_only_run_when_there_is_scan_output():
+def test_build_and_upload_only_run_when_there_is_scan_output():
     scan = job("scan")
-    for step in ("Render the report", "Build the site", "Upload the site"):
+    for step in ("Build the site", "Upload the site"):
         part = scan[scan.index(step) :]
         part = part[: part.find("\n      - ", 1) if "\n      - " in part[1:] else None]
         assert "steps.scan.outputs.has_output == 'true'" in part, step
+
+
+def test_the_site_is_built_by_python_m_report_with_no_jekyll_step():
+    # S4.1.1: our own HTML, uploaded as it is, with no third-party build.
+    scan = job("scan")
+    build = scan[scan.index("- name: Build the site") :]
+    build = build[: build.index("\n      - ", 1)]
+    assert "run: python -m report" in build
+    assert "jekyll" not in text().lower()
+
+
+def test_uploads_output_site_as_it_is():
+    scan = job("scan")
+    upload = scan[scan.index("- name: Upload the site") :]
+    assert "actions/upload-pages-artifact@" in upload
+    assert "path: ./output/site\n" in upload
 
 
 def test_deploy_only_when_there_is_scan_output_with_pages_permissions():
