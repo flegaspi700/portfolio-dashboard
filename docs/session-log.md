@@ -13,6 +13,39 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-18 — Phases 2 and 3 closed; E4 and E2 built; rollout done
+
+**Worked on:** S4.1.1, S4.1.2, S4.1.3, S4.2.1, S4.3.1, S4.4.1, S2.2.1, B1, Phase 2 and Phase 3 close, Phase 4 rollout
+
+**Time spent:** about 3.5h, estimated from the first check (09:30 local) to this entry (13:00). Correct it if that's off.
+
+**Changed:**
+- `report/` — S4.1.1: `python -m report` builds the whole site in `output/site/` (our own `index.html` with Jinja2 3.1.6, auto-escaping on; the report renamed `report.md`); the workflow uploads it as it is, no Jekyll. Built in `report/`, not `site/`: `site` is a standard-library module. PR #34
+- `report/page.py`, `templates/` — S4.1.2 tiles, scan time, partial flag, 36-hour old-data notice, levels explained; S4.1.3 "Needs attention first" (logged tiers, allow-list fields only). PR #34
+- `report/` — S4.2.1: sortable repo table (header buttons added by script, `aria-sort`, missing values last). PR #35
+- `report/`, `scan/result.py`, `privacy/allow_list.py` — S4.3.1: a page per repo at `repos/<slug>.html`; the scan output now carries the registry's checks (decision logged: "Check titles and fixes in the scan output"); one same-site `style.css` keeps a 300-repo site under 500 KB (the owner's choice). PR #36
+- same — S4.4.1: request links on public repo pages; the scan output carries the owner's account name. PR #37
+- `docs/` — Phase 2 closed: the first scheduled run (44333809359) ran unattended, though GitHub started it 9 h late. PR #38
+- `tests/privacy/test_site_leak.py` — S2.2.1: leak test on every built file; AC2 read as a filter passing private rows as public (the owner's choice). F2.2 and E2 done; NFR5 met. PR #39
+- `docs/accessibility.md` — the page's WCAG 2.2 AA checklist and pass; found B1 (reflow at 320 px), fixed in `style.css` (`fit-content(40%)`). PR #41 (it carried #40's commit, so #40 was closed)
+- `docs/` — Phase 3 closed: Lighthouse Accessibility 100 and Performance 99, the owner's Narrator pass, F4.4 and F4.1 steps 1-4 pass; NFR3 and NFR7 met; Phase 4 active. PR #42
+- Rollout (in other repos, by the owner): `/report` in 3 private Level 3 repos; with one other public repo and this one, 5 repos are at Level 3 with real health. Run 44363519631 put it live.
+- `docs/requirements.md` — rollout task ticked; this entry.
+
+**Stopped at:** All 24 stories done, 0 open bugs, 409 tests pass, Ruff clean, `pip-audit` clean. NFR1-3 and NFR5-7 met. Phase 4 is active: the rollout is done; the 30-day unattended count runs from 2026-11-18 to 2026-12-17 at the earliest. F4.1 and E4 stay In progress until the first-reader test.
+
+**Next step:** Run the first-reader test (`docs/manual-tests.md`, F4.1, step 5) with someone who hasn't seen the page; on a pass, mark F4.1 and E4 Done. Meanwhile check the page weekly and let the daily runs count; a failure email means a run to look at.
+
+**Open questions:**
+- Dependabot alerts are still off; turning them on is the owner's call.
+- Protect `main` (PR required, no force pushes)? Optional, the owner's call.
+- The scheduled run started 9 h late on 2026-11-18; if it keeps happening, move the cron off the hour (`17 6 * * *`).
+- Lighthouse's Best Practices 96 (no favicon, so a 404) and SEO 90 (no meta description) aren't NFRs; fix them as a small change?
+- Carried over: `check-compliance.ps1` also passes top-level type errors, so C4 differs from it in a second way. Widen the logged exception, or raise a fix in `pmo-project-standardization`?
+- Merged branches (9, listed by `git branch --no-merged` because of squash merges) can be deleted locally and on GitHub.
+
+---
+
 ## 2026-11-17 — Phase 1 closed; E3 built and live; Phase 3 prepared
 
 **Worked on:** S1.4.2, Phase 1 close, Phase 2 (S3.1.1, S3.2.1, S3.3.1, S3.3.2, S3.3.3), Phase 3 prep
