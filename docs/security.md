@@ -29,8 +29,9 @@ ones included, with a read-only token.
 - **T1:** the allow-list filter in `privacy/` is the only component that
   writes scan output (S2.1.1, S2.1.2). A leak test plants canary values in
   a fixture private repo and fails if any reach output files or logs, at
-  every log level (S2.1.2, S2.1.3), later extended to the report and the
-  page (F2.2). Errors log only a generic reason or the error type, never
+  every log level (S2.1.2, S2.1.3), and to every file of the built site,
+  the report and the pages alike (S2.2.1). The repo pages also read private
+  rows by the allow-list, a second guard behind the filter (S4.3.1). Errors log only a generic reason or the error type, never
   the error's text; the scan logs no repo names at all, which is stricter
   than the allow-list needs (S2.1.3, `privacy/safe_logging.py`). NFR5.
 - **T2:** a fine-grained, read-only token (Contents, Metadata and Pull
