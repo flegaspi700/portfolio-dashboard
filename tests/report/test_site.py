@@ -353,3 +353,26 @@ def test_public_pages_show_full_detail_and_private_pages_the_allow_list(tmp_path
     assert CANARIES["summary"] in public
     assert CANARIES["risk"] in public
     assert "AGENTS.md names the standard version" in public  # a check title
+
+
+# --- F4.4 integration: request links through the whole scan ---
+
+
+def test_request_links_go_to_the_scanned_owners_public_repo_only(tmp_path):
+    repos = {
+        "private-repo": PRIVATE_REPO,
+        "bare-public": {"visibility": "public", "files": {}},
+    }
+    result = run_scan(FakeGitHub(repos), OWNER, NOW)
+    scan_file = tmp_path / "output" / "scan.json"
+    write_output(result, scan_file)
+
+    assert build_site(scan_file, tmp_path / "output" / "site") == 0
+
+    repos_dir = tmp_path / "output" / "site" / "repos"
+    public = (repos_dir / "bare-public.html").read_text(encoding="utf-8")
+    private = (repos_dir / "private-repo.html").read_text(encoding="utf-8")
+    assert f"https://github.com/{OWNER}/bare-public/issues/new?" in public
+    assert "Request a status update" in public
+    assert "Request standard adoption" in public
+    assert "issues/new" not in private

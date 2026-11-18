@@ -15,7 +15,8 @@ in memory, unfiltered, never written to disk. The allow-list filter
 docs/decisions.md, "Scan failure: publish partial and flag it", says.
 It also carries the registry's checks as stated, so the page can show each
 check's title and fix (S4.3.1; decisions.md, "Check titles and fixes in
-the scan output"). Built for S1.4.1.
+the scan output"), and the owner it scanned, for request links (S4.4.1).
+Built for S1.4.1.
 """
 
 import logging
@@ -77,8 +78,8 @@ class RepoRow:
 class ScanResult:
     """One scan: its status (complete, partial or failed), when it ran,
     the spec version of the check registry, the rows sorted by name, why it
-    failed, if it did, and the registry's checks as stated (empty if the
-    registry couldn't be read)."""
+    failed, if it did, the registry's checks as stated (empty if the
+    registry couldn't be read), and the account whose repos were scanned."""
 
     status: str
     scanned_at: datetime
@@ -86,6 +87,7 @@ class ScanResult:
     rows: list[RepoRow]
     failure: str | None = None
     checks: list[dict[str, Any]] = field(default_factory=list)
+    owner: str | None = None
 
 
 def run_scan(fetch: Fetch, owner: str, now: datetime) -> ScanResult:
@@ -133,6 +135,7 @@ def run_scan(fetch: Fetch, owner: str, now: datetime) -> ScanResult:
         spec_version=registry.version,
         rows=rows,
         checks=registry.checks,
+        owner=owner,
     )
 
 

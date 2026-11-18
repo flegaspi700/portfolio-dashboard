@@ -45,7 +45,8 @@ scan result, and writes the site to `output/site/`: the page,
 the shared `style.css` from the same folder, and the Markdown report,
 `report.md`, from `report/markdown.py` (S3.1.1). The scan output also
 carries the standard's checks (ID, title, severity, fix) for the repo
-pages (`decisions.md` → "Check titles and fixes in the scan output"). `.github/workflows/publish.yml` (S3.2.1) runs
+pages (`decisions.md` → "Check titles and fixes in the scan output"), and
+the owner's account name for request links (S4.4.1). `.github/workflows/publish.yml` (S3.2.1) runs
 it all daily and uploads that folder as it is, with no Jekyll build, so the
 site has no third-party code; it commits nothing. The rest is the
 planned flow from the requirements and the glossary. Check it against the code as stories land.
