@@ -219,13 +219,13 @@ so no accessibility pass.
 | F1.4 | Assemble the scan result | Feature | 1 | Done |
 | S1.4.1 | Assemble the scan result | Story | 1 | Done |
 | S1.4.2 | Run a real scan | Story | 1 | Done |
-| E2 | Private data protection | Epic | 1, 3 | Backlog |
+| E2 | Private data protection | Epic | 1, 3 | Done |
 | F2.1 | Allow-list and leak test | Feature | 1 | Done |
 | S2.1.1 | Allow-list filter | Story | 1 | Done |
 | S2.1.2 | Write only filtered output, with a leak test | Story | 1 | Done |
 | S2.1.3 | Keep logs safe | Story | 1 | Done |
-| F2.2 | Leak test covers everything published | Feature | 3 | Backlog |
-| S2.2.1 | Leak test on the built site | Story | 3 | Ready |
+| F2.2 | Leak test covers everything published | Feature | 3 | Done |
+| S2.2.1 | Leak test on the built site | Story | 3 | Done |
 | E3 | Daily publishing | Epic | 2 | Done |
 | F3.1 | Markdown report | Feature | 2 | Done |
 | S3.1.1 | Render the Markdown report | Story | 2 | Done |
@@ -524,6 +524,9 @@ or log.
 **Phase:** 3
 **Depends on:** F2.1, F3.1, F4.3
 **Done when:** the same test also runs on the report and the built page.
+**Status:** Done 2026-11-18: S2.2.1's leak test runs the whole scan, filter,
+write and site build and searches every built file, the report and the
+pages alike (`tests/privacy/test_site_leak.py`).
 
 
 #### S2.2.1 — Leak test on the built site
@@ -531,12 +534,15 @@ or log.
 **Story:** As the owner, I want proof that nothing private reaches the published site, so that I can share the link safely.
 
 **Component:** `tests/`
-**Status:** Ready
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the canary fixture, when the whole scan, filter, report and site build run, then no canary appears in any file of the built site, HTML and Markdown alike
-- [ ] Given the filter is bypassed, when the leak test runs, then it fails
-- [ ] Given the built site, when checked, then private repos' pages and rows contain the allow-list fields only
+- [x] Given the canary fixture, when the whole scan, filter, report and site build run, then no canary appears in any file of the built site, HTML and Markdown alike
+- [x] Given the filter is bypassed, when the leak test runs, then it fails
+- [x] Given the built site, when checked, then private repos' pages and rows contain the allow-list fields only
+
+**Notes:** Built as `tests/privacy/test_site_leak.py`. The second criterion's "filter is bypassed" is read as a filter that passes private rows through whole and labelled public (the owner's choice, 2026-11-18): a plain bypass, with rows whole but still labelled private, leaks nothing, because the repo pages read private rows by the allow-list too, and a test pins that second guard. Six of the seven tests passed on their first run, since the code they check was already built; against a throwaway build with both guards broken, the five that guard against leaks all failed. Canaries are letters, digits and dashes, so escaping and URL encoding can't hide a hit.
+
 ---
 
 ## E3 — Daily publishing
@@ -806,7 +812,7 @@ links through the whole scan. Following a link is the manual test in
 | NFR2 | Security | No known high-severity vulnerabilities in dependencies | Dependency audit + Dependabot, each phase end (`security.md`) | Met (2026-11-18: `pip-audit` clean, Jinja2 3.1.6 included; Dependabot alerts are off, the owner's call) |
 | NFR3 | Accessibility | Meets WCAG 2.2 AA | Manual pass per `accessibility.md` | Not met yet |
 | NFR4 | Reliability | The page rebuilds daily with no manual steps for 30 days in a row; a failed run never replaces the last good page, and a partial run is published with the failed repos flagged | Forced-failure test (F3.3) in Phase 2; 30-day run log in Phase 4 | Not met yet (forced-failure test passed 2026-11-17; first scheduled run passed 2026-11-18, which starts the 30-day count for Phase 4) |
-| NFR5 | Privacy | For private repos, only the allow-list fields reach anything published or the Action logs: the leak test's canary values appear in 0 output files and 0 log lines, and the token appears in none | Leak test (S2.1.2, S2.1.3, then F2.2) on every test run | Met for scan output, logs and the Markdown report (2026-11-18: leak tests pass; the scheduled run's log carried counts only); the built page comes with F2.2 |
+| NFR5 | Privacy | For private repos, only the allow-list fields reach anything published or the Action logs: the leak test's canary values appear in 0 output files and 0 log lines, and the token appears in none | Leak test (S2.1.2, S2.1.3, then F2.2) on every test run | Met (2026-11-18: the leak tests pass for scan output, logs and every file of the built site, report and pages alike (F2.2); the scheduled run's log carried counts only) |
 | NFR6 | Cost | $0 per month: free tiers only (the standard's `cost.md` is not needed) | Any new cost needs a logged decision in `decisions.md` | Met (2026-11-18: no paid service or dependency; no cost decisions logged) |
 | NFR7 | Performance | The dashboard page loads in under 2 seconds on a typical connection, with a total page weight under 500 KB | Lighthouse run on the published page, Phase 3 end | Not met yet |
 
