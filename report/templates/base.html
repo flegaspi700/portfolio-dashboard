@@ -1,0 +1,20 @@
+<!doctype html>
+{# The shared frame of every page, rendered by report/page.py with
+   auto-escaping on. Scripts stay inline and the one stylesheet is on the
+   same site (`root` is the path back to the site's top): nothing from
+   another site (S4.1.1, S4.3.1). Pages fill the title, main and scripts
+   blocks. #}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{% endblock %}</title>
+<link rel="stylesheet" href="{{ root }}style.css">
+</head>
+<body>
+<main>
+{% block main %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>

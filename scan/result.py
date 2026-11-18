@@ -13,11 +13,13 @@ in memory, unfiltered, never written to disk. The allow-list filter
 (`privacy/`, S2.1.1) is the only way out. It is marked complete, partial
 (some repos "could not scan") or failed (nothing worth publishing), as
 docs/decisions.md, "Scan failure: publish partial and flag it", says.
-Built for S1.4.1.
+It also carries the registry's checks as stated, so the page can show each
+check's title and fix (S4.3.1; decisions.md, "Check titles and fixes in
+the scan output"). Built for S1.4.1.
 """
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
@@ -74,14 +76,16 @@ class RepoRow:
 @dataclass(frozen=True)
 class ScanResult:
     """One scan: its status (complete, partial or failed), when it ran,
-    the spec version of the check registry, the rows sorted by name, and
-    why it failed, if it did."""
+    the spec version of the check registry, the rows sorted by name, why it
+    failed, if it did, and the registry's checks as stated (empty if the
+    registry couldn't be read)."""
 
     status: str
     scanned_at: datetime
     spec_version: int | None
     rows: list[RepoRow]
     failure: str | None = None
+    checks: list[dict[str, Any]] = field(default_factory=list)
 
 
 def run_scan(fetch: Fetch, owner: str, now: datetime) -> ScanResult:
@@ -128,6 +132,7 @@ def run_scan(fetch: Fetch, owner: str, now: datetime) -> ScanResult:
         scanned_at=now,
         spec_version=registry.version,
         rows=rows,
+        checks=registry.checks,
     )
 
 

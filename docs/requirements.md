@@ -230,8 +230,8 @@ no accessibility pass.
 | S4.1.3 | Needs attention first | Story | 3 | Done |
 | F4.2 | Sortable table | Feature | 3 | Done |
 | S4.2.1 | Sortable, accessible repo table | Story | 3 | Done |
-| F4.3 | Per-repo pages | Feature | 3 | Backlog |
-| S4.3.1 | A page per repo | Story | 3 | Ready |
+| F4.3 | Per-repo pages | Feature | 3 | Done |
+| S4.3.1 | A page per repo | Story | 3 | Done |
 | F4.4 | Request links | Feature | 3 | Backlog |
 | S4.4.1 | Request links for public repos | Story | 3 | Ready |
 
@@ -738,20 +738,24 @@ table.
 **Depends on:** F4.2
 **Done when:** public repos show full detail and private repos show
 allow-listed fields only.
+**Status:** Done 2026-11-18: S4.3.1 done; shown through the whole scan by
+`test_public_pages_show_full_detail_and_private_pages_the_allow_list`.
 
 #### S4.3.1 — A page per repo
 
 **Story:** As a reviewer, I want to drill into one repo, so that I can see the detail behind its row.
 
-**Component:** `site/`
-**Status:** Ready
+**Component:** `report/` (`page.py`, `site.py`, `templates/`), `scan/result.py`, `privacy/allow_list.py`
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a repo, when the site is built, then it has its own page, linked from its table row, at a path made from its name with only safe characters
-- [ ] Given a public repo, when its page is built, then it shows its facts, level, each check's result with the standard's fix for failures, scan warnings, and its reported status: summary, health reason, risks, blockers, call-outs, next milestone
-- [ ] Given a private repo, when its page is built, then it shows the allow-list fields only
-- [ ] Given a repo that could not be scanned, when its page is built, then it says so, with no other values
-- [ ] Given text from a public repo containing markup, when shown, then it is escaped and displayed as text (T3)
+- [x] Given a repo, when the site is built, then it has its own page, linked from its table row, at a path made from its name with only safe characters
+- [x] Given a public repo, when its page is built, then it shows its facts, level, each check's result with the standard's fix for failures, scan warnings, and its reported status: summary, health reason, risks, blockers, call-outs, next milestone
+- [x] Given a private repo, when its page is built, then it shows the allow-list fields only
+- [x] Given a repo that could not be scanned, when its page is built, then it says so, with no other values
+- [x] Given text from a public repo containing markup, when shown, then it is escaped and displayed as text (T3)
+
+**Notes:** Pages are at `repos/<slug>.html`: the name in lower case with anything but a-z, 0-9, `_` and `-` turned into `-`, and `-2`, `-3` for names that clean to the same slug. The checks' titles and fixes come from the scan output, which now carries the registry's checks (`decisions.md`, "Check titles and fixes in the scan output", the owner's choice on 2026-11-18). A private page reads the allow-list fields by name, so a bypassed filter still shows nothing more. A could not scan page shows the name and scan time only, not even the visibility or error. With a page per repo, a 300-repo test site was 858 KB, over S4.1.1's 500 KB; the owner chose a shared same-site `style.css` over inline styles (431 KB now), and S4.1.1's external-resource test was narrowed to its criterion: relative same-site paths pass, anything with a scheme or host fails. The real 17-repo site is 40 KB. A public page was looked at in Chrome on fixture data.
 
 ### F4.4 — Request links
 

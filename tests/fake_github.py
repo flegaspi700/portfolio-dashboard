@@ -36,6 +36,8 @@ REGISTRY = {
     "checks": [
         {
             "id": "C8",
+            "title": "AGENTS.md names the standard version",
+            "fix": "Add the Standard line to AGENTS.md.",
             "severity": "required",
             "required_from": "2026-12-13",
             "kind": "contains",
@@ -44,6 +46,8 @@ REGISTRY = {
         },
         {
             "id": "C2",
+            "title": "AGENTS.md has the Hosting line",
+            "fix": "Add the Hosting line to AGENTS.md.",
             "severity": "required",
             "required_from": "2026-11-09",
             "kind": "contains",
@@ -52,6 +56,8 @@ REGISTRY = {
         },
         {
             "id": "C4",
+            "title": "portfolio.json fits the schema",
+            "fix": "Run /report to write a valid portfolio.json.",
             "severity": "required",
             "required_from": "2026-11-24",
             "kind": "schema",
@@ -60,6 +66,8 @@ REGISTRY = {
         },
         {
             "id": "C10",
+            "title": "The Standard line names v2",
+            "fix": "Move the project to standard v2.",
             "severity": "required",
             "required_from": "2026-12-13",
             "kind": "contains",

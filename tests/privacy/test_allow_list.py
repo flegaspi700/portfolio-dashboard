@@ -239,6 +239,61 @@ def test_failed_result_has_no_rows_to_leak():
     assert output["failure"] == "could not list repos: HTTP 401"
 
 
+# --- The standard's checks (S4.3.1) ---
+
+
+def test_checks_keep_only_id_title_severity_and_fix():
+    result = ScanResult(
+        status="complete",
+        scanned_at=NOW,
+        spec_version=2,
+        rows=[],
+        checks=[
+            {
+                "id": "C8",
+                "title": "Names the standard",
+                "severity": "required",
+                "fix": "Add the line.",
+                "kind": "contains",
+                "pattern": CANARY,
+                "secret_field": CANARY,
+            }
+        ],
+    )
+
+    output = filter_result(result)
+
+    assert output["checks"] == [
+        {
+            "id": "C8",
+            "title": "Names the standard",
+            "severity": "required",
+            "fix": "Add the line.",
+        }
+    ]
+    assert CANARY not in str(output)
+
+
+def test_a_check_without_a_title_or_fix_gets_null():
+    result = ScanResult(
+        status="complete",
+        scanned_at=NOW,
+        spec_version=2,
+        rows=[],
+        checks=[{"id": "C5", "severity": "optional"}],
+    )
+
+    assert filter_result(result)["checks"] == [
+        {"id": "C5", "title": None, "severity": "optional", "fix": None}
+    ]
+
+
+def test_a_result_without_checks_has_an_empty_list():
+    result = ScanResult(status="failed", scanned_at=NOW, spec_version=None, rows=[])
+
+    assert filter_result(result)["checks"] == []
+
+
 # --- Worst case ---
 
 

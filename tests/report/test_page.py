@@ -9,9 +9,14 @@ network, no clock.
 
 import re
 
-from scan_outputs import ROWS, output, private_row
+from scan_outputs import ROWS, output, private_row, public_row
 
-from report.page import rank_for_attention, render_page
+from report.page import (
+    rank_for_attention,
+    render_page,
+    render_repo_page,
+    repo_paths,
+)
 
 COULD_NOT = {"name": "broken", "scan_status": "could not scan"}
 
@@ -323,10 +328,16 @@ def repo_table(page):
 
 
 def body_rows(page):
-    """The table body's rows, as lists of cell texts."""
+    """The table body's rows, as lists of cell texts (links unwrapped)."""
     body = repo_table(page).split("<tbody>", 1)[1]
     rows = re.findall(r"<tr>(.*?)</tr>", body, re.DOTALL)
-    return [re.findall(r"<t[hd][^>]*>([^<]*)</t[hd]>", row) for row in rows]
+    return [
+        [
+            re.sub(r"<[^>]+>", "", cell)
+            for cell in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row)
+        ]
+        for row in rows
+    ]
 
 
 def test_table_lists_every_repo_in_attention_order_then_done_and_archived():
@@ -389,7 +400,10 @@ def test_table_has_a_caption_and_real_column_headers():
 def test_row_headers_name_each_repo():
     table = repo_table(render_page(output(ROWS)))
 
-    names = re.findall(r'<th scope="row"[^>]*>([^<]*)</th>', table)
+    names = [
+        re.sub(r"<[^>]+>", "", cell)
+        for cell in re.findall(r'<th scope="row"[^>]*>(.*?)</th>', table)
+    ]
     assert names == ["beta", "zeta", "Alpha"]  # amber, not reported, the rest
 
 
@@ -438,3 +452,216 @@ def test_names_in_the_table_are_escaped():
 
     assert "<img src=x" not in page
     assert "&lt;img src=x onerror=alert(1)&gt;" in repo_table(page)
+
+
+# --- S4.3.1: a page per repo ---
+
+
+def visible_text(page):
+    """The page's text with tags, the style and the scripts removed."""
+    page = re.sub(r"<(style|script)>.*?</\1>", "", page, flags=re.DOTALL)
+    return " ".join(re.sub(r"<[^>]+>", " ", page).split())
+
+
+def test_each_repo_gets_a_path_made_of_safe_characters():
+    rows = [
+        private_row("My.Repo"),
+        private_row("my_repo-2"),
+        private_row("../../etc/passwd"),
+        private_row("<script>"),
+        private_row(""),
+    ]
+
+    paths = repo_paths(rows)
+
+    assert paths == {
+        "My.Repo": "repos/my-repo.html",
+        "my_repo-2": "repos/my_repo-2.html",
+        "../../etc/passwd": "repos/------etc-passwd.html",
+        "<script>": "repos/-script-.html",
+        "": "repos/repo.html",
+    }
+    for path in paths.values():
+        assert re.fullmatch(r"repos/[a-z0-9_-]+\.html", path)
+
+
+def test_names_that_clash_after_cleaning_get_distinct_paths():
+    paths = repo_paths([private_row("a.b"), private_row("A-B"), private_row("a_b")])
+
+    assert sorted(paths.values()) == [
+        "repos/a-b-2.html",
+        "repos/a-b.html",
+        "repos/a_b.html",
+    ]
+    assert paths["A-B"] == "repos/a-b.html"  # by name order: "A-B" before "a.b"
+
+
+def test_each_table_row_links_to_its_repo_page():
+    rows = [private_row("Alpha"), public_row("beta")]
+
+    table = repo_table(render_page(output(rows)))
+
+    assert '<a href="repos/alpha.html">Alpha</a>' in table
+    assert '<a href="repos/beta.html">beta</a>' in table
+
+
+def test_public_repo_page_shows_facts_level_checks_warnings_and_status():
+    row = public_row("beta")
+
+    text = visible_text(render_repo_page(row, output([row])))
+
+    for expected in (
+        "beta",
+        "A made-up public project",
+        "Python",
+        "2025-03-01",
+        "2026-11-28",
+        "main",
+        "Open issues 3",
+        "Open pull requests 1",
+        "2 · Adopted",
+        "v2.0.0",
+        "Amber",
+        "Tracks the made-up things.",
+        "Behind on the made-up milestone.",
+        "Made-up risk",
+        "high",
+        "Watch it.",
+        "Made-up blocker",
+        "A yes.",
+        "A made-up call-out.",
+        "Made-up release",
+        "2026-12-20",
+        "2026-11-20",
+    ):
+        assert expected in text, expected
+
+
+def test_public_repo_page_lists_each_check_with_the_fix_for_failures():
+    row = public_row("beta")
+
+    page = render_repo_page(row, output([row]))
+
+    checks = re.findall(
+        r"<tr><th scope=\"row\">([^<]*)</th><td>([^<]*)</td><td>([^<]*)</td>"
+        r"<td>([^<]*)</td></tr>",
+        page,
+    )
+    assert checks == [
+        ("C8", "Names the standard", "Pass", ""),
+        ("C2", "Has the Hosting line", "Pass", ""),
+        ("C4", "portfolio.json fits", "Pass", ""),
+        ("C10", "Names v2", "Fail", "Move to v2."),
+        ("C5", "UTF-8 rule", "Not applicable", ""),
+    ]
+
+
+def test_public_repo_page_explains_each_scan_warning():
+    row = public_row(
+        "beta",
+        warnings=[
+            {"id": "S1", "check_id": None, "required_from": None},
+            {"id": "S2", "check_id": None, "required_from": None},
+            {"id": "S3", "check_id": "C10", "required_from": "2026-12-13"},
+        ],
+    )
+
+    text = visible_text(render_repo_page(row, output([row])))
+
+    assert "S1 Stale report" in text
+    assert "S2 Health never reported" in text
+    assert "S3 Required change due soon: C10 is required from 2026-12-13" in text
+
+
+def test_public_repo_without_a_valid_report_says_so():
+    row = public_row("beta", reported=None, has_portfolio=False, warnings=[])
+
+    text = visible_text(render_repo_page(row, output([row])))
+
+    assert "No valid portfolio.json, so no reported status." in text
+    assert "No scan warnings." in text
+
+
+def test_private_repo_page_shows_the_allow_list_fields_only():
+    # Extra fields as if the filter had been bypassed: none may show.
+    row = {
+        **private_row("secret", risk_count=4, blocker_count=1),
+        "description": "CANARY-description",
+        "reported": {"summary": "CANARY-summary"},
+        "checks": {"CANARY-check": False},
+        "warnings": [{"id": "CANARY-warning"}],
+        "language": "CANARY-language",
+    }
+
+    page = render_repo_page(row, output([row]))
+
+    assert "CANARY" not in page
+    labels = re.findall(r"<dt>([^<]*)</dt>", page)
+    assert labels == [
+        "Visibility",
+        "Lifecycle",
+        "Health",
+        "Level",
+        "Last activity",
+        "Risks",
+        "Blockers",
+        "Scan",
+    ]
+    text = visible_text(page)
+    assert "secret" in text
+    assert "Private repo: only these signals are published." in text
+
+
+def test_a_repo_that_could_not_scan_has_a_page_that_says_so_and_nothing_else():
+    row = {
+        "name": "broken",
+        "visibility": "public",
+        "scan_status": "could not scan",
+        "scan_error": "HTTP 500",
+    }
+
+    page = render_repo_page(row, output([row], status="partial"))
+
+    assert "This repo could not be scanned in the latest run" in page
+    assert "HTTP 500" not in page
+    assert "public" not in visible_text(page)
+    assert "<dl" not in page
+
+
+def test_markup_in_public_text_is_escaped():
+    row = public_row(
+        "beta",
+        description="<script>alert('d')</script>",
+        reported={
+            **public_row("beta")["reported"],
+            "summary": "<img src=x onerror=alert(1)>",
+            "callouts": ["<b>bold</b>"],
+        },
+    )
+
+    page = render_repo_page(row, output([row]))
+
+    assert "<script>alert" not in page
+    assert "<img src=x" not in page
+    assert "<b>bold</b>" not in page
+    assert "&lt;img src=x onerror=alert(1)&gt;" in page
+    assert "&lt;b&gt;bold&lt;/b&gt;" in page
+
+
+def test_repo_page_links_back_to_the_dashboard():
+    row = private_row("Alpha")
+
+    assert 'href="../index.html"' in render_repo_page(row, output([row]))
+
+
+def test_missing_level_and_health_show_a_dash_in_the_table():
+    row = private_row("Alpha", level=None, health=None)
+
+    assert body_rows(render_page(output([row])))[0][2:4] == ["—", "—"]
+
+
+def test_public_repo_with_no_next_milestone_shows_a_dash():
+    row = public_row("beta")
+    row["reported"] = {**row["reported"], "next_milestone": None}
+
+    assert "Next milestone — " in visible_text(render_repo_page(row, output([row])))

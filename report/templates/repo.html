@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{# One repo's page (S4.3.1), linked from its table row. Three kinds:
+   public (every field, checks with the standard's fix for failures,
+   warnings and reported status), private (the allow-list fields only),
+   and could not scan (says so, nothing else). Every value is escaped. #}
+{% block title %}{{ name }} · Portfolio dashboard{% endblock %}
+{% block main %}
+<p><a href="../index.html">← All repos</a></p>
+<h1>{{ name }}</h1>
+<p>Scanned <time datetime="{{ scanned_at_iso }}">{{ scanned_at }} UTC</time></p>
+{% if kind == "failed" %}
+<p class="notice">This repo could not be scanned in the latest run, so nothing else about it is shown.</p>
+{% else %}
+{% if kind == "public" and description %}
+<p>{{ description }}</p>
+{% endif %}
+{% if kind == "private" %}
+<p>Private repo: only these signals are published.</p>
+{% endif %}
+<section aria-labelledby="status">
+<h2 id="status">Status</h2>
+<dl>
+{% for label, value in status %}
+<dt>{{ label }}</dt>
+<dd>{{ value }}</dd>
+{% endfor %}
+</dl>
+</section>
+{% if kind == "public" %}
+<section aria-labelledby="facts">
+<h2 id="facts">Facts</h2>
+<dl>
+{% for label, value in facts %}
+<dt>{{ label }}</dt>
+<dd>{{ value }}</dd>
+{% endfor %}
+</dl>
+</section>
+
+<section aria-labelledby="reported">
+<h2 id="reported">Reported status</h2>
+{% if reported %}
+<dl>
+{% for label, value in reported.fields %}
+<dt>{{ label }}</dt>
+<dd>{{ value }}</dd>
+{% endfor %}
+</dl>
+<h3>Risks</h3>
+{% if reported.risks %}
+<ul>
+{% for risk in reported.risks %}
+<li>{{ risk }}</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>None reported.</p>
+{% endif %}
+<h3>Blockers</h3>
+{% if reported.blockers %}
+<ul>
+{% for blocker in reported.blockers %}
+<li>{{ blocker }}</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>None reported.</p>
+{% endif %}
+<h3>Call-outs</h3>
+{% if reported.callouts %}
+<ul>
+{% for callout in reported.callouts %}
+<li>{{ callout }}</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>None reported.</p>
+{% endif %}
+{% else %}
+<p>No valid portfolio.json, so no reported status.</p>
+{% endif %}
+</section>
+
+<section aria-labelledby="checks">
+<h2 id="checks">Compliance checks</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="checks">
+<table>
+<caption>Each check in the standard, with the fix for a failure.</caption>
+<thead>
+<tr><th scope="col">Check</th><th scope="col">Title</th><th scope="col">Result</th><th scope="col">Fix</th></tr>
+</thead>
+<tbody>
+{% for check_id, title, result, fix in checks %}
+<tr><th scope="row">{{ check_id }}</th><td>{{ title }}</td><td>{{ result }}</td><td>{{ fix }}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+
+<section aria-labelledby="warnings">
+<h2 id="warnings">Scan warnings</h2>
+{% if warnings %}
+<ul>
+{% for warning in warnings %}
+<li>{{ warning }}</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>No scan warnings.</p>
+{% endif %}
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}
