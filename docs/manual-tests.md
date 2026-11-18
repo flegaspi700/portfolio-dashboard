@@ -89,3 +89,27 @@ logic was also run against fake clocks with Node on 2026-11-18 (hidden at
 
 | Date | Commit | Result | Notes |
 |---|---|---|---|
+
+---
+
+## F4.2 — Sortable table
+
+**What to check:** every repo can be sorted by keyboard, and states aren't
+shown by colour alone (F4.2's Done when; `accessibility.md`, Repo table).
+
+**Steps:**
+1. Open the page (built locally, or the live page after the merge).
+2. Without the mouse, press Tab until a column header has focus; check the
+   focus outline is visible.
+3. Press Enter: the table sorts by that column, ascending, and the header
+   shows ▲. Press Space: it reverses and shows ▼. Repeat for a number
+   column (Risks) and Health; missing values (—) stay last both ways.
+4. Check health, level and scan show as words in every row.
+5. With scripts turned off, check the table shows every repo in attention
+   order, with plain headers.
+
+**Results:**
+
+| Date | Commit | Result | Notes |
+|---|---|---|---|
+| 2026-11-18 | S4.2.1 branch | Pass (steps 1-4) | By the agent, in Chrome, on a site built from made-up fixture data and served on 127.0.0.1. Two Tabs reached the Repo header button; Enter sorted ascending (`aria-sort` ascending, ▲), Space reversed it (descending, ▼), focus stayed on the button with a visible outline. Clicking Risks, Health and Last activity sorted correctly, with missing values last both ways; only the sorted header had `aria-sort`. Step 5 (scripts off) is covered by the tests, not run in the browser. |

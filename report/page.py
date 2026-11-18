@@ -13,7 +13,8 @@ label, never colour alone (accessibility.md). Built for S4.1.1 (the page),
 S4.1.2 (summary tiles, scan time, old-data notice, levels explained) and
 S4.1.3 (needs attention first, docs/decisions.md, "'Needs attention
 first' ranking": it reads the allow-list fields only, so public and private
-repos rank alike).
+repos rank alike) and S4.2.1 (the repo table: every repo in attention order,
+each cell with a sort value for the page's sorting script).
 """
 
 import math
@@ -25,7 +26,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from privacy.allow_list import PRIVATE_FIELDS
-from report.markdown import COULD_NOT_SCAN, HEALTH_VALUES
+from report.markdown import COULD_NOT_SCAN, HEALTH_VALUES, MISSING
 from scan.levels import LEVEL_NAMES
 
 ENVIRONMENT = Environment(
@@ -73,6 +74,21 @@ ATTENTION_TIERS = (
 NOT_RANKED = ("done", "archived")
 ATTENTION_LIST_LENGTH = 5  # From S4.1.3's criteria.
 
+# The repo table's columns: (title, sorts as a number).
+TABLE_COLUMNS = (
+    ("Repo", False),
+    ("Visibility", False),
+    ("Level", True),
+    ("Health", True),
+    ("Lifecycle", False),
+    ("Last activity", False),
+    ("Risks", True),
+    ("Blockers", True),
+    ("Scan", False),
+)
+# Health sorts by how much attention it needs, red first.
+HEALTH_SORT = {"red": 0, "amber": 1, "not-reported": 2, "green": 3}
+
 COMPLIANCE_SPEC_URL = (
     "https://github.com/flegaspi700/pmo-project-standardization"
     "/blob/HEAD/spec/compliance.md"
@@ -112,7 +128,56 @@ def render_page(output: dict[str, Any]) -> str:
             (row["name"], reason)
             for row, reason in rank_for_attention(rows)[:ATTENTION_LIST_LENGTH]
         ],
+        columns=TABLE_COLUMNS,
+        table=[_table_cells(row) for row in table_order(rows)],
     )
+
+
+def table_order(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Every row: the ranked ones in "needs attention first" order, then
+    the done and archived ones, which aren't ranked, by name."""
+    ranked = [row for row, _ in rank_for_attention(rows)]
+    not_ranked = [row for row in rows if row.get("lifecycle") in NOT_RANKED]
+    return ranked + sorted(
+        not_ranked, key=lambda row: (row["name"].lower(), row["name"])
+    )
+
+
+def _table_cells(row: dict[str, Any]) -> list[tuple[str, str | None]]:
+    """One repo's cells, in TABLE_COLUMNS order, as (text shown, sort
+    value). A missing value shows a dash and has no sort value, so the
+    script sorts it last."""
+    name = (row["name"], row["name"].lower())
+    if row.get("scan_status") == COULD_NOT_SCAN:
+        return [name, *[(MISSING, None)] * 7, (COULD_NOT_SCAN, COULD_NOT_SCAN)]
+    level = row.get("level")
+    health = row.get("health")
+    if isinstance(level, int) and 0 <= level < len(LEVEL_NAMES):
+        level_cell = (f"{level} · {LEVEL_NAMES[level]}", str(level))
+    else:
+        level_cell = _plain(level)
+    if health in HEALTH_LABELS:
+        health_cell = (HEALTH_LABELS[health], str(HEALTH_SORT[health]))
+    else:
+        health_cell = _plain(health)
+    return [
+        name,
+        _plain(row.get("visibility")),
+        level_cell,
+        health_cell,
+        _plain(row.get("lifecycle")),
+        _plain(row.get("last_activity")),
+        _plain(row.get("risk_count")),
+        _plain(row.get("blocker_count")),
+        _plain(row.get("scan_status")),
+    ]
+
+
+def _plain(value: Any) -> tuple[str, str | None]:
+    """A value shown as it is and sorted by its text, or a dash if missing."""
+    if value is None:
+        return (MISSING, None)
+    return (str(value), str(value))
 
 
 def rank_for_attention(
