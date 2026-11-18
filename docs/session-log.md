@@ -13,6 +13,29 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-18 — First-reader test dropped; E5 planned and approved
+
+**Worked on:** Phase 4 (the first-reader test), E5 planning
+
+**Time spent:** about 0.75h, estimated from the previous entry (13:00 local) to this one. Correct it if that's off.
+
+**Changed:**
+- `docs/decisions.md`, `docs/requirements.md`, `docs/manual-tests.md` — "Drop the first-reader test": no first-time reader is available, so the success criterion and the Phase 4 task are dropped and F4.1's Done when is waived; F4.1 and E4 Done. PR #44
+- Branches — the 11 merged branches deleted locally and on GitHub (`docs/accessibility-pass` was checked as contained in #41 first); only `main` is left.
+- `docs/requirements.md` — E5, "Report details and owner shortcuts" (Phase 4 tuning): 4 features, 8 stories, all Ready, criteria approved by the owner. From the owner's choices: richer public repo pages, progress columns and charts, a better Markdown report, a "refresh now" link and smarter request links; status updates stay with `/report`; no new dependency, token or allow-list field.
+- `portfolio.json` — progress 24 of 32 stories (E5 added).
+
+**Stopped at:** E5 stories written and approved, nothing built. All tests pass (409), Ruff clean. Phase 4: the rollout is done; the 30-day unattended count runs to 2026-12-17 at the earliest.
+
+**Next step:** Merge this PR, then `/story E5`: one branch and PR per feature, starting with F5.1 (S5.1.1, then S5.1.2). Load the `dataviz` skill before the charts in F5.2.
+
+**Open questions:**
+- The `portfolio-request` label (S5.4.2) applies only where it exists: create it in the repos you want requests tracked in, or leave issues unlabelled.
+- `portfolio.json` → `health_reason` still mentions the first-reader test; update it with `/report`.
+- Carried over: Dependabot alerts off; protect `main`; Lighthouse's favicon and meta description; move the cron off the hour if runs keep starting late; the C4 difference from `check-compliance.ps1`.
+
+---
+
 ## 2026-11-18 — Phases 2 and 3 closed; E4 and E2 built; rollout done
 
 **Worked on:** S4.1.1, S4.1.2, S4.1.3, S4.2.1, S4.3.1, S4.4.1, S2.2.1, B1, Phase 2 and Phase 3 close, Phase 4 rollout
