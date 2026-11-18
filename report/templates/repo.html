@@ -2,7 +2,8 @@
 {# One repo's page (S4.3.1), linked from its table row. Three kinds:
    public (every field, checks with the standard's fix for failures,
    warnings and reported status), private (the allow-list fields only),
-   and could not scan (says so, nothing else). Every value is escaped. #}
+   and could not scan (says so, nothing else). Public pages also get
+   request links (S4.4.1). Every value is escaped. #}
 {% block title %}{{ name }} · Portfolio dashboard{% endblock %}
 {% block main %}
 <p><a href="../index.html">← All repos</a></p>
@@ -27,6 +28,18 @@
 </dl>
 </section>
 {% if kind == "public" %}
+{% if requests %}
+<section aria-labelledby="requests">
+<h2 id="requests">Requests</h2>
+<ul>
+{% for text, url in requests %}
+<li><a class="request" href="{{ url }}">{{ text }}</a></li>
+{% endfor %}
+</ul>
+<p>Each link opens GitHub's new-issue form in this repo, filled in. Nothing is sent until you submit it there.</p>
+</section>
+
+{% endif %}
 <section aria-labelledby="facts">
 <h2 id="facts">Facts</h2>
 <dl>

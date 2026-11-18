@@ -288,6 +288,14 @@ def test_a_check_without_a_title_or_fix_gets_null():
     ]
 
 
+def test_the_owner_passes_through():
+    result = ScanResult(
+        status="complete", scanned_at=NOW, spec_version=2, rows=[], owner="someone"
+    )
+
+    assert filter_result(result)["owner"] == "someone"
+
+
 def test_a_result_without_checks_has_an_empty_list():
     result = ScanResult(status="failed", scanned_at=NOW, spec_version=None, rows=[])
 

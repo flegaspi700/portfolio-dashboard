@@ -17,7 +17,10 @@ repos rank alike), S4.2.1 (the repo table: every repo in attention order,
 each cell with a sort value for the page's sorting script) and S4.3.1 (a
 page per repo at `repos/<safe name>.html`: public repos in full, with each
 check's fix from the scan output's `checks`; private repos with the
-allow-list fields only, read by name; could not scan with nothing else).
+allow-list fields only, read by name; could not scan with nothing else)
+and S4.4.1 (request links on public pages: a GitHub new-issue link, filled
+from a fixed template and URL-encoded, which changes nothing until the
+reader submits it).
 """
 
 import math
@@ -26,6 +29,7 @@ from collections import Counter
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote, urlencode
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
@@ -226,6 +230,33 @@ def _day_number(day: str | None) -> float:
     return date.fromisoformat(day).toordinal() if day else -math.inf
 
 
+# Request links (S4.4.1): (link text, issue title, issue body). Fixed text
+# only, so nothing from a repo's own content goes into the issue.
+STATUS_REQUEST = (
+    "Request a status update",
+    "Status update requested by the portfolio dashboard",
+    (
+        "The portfolio dashboard shows this repo's health as not reported, or its "
+        "report as out of date.\n\n"
+        "Please update `portfolio.json`: run `/report` in this repo, or edit the "
+        "file by hand and set `updated` to today.\n\n"
+        "Opened from a request link on the portfolio dashboard."
+    ),
+)
+ADOPTION_REQUEST = (
+    "Request standard adoption",
+    "Adopt the project standard",
+    (
+        "The portfolio dashboard shows this repo below Level 2 (Adopted) of "
+        "pmo-project-standardization.\n\n"
+        "To adopt it, run `/new-project` and choose the option for an existing "
+        "repo. To report status only for now (Level 1), add a `portfolio.json`.\n\n"
+        f"What each level needs: {COMPLIANCE_SPEC_URL}\n\n"
+        "Opened from a request link on the portfolio dashboard."
+    ),
+)
+
+
 def repo_paths(rows: list[dict[str, Any]]) -> dict[str, str]:
     """Each repo's page path, `repos/<slug>.html`, by name. The slug is the
     name in lower case with anything but a-z, 0-9, `_` and `-` turned into
@@ -259,6 +290,7 @@ def render_repo_page(row: dict[str, Any], output: dict[str, Any]) -> str:
         context["kind"] = "failed"
     elif row.get("visibility") == "public":
         context.update(_public_details(row, output.get("checks", [])))
+        context["requests"] = _request_links(row, output.get("owner"))
     else:
         # Read by name from the allow-list, so nothing else can show.
         fields = {name: row.get(name) for name in PRIVATE_FIELDS}
@@ -306,6 +338,29 @@ def _public_details(
         "checks": _check_rows(row.get("checks") or {}, checks),
         "warnings": [_warning_text(warning) for warning in row.get("warnings") or []],
     }
+
+
+def _request_links(row: dict[str, Any], owner: str | None) -> list[tuple[str, str]]:
+    """A public repo's request links, as (text, URL): a status update when
+    its health isn't reported or its report is stale (S1, S2), and adoption
+    when it is below Level 2. None without an owner to address them to."""
+    if not owner:
+        return []
+    warning_ids = {warning.get("id") for warning in row.get("warnings") or []}
+    wanted = []
+    if row.get("health") in ("not-reported", None) or warning_ids & {"S1", "S2"}:
+        wanted.append(STATUS_REQUEST)
+    if row.get("level") is not None and row["level"] < 2:
+        wanted.append(ADOPTION_REQUEST)
+    base = f"https://github.com/{quote(owner, safe='')}/{quote(row['name'], safe='')}"
+    return [
+        (
+            text,
+            f"{base}/issues/new?"
+            + urlencode({"title": title, "body": body}, quote_via=quote),
+        )
+        for text, title, body in wanted
+    ]
 
 
 def _reported(reported: dict[str, Any] | None) -> dict[str, Any] | None:

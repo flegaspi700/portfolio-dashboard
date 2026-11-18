@@ -17,6 +17,8 @@ read one shape. Built for S2.1.1.
 The standard's checks pass too, cut to their ID, title, severity and fix:
 the standard's own public text, the same for every repo, with no repo data
 (S4.3.1; docs/decisions.md, "Check titles and fixes in the scan output").
+So does the owner's account name, which is already public in the site's
+address, for request links (S4.4.1).
 """
 
 from dataclasses import asdict
@@ -42,7 +44,7 @@ CHECK_FIELDS = ("id", "title", "severity", "fix")
 def filter_result(result: ScanResult) -> dict[str, Any]:
     """The scan output: the result's status, scan time, spec version and
     failure reason (all generic, never repo data), the standard's checks
-    (CHECK_FIELDS only), and each row filtered."""
+    (CHECK_FIELDS only), the owner's account name, and each row filtered."""
     return {
         "status": result.status,
         "scanned_at": result.scanned_at,
@@ -51,6 +53,7 @@ def filter_result(result: ScanResult) -> dict[str, Any]:
         "checks": [
             {name: check.get(name) for name in CHECK_FIELDS} for check in result.checks
         ],
+        "owner": result.owner,
         "rows": [filter_row(row) for row in result.rows],
     }
 

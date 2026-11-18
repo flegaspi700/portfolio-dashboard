@@ -92,6 +92,29 @@ logic was also run against fake clocks with Node on 2026-11-18 (hidden at
 
 ---
 
+## F4.4 — Request links
+
+**What to check:** a request link opens GitHub's new-issue form in that
+repo, filled in, and changes nothing by itself; private repos have none
+(F4.4's Done when). Tests check the links' URLs; following one needs a
+signed-in browser.
+
+**Steps:**
+1. On the live page (after the merge), open a public repo that shows
+   "Request a status update" or "Request standard adoption".
+2. Follow each link: GitHub's new-issue form opens in that repo with the
+   title and body filled in.
+3. Close the tab without submitting, and check the repo's Issues tab has
+   no new issue.
+4. Open two private repos' pages and check they have no Requests section.
+
+**Results:**
+
+| Date | Commit | Result | Notes |
+|---|---|---|---|
+
+---
+
 ## F4.2 — Sortable table
 
 **What to check:** every repo can be sorted by keyboard, and states aren't

@@ -106,6 +106,7 @@ def output(rows, status="complete", scanned_at="2026-12-01T06:00:00+00:00"):
         "spec_version": 2,
         "failure": None,
         "checks": CHECKS,
+        "owner": "someone",
         "rows": rows,
     }
 

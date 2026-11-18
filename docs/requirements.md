@@ -232,8 +232,8 @@ no accessibility pass.
 | S4.2.1 | Sortable, accessible repo table | Story | 3 | Done |
 | F4.3 | Per-repo pages | Feature | 3 | Done |
 | S4.3.1 | A page per repo | Story | 3 | Done |
-| F4.4 | Request links | Feature | 3 | Backlog |
-| S4.4.1 | Request links for public repos | Story | 3 | Ready |
+| F4.4 | Request links | Feature | 3 | In progress |
+| S4.4.1 | Request links for public repos | Story | 3 | Done |
 
 Component folders in the stories below are provisional until `/stack` and
 the standard's `coding.md` settle the layout. All tests use fixtures, with no
@@ -764,22 +764,26 @@ allow-listed fields only.
 **Depends on:** F4.3
 **Done when:** a link opens a pre-filled issue in public repos, and private
 repos have no links.
+**Status:** In progress 2026-11-18: S4.4.1 done; the integration test
+`test_request_links_go_to_the_scanned_owners_public_repo_only` shows the
+links through the whole scan. Following a link is the manual test in
+`docs/manual-tests.md` (F4.4), still to run.
 
 
 #### S4.4.1 — Request links for public repos
 
 **Story:** As the owner, I want a link that asks a project's owner for what's missing, so that gaps get fixed without me writing each request.
 
-**Component:** `site/`
-**Status:** Ready
+**Component:** `report/` (`page.py`, `templates/repo.html`), `scan/result.py`, `privacy/allow_list.py`
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given a public repo whose health isn't reported or whose report is stale (S1, S2), when its page is built, then it has a "Request a status update" link
-- [ ] Given a public repo below Level 2, when its page is built, then it has a "Request standard adoption" link
-- [ ] Given a link, when followed, then it opens GitHub's new-issue form in that repo with a title and body from a fixed template, URL-encoded, and changes nothing by itself
-- [ ] Given a private repo, when its page is built, then it has no request links
+- [x] Given a public repo whose health isn't reported or whose report is stale (S1, S2), when its page is built, then it has a "Request a status update" link
+- [x] Given a public repo below Level 2, when its page is built, then it has a "Request standard adoption" link
+- [x] Given a link, when followed, then it opens GitHub's new-issue form in that repo with a title and body from a fixed template, URL-encoded, and changes nothing by itself
+- [x] Given a private repo, when its page is built, then it has no request links
 
-**Notes:** Non-goals: the dashboard never changes other repos; a link only opens a pre-filled issue that the reader submits.
+**Notes:** Non-goals: the dashboard never changes other repos; a link only opens a pre-filled issue that the reader submits. The links need the owner's account name, so the scan output now carries `owner` (the token's user, already public in the site's address), passed by the filter like the checks list. Without it, no links are shown. Titles and bodies are fixed text in `report/page.py`; nothing from a repo goes into them, and the query is URL-encoded (`%20` for spaces). "Health not reported" includes a repo with no valid `portfolio.json`. On a real scan on 2026-11-18, 6 of the 8 public repos got both links and no private page had any.
 ---
 
 ## Non-functional requirements

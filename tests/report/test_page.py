@@ -7,8 +7,11 @@ notice's script needs a browser, so its behaviour is a manual test
 network, no clock.
 """
 
+import html
 import re
+from urllib.parse import parse_qs, urlsplit
 
+import pytest
 from scan_outputs import ROWS, output, private_row, public_row
 
 from report.page import (
@@ -665,3 +668,136 @@ def test_public_repo_with_no_next_milestone_shows_a_dash():
     row["reported"] = {**row["reported"], "next_milestone": None}
 
     assert "Next milestone — " in visible_text(render_repo_page(row, output([row])))
+
+
+# --- S4.4.1: request links ---
+
+
+def request_links(page):
+    """The page's request links, as (text, URL) with the URL unescaped."""
+    return [
+        (text, html.unescape(href))
+        for href, text in re.findall(
+            r'<a class="request" href="([^"]*)">([^<]*)</a>', page
+        )
+    ]
+
+
+def link_parts(url):
+    parts = urlsplit(url)
+    return parts, parse_qs(parts.query)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"health": "not-reported", "warnings": []},
+        {"health": None, "reported": None, "warnings": []},
+        {"warnings": [{"id": "S1", "check_id": None, "required_from": None}]},
+        {"warnings": [{"id": "S2", "check_id": None, "required_from": None}]},
+    ],
+    ids=["not-reported", "no-report", "S1-stale", "S2-never-reported"],
+)
+def test_public_repo_needing_a_status_update_gets_that_link(overrides):
+    row = public_row("beta", **overrides)
+
+    links = request_links(render_repo_page(row, output([row])))
+
+    assert [text for text, _ in links] == ["Request a status update"]
+
+
+def test_public_repo_below_level_2_gets_an_adoption_link():
+    row = public_row("beta", level=1, warnings=[])
+
+    links = request_links(render_repo_page(row, output([row])))
+
+    assert [text for text, _ in links] == ["Request standard adoption"]
+
+
+def test_a_repo_can_need_both_requests():
+    row = public_row("beta", level=0, health="not-reported", warnings=[])
+
+    links = request_links(render_repo_page(row, output([row])))
+
+    assert [text for text, _ in links] == [
+        "Request a status update",
+        "Request standard adoption",
+    ]
+
+
+def test_a_reporting_adopted_repo_gets_no_links():
+    row = public_row("beta", warnings=[])  # amber, Level 2, no S1 or S2
+
+    assert request_links(render_repo_page(row, output([row]))) == []
+
+
+def test_a_link_opens_githubs_new_issue_form_with_a_fixed_title_and_body():
+    row = public_row("beta", level=1, health="not-reported", warnings=[])
+
+    links = dict(request_links(render_repo_page(row, output([row]))))
+
+    for text in ("Request a status update", "Request standard adoption"):
+        parts, query = link_parts(links[text])
+        assert (parts.scheme, parts.netloc) == ("https", "github.com")
+        assert parts.path == "/someone/beta/issues/new"
+        assert set(query) == {"title", "body"}
+        assert query["title"][0]
+        assert query["body"][0]
+    _, status = link_parts(links["Request a status update"])
+    assert "/report" in status["body"][0]
+    _, adoption = link_parts(links["Request standard adoption"])
+    assert "/new-project" in adoption["body"][0]
+
+
+def test_the_title_and_body_are_the_same_whatever_the_repo_says():
+    # Fixed template: nothing from the repo's own text goes into the issue.
+    plain = public_row("beta", level=1, warnings=[])
+    loud = public_row(
+        "beta",
+        level=1,
+        warnings=[],
+        description="CANARY & <x>",
+        reported={**plain["reported"], "summary": "CANARY summary"},
+    )
+
+    def query(row):
+        links = request_links(render_repo_page(row, output([row])))
+        return link_parts(links[0][1])[1]
+
+    assert query(plain) == query(loud)
+    assert "CANARY" not in str(query(loud))
+
+
+def test_link_parts_are_url_encoded():
+    row = public_row("beta", level=1, warnings=[])
+
+    page = render_repo_page(row, output([row]))
+
+    href = re.search(r'<a class="request" href="([^"]*)"', page).group(1)
+    url = html.unescape(href)
+    query = url.split("?", 1)[1]
+    assert " " not in query
+    assert "\n" not in query
+    assert "%20" in query or "+" in query
+
+
+def test_a_private_repo_has_no_request_links():
+    row = private_row("secret", level=0, health="not-reported")
+
+    page = render_repo_page(row, output([row]))
+
+    assert request_links(page) == []
+    assert "issues/new" not in page
+
+
+def test_a_repo_that_could_not_scan_has_no_request_links():
+    row = {"name": "broken", "visibility": "public", "scan_status": "could not scan"}
+
+    assert "issues/new" not in render_repo_page(row, output([row], status="partial"))
+
+
+def test_no_owner_in_the_scan_output_means_no_links():
+    row = public_row("beta", level=0, health="not-reported", warnings=[])
+    scan_output = {**output([row]), "owner": None}
+
+    assert request_links(render_repo_page(row, scan_output)) == []

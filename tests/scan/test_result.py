@@ -179,6 +179,13 @@ def test_result_carries_the_registry_checks_as_stated():
     assert result.checks == REGISTRY["checks"]
 
 
+def test_result_carries_the_owner_it_scanned():
+    # S4.4.1: request links open an issue in owner/repo.
+    result, _ = scan({"repo": {"files": CURRENT}})
+
+    assert result.owner == OWNER
+
+
 def test_unreadable_registry_gives_no_checks():
     result, _ = scan({"repo": {"files": CURRENT}}, fail_registry=True)
 
