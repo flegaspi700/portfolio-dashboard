@@ -820,7 +820,16 @@ links through the whole scan. Following a link is the manual test in
 
 ## Bugs
 
-None logged yet.
-
 | ID | Title | Found in | Severity | Status | Test |
 |---|---|---|---|---|---|
+| B1 | Levels list scrolls sideways at 320 CSS px | S4.3.1 (the two-column definition lists), found in the Phase 3 accessibility pass | Medium: fails WCAG 1.4.10 Reflow (NFR3) | Open | — |
+
+**B1 — Levels list scrolls sideways at 320 CSS px**
+- **Steps:** open the dashboard page at 320 CSS px wide (a 320 px frame, or
+  zoom 400% on a 1280 px window).
+- **Expected:** no horizontal scrolling outside the data tables (WCAG
+  1.4.10).
+- **Actual:** the page scrolls 13 px sideways. The "What the compliance
+  levels mean" list's left column (`dl` grid, `max-content`) is as wide as
+  its longest label, "Level 0 · Not on standard", and pushes the values
+  past the edge. The repo pages' lists have short labels and fit.
