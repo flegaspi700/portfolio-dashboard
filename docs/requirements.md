@@ -133,8 +133,8 @@ show the size of the work, not dates.
 | 0 — Setup and go/no-go | Prove the toolchain and the riskiest assumptions, with no real logic yet | The go/no-go is decided and logged, and an Action has read a private repo with nothing private in its logs. If the mock is a no-go, the Phase 4 rollout tasks move ahead of Phase 1 | Done | 2-3 days | 2026-11-02 | 2026-11-13 |
 | 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all in-scope repos, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Done | 10 days at most (10 stories) | 2026-11-13 | 2026-11-17 |
 | 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Done | 5 days at most (5 stories) | 2026-11-17 | 2026-11-18 |
-| 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Active | 7 days at most (7 stories) | 2026-11-18 | |
-| 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met, and the link is good enough to send to a hiring manager | Planned | At least 30 days (the unattended run) | | |
+| 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Done | 7 days at most (7 stories) | 2026-11-18 | 2026-11-18 |
+| 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met, and the link is good enough to send to a hiring manager | Active | At least 30 days (the unattended run) | 2026-11-18 | |
 
 ### Phase tasks
 
@@ -157,7 +157,7 @@ Work that isn't a story. Tick it here when done.
 - [ ] Turn on Dependabot and secret scanning (`security.md` → GitHub setup). Secret scanning and push protection are on; Dependabot alerts are off (checked 2026-11-17)
 - [x] Copy `.env.example` to `.env` for the local token (2026-11-17)
 - [x] First pass of the threat model (`security.md`) (2026-11-13)
-- [ ] Record what applies to this page in `accessibility.md`
+- [x] Record what applies to this page in `accessibility.md` (2026-11-18, in Phase 3)
 - [x] Fill in the non-functional requirements (`requirements.md`) (2026-11-13)
 
 Phase 0 closed 2026-11-13 with its exit criteria met. The open tasks above
@@ -193,12 +193,24 @@ so no accessibility pass.
 **Phase 3:**
 - [x] Decide the "needs attention first" ranking (`decisions.md`) (2026-11-17: fixed tiers, with the reason shown)
 - [x] Write the stories for F4.1, F4.2, F4.3, F4.4, F2.2 (2026-11-17, approved by the owner)
-- [ ] Record what applies to the page in `accessibility.md`, then run the accessibility pass and a Lighthouse check (NFR3, NFR7) before closing the phase
+- [x] Record what applies to the page in `accessibility.md`, then run the accessibility pass and a Lighthouse check (NFR3, NFR7) before closing the phase (2026-11-18: one bug, B1, found and fixed; Lighthouse Accessibility 100, Performance 99)
+
+Phase 3 closed 2026-11-18 with its exit criteria met: the page is live on
+GitHub Pages (run 44355374079), it meets the checks in `accessibility.md`
+(the agent's pass, B1 fixed and re-checked live, Lighthouse Accessibility
+100, the owner's Narrator pass), and the leak test covers the report and
+every file of the built site (S2.2.1). Phase checklist: 409 tests pass,
+coverage 99% (only `report/__main__.py`, run as a subprocess, and one line
+of `main.py` unmeasured), NFRs updated below, `pip-audit` clean, no open
+secret-scanning alerts, threat model reviewed (no new way in). Manual
+tests: F4.2 and F4.4 pass; F4.1 passes apart from its first-reader test,
+which needs someone who hasn't seen the page, so it moves to Phase 4 (where
+it is already a task) and F4.1 and E4 stay In progress until it runs.
 
 **Phase 4:**
 - [ ] Rollout: get at least 4 repos to Level 2 or higher with real status data (done by hand in those repos, not by the dashboard). Can start any time: on 2026-11-17, 5 repos were at Level 3 but only this one reported health, so `/report` in 4 of them meets it
 - [ ] Run the daily rebuild for 30 days straight with no manual steps (counting from the first scheduled run, 2026-11-18, run 44333809359; manual runs don't break the count)
-- [ ] First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first
+- [ ] First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first. Also F4.1's Done when: passing it marks F4.1 and E4 Done (`docs/manual-tests.md`, F4.1, step 5). Best after the rollout, so the ranking has real health to work with
 - [ ] Check the page at least weekly for a month
 
 ## Epics, features and stories
@@ -244,7 +256,7 @@ so no accessibility pass.
 | S4.2.1 | Sortable, accessible repo table | Story | 3 | Done |
 | F4.3 | Per-repo pages | Feature | 3 | Done |
 | S4.3.1 | A page per repo | Story | 3 | Done |
-| F4.4 | Request links | Feature | 3 | In progress |
+| F4.4 | Request links | Feature | 3 | Done |
 | S4.4.1 | Request links for public repos | Story | 3 | Done |
 
 Component folders in the stories below are provisional until `/stack` and
@@ -673,7 +685,7 @@ old-data flag, and an explanation of the compliance levels.
 **Depends on:** F3.2
 **Done when:** a first-time reader can name the project needing attention
 within 3 minutes.
-**Status:** In progress 2026-11-18: all three stories done; the Done when line is the first-reader test in `docs/manual-tests.md` (F4.1), still to run.
+**Status:** In progress 2026-11-18: all three stories done and the page's manual checks pass (`docs/manual-tests.md`, F4.1, steps 1-4); the Done when line, the first-reader test (step 5), needs someone who hasn't seen the page and moved to Phase 4.
 
 #### S4.1.1 — Build the page from the scan output
 
@@ -782,10 +794,10 @@ allow-listed fields only.
 **Depends on:** F4.3
 **Done when:** a link opens a pre-filled issue in public repos, and private
 repos have no links.
-**Status:** In progress 2026-11-18: S4.4.1 done; the integration test
+**Status:** Done 2026-11-18: S4.4.1 done; the integration test
 `test_request_links_go_to_the_scanned_owners_public_repo_only` shows the
-links through the whole scan. Following a link is the manual test in
-`docs/manual-tests.md` (F4.4), still to run.
+links through the whole scan, and the owner followed one on the live page
+(`docs/manual-tests.md`, F4.4).
 
 
 #### S4.4.1 — Request links for public repos
@@ -808,13 +820,13 @@ links through the whole scan. Following a link is the manual test in
 
 | ID | Category | Requirement (measurable) | How verified | Status |
 |---|---|---|---|---|
-| NFR1 | Performance | A full scan of all in-scope repos finishes in under 5 minutes on GitHub Actions and makes fewer than 1,000 GitHub API requests | Timed run and a request count in the run log, each phase end | Met (2026-11-18, the scheduled run on GitHub Actions: 84 requests, 24.2 s for 17 repos) |
+| NFR1 | Performance | A full scan of all in-scope repos finishes in under 5 minutes on GitHub Actions and makes fewer than 1,000 GitHub API requests | Timed run and a request count in the run log, each phase end | Met (2026-11-18, on GitHub Actions: 84 requests, 24.2 s on the scheduled run and 24.5 s on run 44355374079, for 17 repos) |
 | NFR2 | Security | No known high-severity vulnerabilities in dependencies | Dependency audit + Dependabot, each phase end (`security.md`) | Met (2026-11-18: `pip-audit` clean, Jinja2 3.1.6 included; Dependabot alerts are off, the owner's call) |
-| NFR3 | Accessibility | Meets WCAG 2.2 AA | Manual pass per `accessibility.md` | Not met yet |
+| NFR3 | Accessibility | Meets WCAG 2.2 AA | Manual pass per `accessibility.md` | Met (2026-11-18: the pass in `accessibility.md`, with B1 fixed and re-checked on the live site; Lighthouse Accessibility 100; the owner's Narrator pass) |
 | NFR4 | Reliability | The page rebuilds daily with no manual steps for 30 days in a row; a failed run never replaces the last good page, and a partial run is published with the failed repos flagged | Forced-failure test (F3.3) in Phase 2; 30-day run log in Phase 4 | Not met yet (forced-failure test passed 2026-11-17; first scheduled run passed 2026-11-18, which starts the 30-day count for Phase 4) |
 | NFR5 | Privacy | For private repos, only the allow-list fields reach anything published or the Action logs: the leak test's canary values appear in 0 output files and 0 log lines, and the token appears in none | Leak test (S2.1.2, S2.1.3, then F2.2) on every test run | Met (2026-11-18: the leak tests pass for scan output, logs and every file of the built site, report and pages alike (F2.2); the scheduled run's log carried counts only) |
 | NFR6 | Cost | $0 per month: free tiers only (the standard's `cost.md` is not needed) | Any new cost needs a logged decision in `decisions.md` | Met (2026-11-18: no paid service or dependency; no cost decisions logged) |
-| NFR7 | Performance | The dashboard page loads in under 2 seconds on a typical connection, with a total page weight under 500 KB | Lighthouse run on the published page, Phase 3 end | Not met yet |
+| NFR7 | Performance | The dashboard page loads in under 2 seconds on a typical connection, with a total page weight under 500 KB | Lighthouse run on the published page, Phase 3 end | Met (2026-11-18: Lighthouse mobile Performance 99; the page and its stylesheet are 3.6 KB compressed, 2,823 + 806 bytes) |
 
 **Statuses:** `Not met yet` · `Met` (with date last verified) · `At risk`
 
