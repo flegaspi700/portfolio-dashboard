@@ -1,6 +1,8 @@
 <!doctype html>
-{# The dashboard page (S4.1.1), rendered by report/page.py with
-   auto-escaping on. Style and script stay inline: nothing from another site. #}
+{# The dashboard page, rendered by report/page.py with auto-escaping on.
+   Style and script stay inline: nothing from another site (S4.1.1).
+   Summary tiles, scan time, old-data notice and levels: S4.1.2. Every
+   state has a text label; colour only repeats it. #}
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -9,13 +11,69 @@
 <style>
 body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 0 auto; max-width: 64rem; padding: 1rem; color: #1a1a1a; background: #fff; }
 a { color: #0b57d0; }
+.notice { border: 2px solid #8a4b00; background: #fff4e5; padding: 0.5rem 0.75rem; }
+.tiles { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; }
+.tile { border: 1px solid #767676; border-left-width: 0.4rem; padding: 0.5rem 0.75rem; min-width: 8rem; }
+.tile .count { display: block; font-size: 1.5rem; font-weight: bold; }
+.health-green { border-left-color: #1e7b34; }
+.health-amber { border-left-color: #b25e00; }
+.health-red { border-left-color: #c0262d; }
+.health-not-reported { border-left-color: #767676; border-left-style: dashed; }
+dt { font-weight: bold; }
+dd { margin: 0 0 0.5rem 0; }
 </style>
 </head>
 <body>
 <main>
 <h1>Portfolio dashboard</h1>
-<p>Scanned {{ scanned_at }} UTC · spec version {{ spec_version }} · {{ repo_count }} repos</p>
+{% if partial %}
+<p class="notice"><strong>Partial scan: {{ could_not_scan }} of {{ repo_count }} repos could not be scanned.</strong> They are counted under Could not scan; the rest are current.</p>
+{% endif %}
+<p id="stale-notice" class="notice" hidden><strong>This data may be out of date:</strong> it was scanned more than 36 hours ago, so the daily scan may have failed.</p>
+<p>Scanned <time id="scanned-at" datetime="{{ scanned_at_iso }}">{{ scanned_at }} UTC</time> · spec version {{ spec_version }}</p>
+
+<section aria-labelledby="summary">
+<h2 id="summary">Summary</h2>
+<ul class="tiles">
+<li class="tile"><span class="count">{{ repo_count }}</span> <span class="label">Repos</span></li>
+<li class="tile"><span class="count">{{ could_not_scan }}</span> <span class="label">Could not scan</span></li>
+</ul>
+<h3>Health</h3>
+<ul class="tiles">
+{% for value, label, count in health_tiles %}
+<li class="tile health-{{ value }}"><span class="count">{{ count }}</span> <span class="label">{{ label }}</span></li>
+{% endfor %}
+</ul>
+<h3>Compliance level</h3>
+<ul class="tiles">
+{% for label, count in level_tiles %}
+<li class="tile"><span class="count">{{ count }}</span> <span class="label">{{ label }}</span></li>
+{% endfor %}
+</ul>
+</section>
+
+<section aria-labelledby="levels">
+<h2 id="levels">What the compliance levels mean</h2>
+<dl>
+{% for term, sentence in levels %}
+<dt>{{ term }}</dt>
+<dd>{{ sentence }}</dd>
+{% endfor %}
+</dl>
+<p>How each level is earned: <a href="{{ compliance_spec_url }}">the standard's compliance spec</a>.</p>
+</section>
+
 <p><a href="report.md">The same data as a Markdown report</a></p>
 </main>
+<script>
+// Show the old-data notice when the scan is more than 36 hours older than
+// the reader's clock: a daily run plus half a day's slack (S4.1.2).
+(function () {
+  var scanned = Date.parse(document.getElementById("scanned-at").getAttribute("datetime"));
+  if (Date.now() - scanned > 36 * 60 * 60 * 1000) {
+    document.getElementById("stale-notice").hidden = false;
+  }
+})();
+</script>
 </body>
 </html>

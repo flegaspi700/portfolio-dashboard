@@ -56,3 +56,36 @@ NFR4's forced-failure test).
 | Date | Commit | Result | Notes |
 |---|---|---|---|
 | 2026-11-17 | 780faee | Pass | Run 44142953144 (manual, force_failure): scan failed at Forced failure, deploy skipped, result failed, keep-alive passed. The page kept the earlier scan (17:57 UTC). The owner received GitHub's failure email. |
+
+---
+
+## F4.1 — Portfolio summary
+
+**What to check:** the page reads well in a real browser, the old-data
+notice appears only when the data is old, and a first-time reader gets the
+picture fast (S4.1.2, S4.1.3; F4.1's Done when). Tests check the HTML; the
+notice's script and the reading need a browser and a person. The script's
+logic was also run against fake clocks with Node on 2026-11-18 (hidden at
+35 h 59 min, shown at 36 h 1 min).
+
+**Steps:**
+1. Build the site locally (`.venv\Scripts\python -m report`) and open
+   `output/site/index.html` in a browser.
+2. Check the tiles show repos, could not scan, each health value and each
+   level, each with a text label, and the levels section links to the
+   standard's compliance spec.
+3. Old-data notice: the local scan output is less than 36 hours old, so no
+   notice shows. Save a copy of the page, change the `datetime` of its
+   `scanned-at` element to two days back, and open the copy: the notice
+   shows. With scripts turned off, the scan time still shows and the notice
+   doesn't.
+4. After the merge, check the same on
+   https://flegaspi700.github.io/portfolio-dashboard/.
+5. First-reader test: someone who hasn't seen the page opens the link and,
+   within 3 minutes and without help, names the project that needs
+   attention first.
+
+**Results:**
+
+| Date | Commit | Result | Notes |
+|---|---|---|---|

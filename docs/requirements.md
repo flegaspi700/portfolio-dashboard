@@ -226,7 +226,7 @@ no accessibility pass.
 | E4 | Dashboard page | Epic | 3 | In progress |
 | F4.1 | Portfolio summary | Feature | 3 | In progress |
 | S4.1.1 | Build the page from the scan output | Story | 3 | Done |
-| S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Ready |
+| S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Done |
 | S4.1.3 | Needs attention first | Story | 3 | Ready |
 | F4.2 | Sortable table | Feature | 3 | Backlog |
 | S4.2.1 | Sortable, accessible repo table | Story | 3 | Ready |
@@ -676,15 +676,17 @@ within 3 minutes.
 
 **Story:** As a reviewer, I want the portfolio's state at a glance, so that I understand it within a few minutes.
 
-**Component:** `site/`
-**Status:** Ready
+**Component:** `report/` (`page.py`, `templates/index.html`)
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the scan output, when the page is built, then tiles show the number of repos, the count per health value, per compliance level, and could not scan
-- [ ] Given the page, when read, then it shows when the data was scanned (UTC), and a partial scan is flagged at the top
-- [ ] Given data more than 36 hours old when the page is opened, when it loads, then a notice says the data may be out of date (a small script compares the scan time with the reader's clock; without scripts, the scan time is still shown)
-- [ ] Given the page, when read, then the four compliance levels are explained in a sentence each, with a link to the standard's compliance spec
-- [ ] Given counts and states, when shown, then none rely on colour alone (text labels on every state)
+- [x] Given the scan output, when the page is built, then tiles show the number of repos, the count per health value, per compliance level, and could not scan
+- [x] Given the page, when read, then it shows when the data was scanned (UTC), and a partial scan is flagged at the top
+- [x] Given data more than 36 hours old when the page is opened, when it loads, then a notice says the data may be out of date (a small script compares the scan time with the reader's clock; without scripts, the scan time is still shown)
+- [x] Given the page, when read, then the four compliance levels are explained in a sentence each, with a link to the standard's compliance spec
+- [x] Given counts and states, when shown, then none rely on colour alone (text labels on every state)
+
+**Notes:** The counts leave out repos that could not be scanned, as the report does. The levels' sentences come from the Meaning column of the standard's `spec/compliance.md`, and the link goes to it on the default branch, where the scan reads the check registry. The old-data notice is a hidden paragraph that an inline script shows; its logic was run against fake clocks with Node (hidden at 35 h 59 min, shown at 36 h 1 min), and the in-browser check is in `docs/manual-tests.md` (F4.1). Health tiles carry a coloured edge as well as their label.
 
 #### S4.1.3 — Needs attention first
 
