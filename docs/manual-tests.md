@@ -82,9 +82,11 @@ logic was also run against fake clocks with Node on 2026-11-18 (hidden at
    doesn't.
 4. After the merge, check the same on
    https://flegaspi700.github.io/portfolio-dashboard/.
-5. First-reader test: someone who hasn't seen the page opens the link and,
+5. ~~First-reader test: someone who hasn't seen the page opens the link and,
    within 3 minutes and without help, names the project that needs
-   attention first.
+   attention first.~~ Dropped 2026-11-18: no first-time reader is
+   available (`decisions.md`, "Drop the first-reader test"). If one turns
+   up, record their reaction here anyway.
 
 **Results:**
 

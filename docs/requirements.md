@@ -55,8 +55,10 @@ doesn't need to be a full PMO product.
 
 ### Success looks like
 
-- A first-time reader can say, within 3 minutes and without help, how healthy
-  the portfolio is and which project needs attention first.
+- ~~A first-time reader can say, within 3 minutes and without help, how healthy
+  the portfolio is and which project needs attention first.~~ Dropped
+  2026-11-18: no first-time reader is available (`decisions.md`, "Drop the
+  first-reader test").
 - All in-scope repos appear on the page, and at least 4 are on the standard
   (Level 2 or higher) with real status data.
 - The page rebuilds daily with no manual steps for 30 days straight, and
@@ -134,7 +136,7 @@ show the size of the work, not dates.
 | 1 — Scan and JSON | A correct, filtered scan output on real repos, run locally, with nothing published (F1.1–F1.4, F2.1) | A local run on the real repos lists all in-scope repos, levels match `check-compliance.ps1` (apart from the nested schema exception in F1.2), and the leak test passes for output files and logs | Done | 10 days at most (10 stories) | 2026-11-13 | 2026-11-17 |
 | 2 — Report and daily run | The scan runs itself every day and publishes a Markdown report (F3.1–F3.3) | The daily run needs no manual steps, a failed run leaves the last good version up, and a forced failure sends an alert | Done | 5 days at most (5 stories) | 2026-11-17 | 2026-11-18 |
 | 3 — Dashboard page | A reader gets the whole picture from one link and can drill down (F4.1–F4.4, F2.2) | The page is live on GitHub Pages, meets the checks in `accessibility.md`, and the leak test covers the report and the built page | Done | 7 days at most (7 stories) | 2026-11-18 | 2026-11-18 |
-| 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met, and the link is good enough to send to a hiring manager | Active | At least 30 days (the unattended run) | 2026-11-18 | |
+| 4 — Launch and tuning | Meet the success criteria in the Vision on real data | Every item under "Success looks like" is met (apart from the dropped first-reader test), and the link is good enough to send to a hiring manager | Active | At least 30 days (the unattended run) | 2026-11-18 | |
 
 ### Phase tasks
 
@@ -210,7 +212,7 @@ it is already a task) and F4.1 and E4 stay In progress until it runs.
 **Phase 4:**
 - [x] Rollout: get at least 4 repos to Level 2 or higher with real status data (done by hand in those repos, not by the dashboard). Done 2026-11-18: the owner ran `/report` in 3 private Level 3 repos, so 5 repos are at Level 3 with real health (with one other public repo and this one); a scan that day counted 5, and run 44363519631 put it live
 - [ ] Run the daily rebuild for 30 days straight with no manual steps (counting from the first scheduled run, 2026-11-18, run 44333809359; manual runs don't break the count)
-- [ ] First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first. Also F4.1's Done when: passing it marks F4.1 and E4 Done (`docs/manual-tests.md`, F4.1, step 5). Best after the rollout, so the ranking has real health to work with
+- [x] ~~First-reader test: someone new says, within 3 minutes and without help, how healthy the portfolio is and which project needs attention first.~~ Dropped 2026-11-18 by the owner: no first-time reader is available (`decisions.md`, "Drop the first-reader test"). F4.1 and E4 are Done on their other evidence
 - [ ] Check the page at least weekly for a month
 
 ## Epics, features and stories
@@ -247,8 +249,8 @@ it is already a task) and F4.1 and E4 stay In progress until it runs.
 | S3.3.1 | Failure alert, with a forced-failure test | Story | 2 | Done |
 | S3.3.2 | Keep the schedule alive | Story | 2 | Done |
 | S3.3.3 | Token renewal reminder | Story | 2 | Done |
-| E4 | Dashboard page | Epic | 3 | In progress |
-| F4.1 | Portfolio summary | Feature | 3 | In progress |
+| E4 | Dashboard page | Epic | 3 | Done |
+| F4.1 | Portfolio summary | Feature | 3 | Done |
 | S4.1.1 | Build the page from the scan output | Story | 3 | Done |
 | S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Done |
 | S4.1.3 | Needs attention first | Story | 3 | Done |
@@ -675,6 +677,7 @@ exists, and the 60-day workflow shutoff is handled.
 
 **Goal:** A reader understands the portfolio from one link and can drill down.
 **Serves:** G1, G2
+**Status:** Done 2026-11-18: F4.1-F4.4 done; F4.1's first-reader test waived (`decisions.md`, "Drop the first-reader test").
 **Out of scope:** Backend, sign-in, editing on the page, history and trends.
 
 ### F4.1 — Portfolio summary
@@ -685,7 +688,7 @@ old-data flag, and an explanation of the compliance levels.
 **Depends on:** F3.2
 **Done when:** a first-time reader can name the project needing attention
 within 3 minutes.
-**Status:** In progress 2026-11-18: all three stories done and the page's manual checks pass (`docs/manual-tests.md`, F4.1, steps 1-4); the Done when line, the first-reader test (step 5), needs someone who hasn't seen the page and moved to Phase 4.
+**Status:** Done 2026-11-18: all three stories done and the page's manual checks pass (`docs/manual-tests.md`, F4.1, steps 1-4). The Done when line, the first-reader test, was waived by the owner: no first-time reader is available (`decisions.md`, "Drop the first-reader test").
 
 #### S4.1.1 — Build the page from the scan output
 
