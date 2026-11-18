@@ -13,6 +13,10 @@ scanned keeps only its name and scan status, with no error text. Anything
 whose visibility isn't exactly "public" counts as private. A public row
 keeps every field, plus the same signal fields, so the report and page
 read one shape. Built for S2.1.1.
+
+The standard's checks pass too, cut to their ID, title, severity and fix:
+the standard's own public text, the same for every repo, with no repo data
+(S4.3.1; docs/decisions.md, "Check titles and fixes in the scan output").
 """
 
 from dataclasses import asdict
@@ -32,15 +36,21 @@ PRIVATE_FIELDS = (
     "scan_status",
 )
 
+CHECK_FIELDS = ("id", "title", "severity", "fix")
+
 
 def filter_result(result: ScanResult) -> dict[str, Any]:
     """The scan output: the result's status, scan time, spec version and
-    failure reason (all generic, never repo data), and each row filtered."""
+    failure reason (all generic, never repo data), the standard's checks
+    (CHECK_FIELDS only), and each row filtered."""
     return {
         "status": result.status,
         "scanned_at": result.scanned_at,
         "spec_version": result.spec_version,
         "failure": result.failure,
+        "checks": [
+            {name: check.get(name) for name in CHECK_FIELDS} for check in result.checks
+        ],
         "rows": [filter_row(row) for row in result.rows],
     }
 

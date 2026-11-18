@@ -19,7 +19,7 @@ flowchart LR
     gh[("GitHub API")] -- "repo facts, files" --> scan["scan/"]
     scan -- "scan result, unfiltered" --> privacy["privacy/"]
     privacy -- "scan output, allow-listed" --> report["report/"]
-    report -- "index.html, report.md" --> pages["GitHub Pages, deployed by the publish workflow"]
+    report -- "index.html, repos/*.html, style.css, report.md" --> pages["GitHub Pages, deployed by the publish workflow"]
 ```
 
 So far `scan/` has `repos.py` (S1.1.1: the repo listing and scope rule),
@@ -40,9 +40,12 @@ the scan output, cutting private rows to the allow-list, and
 exit code; `privacy/safe_logging.py` (S2.1.3) sets up logging so an
 exception shows only its type. `report/site.py` reads that file, never the
 scan result, and writes the site to `output/site/`: the page,
-`index.html`, from `report/page.py` and its Jinja2 template in
-`report/templates/` (S4.1.1), and the Markdown report, `report.md`, from
-`report/markdown.py` (S3.1.1). `.github/workflows/publish.yml` (S3.2.1) runs
+`index.html`, and a page per repo, `repos/<safe name>.html` (S4.3.1), from
+`report/page.py` and its Jinja2 templates in `report/templates/` (S4.1.1),
+the shared `style.css` from the same folder, and the Markdown report,
+`report.md`, from `report/markdown.py` (S3.1.1). The scan output also
+carries the standard's checks (ID, title, severity, fix) for the repo
+pages (`decisions.md` → "Check titles and fixes in the scan output"). `.github/workflows/publish.yml` (S3.2.1) runs
 it all daily and uploads that folder as it is, with no Jekyll build, so the
 site has no third-party code; it commits nothing. The rest is the
 planned flow from the requirements and the glossary. Check it against the code as stories land.
@@ -170,6 +173,7 @@ ruled out: if one shows up in code or docs, rename it.
 | in-scope repo | A repo the portfolio counts: not archived, not a fork, not tagged `portfolio-exclude`, and pushed since the scan cut-off. | "active repo", "tracked repo" |
 | leak test | The automated test that plants canary values in a private repo and fails if any reach output files or logs. | "privacy check" |
 | repo facts | What GitHub knows about an in-scope repo: last push, created date, language, description, default branch, and open issue and PR counts (issues exclude PRs). A repo whose facts can't be read is a failed read, with no values guessed. | "metadata", "repo info" |
+| repo page | A repo's own page on the site, `repos/<safe name>.html`, linked from its table row: in full for a public repo, the allow-list fields only for a private one. | "detail page", "drill-down" |
 | request link | A link on the page that opens a pre-filled GitHub issue for a public repo's owner. It changes nothing by itself. | "action button", "update button" |
 | scan | One run that reads all in-scope repos and works out their facts, compliance and status. | "crawl", "sync" |
 | scan cut-off | The fixed date 2026-01-01. Repos last pushed before it are out of scope. | "activity window" |

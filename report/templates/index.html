@@ -1,40 +1,10 @@
-<!doctype html>
-{# The dashboard page, rendered by report/page.py with auto-escaping on.
-   Style and script stay inline: nothing from another site (S4.1.1).
-   Summary tiles, scan time, old-data notice and levels: S4.1.2.
-   Needs attention first: S4.1.3. The sortable repo table: S4.2.1
-   (checks in docs/accessibility.md, Repo table). Every
-   state has a text label; colour only repeats it. #}
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Portfolio dashboard</title>
-<style>
-body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 0 auto; max-width: 64rem; padding: 1rem; color: #1a1a1a; background: #fff; }
-a { color: #0b57d0; }
-.notice { border: 2px solid #8a4b00; background: #fff4e5; padding: 0.5rem 0.75rem; }
-.tiles { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; }
-.tile { border: 1px solid #767676; border-left-width: 0.4rem; padding: 0.5rem 0.75rem; min-width: 8rem; }
-.tile .count { display: block; font-size: 1.5rem; font-weight: bold; }
-.health-green { border-left-color: #1e7b34; }
-.health-amber { border-left-color: #b25e00; }
-.health-red { border-left-color: #c0262d; }
-.health-not-reported { border-left-color: #767676; border-left-style: dashed; }
-.table-wrap { overflow-x: auto; }
-table { border-collapse: collapse; }
-caption { text-align: left; padding: 0.25rem 0; }
-th, td { border-bottom: 1px solid #767676; padding: 0.25rem 0.5rem; text-align: left; white-space: nowrap; }
-thead th button { font: inherit; font-weight: bold; color: inherit; background: none; border: 1px solid transparent; padding: 0.125rem 0.25rem; min-height: 1.5rem; cursor: pointer; }
-thead th button:focus-visible, .table-wrap:focus-visible, a:focus-visible { outline: 3px solid #0b57d0; outline-offset: 2px; }
-th[aria-sort="ascending"] button::after { content: " ▲"; }
-th[aria-sort="descending"] button::after { content: " ▼"; }
-dt { font-weight: bold; }
-dd { margin: 0 0 0.5rem 0; }
-</style>
-</head>
-<body>
-<main>
+{% extends "base.html" %}
+{# The dashboard page (S4.1.1). Summary tiles, scan time, old-data notice
+   and levels: S4.1.2. Needs attention first: S4.1.3. The sortable repo
+   table: S4.2.1 (checks in docs/accessibility.md, Repo table); each row
+   links to its repo page (S4.3.1). #}
+{% block title %}Portfolio dashboard{% endblock %}
+{% block main %}
 <h1>Portfolio dashboard</h1>
 {% if partial %}
 <p class="notice"><strong>Partial scan: {{ could_not_scan }} of {{ repo_count }} repos could not be scanned.</strong> They are counted under Could not scan; the rest are current.</p>
@@ -89,11 +59,11 @@ dd { margin: 0 0 0.5rem 0; }
 </tr>
 </thead>
 <tbody>
-{% for cells in table %}
+{% for path, cells in table %}
 <tr>
 {% for text, value in cells %}
 {% if loop.first %}
-<th scope="row"{% if value is not none %} data-value="{{ value }}"{% endif %}>{{ text }}</th>
+<th scope="row"{% if value is not none %} data-value="{{ value }}"{% endif %}><a href="{{ path }}">{{ text }}</a></th>
 {% else %}
 <td{% if value is not none %} data-value="{{ value }}"{% endif %}>{{ text }}</td>
 {% endif %}
@@ -117,7 +87,8 @@ dd { margin: 0 0 0.5rem 0; }
 </section>
 
 <p><a href="report.md">The same data as a Markdown report</a></p>
-</main>
+{% endblock %}
+{% block scripts %}
 <script>
 // Show the old-data notice when the scan is more than 36 hours older than
 // the reader's clock: a daily run plus half a day's slack (S4.1.2).
@@ -163,5 +134,4 @@ dd { margin: 0 0 0.5rem 0; }
   });
 })();
 </script>
-</body>
-</html>
+{% endblock %}

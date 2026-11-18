@@ -11,6 +11,7 @@ file, the report's leak test and `python -m report`. No network, no clock.
 
 import logging
 import os
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -19,7 +20,14 @@ from pathlib import Path
 
 from canaries import CANARIES, PRIVATE_REPO
 from fake_github import OWNER, FakeGitHub
-from scan_outputs import ROWS, output, private_row, table_rows, write_scan_file
+from scan_outputs import (
+    ROWS,
+    output,
+    private_row,
+    public_row,
+    table_rows,
+    write_scan_file,
+)
 
 import report.page
 import report.site
@@ -109,7 +117,14 @@ def files(site):
 def test_build_writes_the_page_and_the_report_from_the_scan_output(tmp_path):
     site = build(tmp_path, output(ROWS))
 
-    assert sorted(files(site)) == ["index.html", "report.md"]
+    assert sorted(files(site)) == [
+        "index.html",
+        "report.md",
+        "repos/alpha.html",
+        "repos/beta.html",
+        "repos/zeta.html",
+        "style.css",
+    ]
     page = (site / "index.html").read_bytes()
     report_md = (site / "report.md").read_bytes()
     assert page.decode("utf-8") == render_page(output(ROWS))
@@ -148,18 +163,52 @@ def test_site_modules_never_import_the_scan_result():
         assert "run_scan" not in text, module.__name__
 
 
+def test_each_repo_page_is_written_where_the_table_links(tmp_path):
+    site = build(tmp_path, output(ROWS))
+
+    page = (site / "index.html").read_text(encoding="utf-8")
+    for link in re.findall(r'<a href="(repos/[^"]+)">', page):
+        assert (site / link).is_file(), link
+    assert len(re.findall(r'<a href="repos/', page)) == len(ROWS)
+
+
 # --- No third-party code, and light ---
 
 
 def test_page_loads_nothing_from_another_site(tmp_path):
-    page = (build(tmp_path, output(ROWS)) / "index.html").read_text(encoding="utf-8")
+    rows = [*ROWS, public_row("open")]
+    site = build(tmp_path, output(rows))
 
-    external = [
-        url
-        for url in resources(page)
-        if "//" in url or url.startswith("<link") or "url(" in url or "@import" in url
-    ]
-    assert external == []
+    for name, content in files(site).items():
+        if not name.endswith(".html"):
+            continue
+        # Same-site relative paths (the shared style.css) are allowed;
+        # anything with a scheme or a host is not (S4.1.1's criterion).
+        external = [
+            url
+            for url in resources(content.decode("utf-8"))
+            if ":" in url or "//" in url or "url(" in url or "@import" in url
+        ]
+        assert external == [], name
+
+
+def test_the_stylesheet_loads_nothing_either(tmp_path):
+    css = (build(tmp_path, output(ROWS)) / "style.css").read_text(encoding="utf-8")
+
+    assert "url(" not in css
+    assert "@import" not in css
+    assert "//" not in css
+
+
+def test_every_page_links_the_shared_stylesheet_by_its_relative_path(tmp_path):
+    site = build(tmp_path, output(ROWS))
+
+    for name, content in files(site).items():
+        if not name.endswith(".html"):
+            continue
+        links = re.findall(r"<link[^>]*>", content.decode("utf-8"))
+        prefix = "../" if name.startswith("repos/") else ""
+        assert links == [f'<link rel="stylesheet" href="{prefix}style.css">'], name
 
 
 def test_the_resource_check_finds_an_external_script():
@@ -279,3 +328,28 @@ def test_the_page_built_from_a_real_shaped_scan_ranks_and_counts_every_repo(tmp_
     table = page[page.index('<table id="repos"') : page.index("</table>")]
     assert "private-repo" in table
     assert "public-repo" in table
+
+
+# --- F4.3 integration: repo pages through the whole scan ---
+
+
+def test_public_pages_show_full_detail_and_private_pages_the_allow_list(tmp_path):
+    # Both repos carry the canary portfolio.json; only the public one may
+    # show its text.
+    repos = {
+        "private-repo": PRIVATE_REPO,
+        "public-repo": {"visibility": "public", "files": PRIVATE_REPO["files"]},
+    }
+    result = run_scan(FakeGitHub(repos), OWNER, NOW)
+    scan_file = tmp_path / "output" / "scan.json"
+    write_output(result, scan_file)
+
+    assert build_site(scan_file, tmp_path / "output" / "site") == 0
+
+    repos_dir = tmp_path / "output" / "site" / "repos"
+    private = (repos_dir / "private-repo.html").read_text(encoding="utf-8")
+    public = (repos_dir / "public-repo.html").read_text(encoding="utf-8")
+    assert [c for c in CANARIES.values() if c in private] == []
+    assert CANARIES["summary"] in public
+    assert CANARIES["risk"] in public
+    assert "AGENTS.md names the standard version" in public  # a check title

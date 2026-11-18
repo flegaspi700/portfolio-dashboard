@@ -1,4 +1,4 @@
-"""Renders the dashboard page, `index.html`, from the scan output.
+"""Renders the dashboard page, `index.html`, and a page per repo.
 
 Part of `report/`. `site.py` reads `output/scan.json` (the filtered scan
 output) and passes it to `render_page`, which works out the counts and
@@ -13,11 +13,15 @@ label, never colour alone (accessibility.md). Built for S4.1.1 (the page),
 S4.1.2 (summary tiles, scan time, old-data notice, levels explained) and
 S4.1.3 (needs attention first, docs/decisions.md, "'Needs attention
 first' ranking": it reads the allow-list fields only, so public and private
-repos rank alike) and S4.2.1 (the repo table: every repo in attention order,
-each cell with a sort value for the page's sorting script).
+repos rank alike), S4.2.1 (the repo table: every repo in attention order,
+each cell with a sort value for the page's sorting script) and S4.3.1 (a
+page per repo at `repos/<safe name>.html`: public repos in full, with each
+check's fix from the scan output's `checks`; private repos with the
+allow-list fields only, read by name; could not scan with nothing else).
 """
 
 import math
+import re
 from collections import Counter
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -29,8 +33,11 @@ from privacy.allow_list import PRIVATE_FIELDS
 from report.markdown import COULD_NOT_SCAN, HEALTH_VALUES, MISSING
 from scan.levels import LEVEL_NAMES
 
+TEMPLATES = Path(__file__).parent / "templates"
+STYLESHEET = TEMPLATES / "style.css"
+
 ENVIRONMENT = Environment(
-    loader=FileSystemLoader(Path(__file__).parent / "templates"),
+    loader=FileSystemLoader(TEMPLATES),
     autoescape=True,
     undefined=StrictUndefined,
     keep_trailing_newline=True,
@@ -101,9 +108,11 @@ def render_page(output: dict[str, Any]) -> str:
     rows = output["rows"]
     scanned = [row for row in rows if row.get("scan_status") != COULD_NOT_SCAN]
     scanned_at = datetime.fromisoformat(output["scanned_at"]).astimezone(UTC)
+    paths = repo_paths(rows)
     health = Counter(row.get("health") for row in scanned)
     levels = Counter(row.get("level") for row in scanned)
     return ENVIRONMENT.get_template("index.html").render(
+        root="",
         scanned_at=f"{scanned_at:%Y-%m-%d %H:%M}",
         scanned_at_iso=f"{scanned_at:%Y-%m-%dT%H:%M:%SZ}",
         spec_version=output["spec_version"],
@@ -129,7 +138,7 @@ def render_page(output: dict[str, Any]) -> str:
             for row, reason in rank_for_attention(rows)[:ATTENTION_LIST_LENGTH]
         ],
         columns=TABLE_COLUMNS,
-        table=[_table_cells(row) for row in table_order(rows)],
+        table=[(paths[row["name"]], _table_cells(row)) for row in table_order(rows)],
     )
 
 
@@ -215,3 +224,169 @@ def rank_for_attention(
 def _day_number(day: str | None) -> float:
     """A date as a number for sorting, with no date as the oldest."""
     return date.fromisoformat(day).toordinal() if day else -math.inf
+
+
+def repo_paths(rows: list[dict[str, Any]]) -> dict[str, str]:
+    """Each repo's page path, `repos/<slug>.html`, by name. The slug is the
+    name in lower case with anything but a-z, 0-9, `_` and `-` turned into
+    `-`, so a name can't reach outside `repos/`. Names that clean to the
+    same slug get `-2`, `-3` and so on, in name order."""
+    paths: dict[str, str] = {}
+    taken: set[str] = set()
+    for name in sorted({row["name"] for row in rows}, key=lambda n: (n.lower(), n)):
+        slug = re.sub(r"[^a-z0-9_-]", "-", name.lower()) or "repo"
+        candidate, number = slug, 1
+        while candidate in taken:
+            number += 1
+            candidate = f"{slug}-{number}"
+        taken.add(candidate)
+        paths[name] = f"repos/{candidate}.html"
+    return paths
+
+
+def render_repo_page(row: dict[str, Any], output: dict[str, Any]) -> str:
+    """One repo's page, as HTML: in full for a public row, the allow-list
+    fields only for a private one, and only its name for a row that could
+    not be scanned."""
+    scanned_at = datetime.fromisoformat(output["scanned_at"]).astimezone(UTC)
+    context: dict[str, Any] = {
+        "root": "../",
+        "name": row["name"],
+        "scanned_at": f"{scanned_at:%Y-%m-%d %H:%M}",
+        "scanned_at_iso": f"{scanned_at:%Y-%m-%dT%H:%M:%SZ}",
+    }
+    if row.get("scan_status") == COULD_NOT_SCAN:
+        context["kind"] = "failed"
+    elif row.get("visibility") == "public":
+        context.update(_public_details(row, output.get("checks", [])))
+    else:
+        # Read by name from the allow-list, so nothing else can show.
+        fields = {name: row.get(name) for name in PRIVATE_FIELDS}
+        context.update(kind="private", status=_status(fields))
+    return ENVIRONMENT.get_template("repo.html").render(**context)
+
+
+def _status(fields: dict[str, Any]) -> list[tuple[str, str]]:
+    """The allow-list fields as (label, text), for every kind of page."""
+    return [
+        ("Visibility", _text(fields.get("visibility"))),
+        ("Lifecycle", _text(fields.get("lifecycle"))),
+        ("Health", _table_cells_text(fields)[3]),
+        ("Level", _table_cells_text(fields)[2]),
+        ("Last activity", _text(fields.get("last_activity"))),
+        ("Risks", _text(fields.get("risk_count"))),
+        ("Blockers", _text(fields.get("blocker_count"))),
+        ("Scan", _text(fields.get("scan_status"))),
+    ]
+
+
+def _table_cells_text(fields: dict[str, Any]) -> list[str]:
+    return [text for text, _ in _table_cells(fields)]
+
+
+def _public_details(
+    row: dict[str, Any], checks: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Everything a public repo's page shows."""
+    status = _status(row)
+    status.insert(4, ("Standard version", _text(row.get("standard_version"))))
+    return {
+        "kind": "public",
+        "description": row.get("description"),
+        "status": status,
+        "facts": [
+            ("Language", _text(row.get("language"))),
+            ("Created", _date(row.get("created_at"))),
+            ("Last push", _date(row.get("pushed_at"))),
+            ("Default branch", _text(row.get("default_branch"))),
+            ("Open issues", _text(row.get("open_issues"))),
+            ("Open pull requests", _text(row.get("open_prs"))),
+        ],
+        "reported": _reported(row.get("reported")),
+        "checks": _check_rows(row.get("checks") or {}, checks),
+        "warnings": [_warning_text(warning) for warning in row.get("warnings") or []],
+    }
+
+
+def _reported(reported: dict[str, Any] | None) -> dict[str, Any] | None:
+    """A valid portfolio.json as the page shows it, or None."""
+    if not reported:
+        return None
+    return {
+        "fields": [
+            ("Summary", _text(reported.get("summary"))),
+            ("Health reason", _text(reported.get("health_reason"))),
+            ("Next milestone", _milestone(reported.get("next_milestone"))),
+            ("Updated", _text(reported.get("updated"))),
+        ],
+        "risks": [
+            _joined(risk["title"], risk.get("severity"), risk.get("mitigation"))
+            for risk in reported.get("risks") or []
+        ],
+        "blockers": [
+            _joined(
+                blocker["title"],
+                f"since {blocker['since']}" if blocker.get("since") else None,
+                f"needs: {blocker['needs']}" if blocker.get("needs") else None,
+            )
+            for blocker in reported.get("blockers") or []
+        ],
+        "callouts": list(reported.get("callouts") or []),
+    }
+
+
+def _check_rows(
+    results: dict[str, bool | None], checks: list[dict[str, Any]]
+) -> list[tuple[str, str, str, str]]:
+    """(ID, title, result, fix) for each check in registry order; the fix
+    only for a failure."""
+    rows = []
+    for check in checks:
+        if check["id"] not in results:
+            continue
+        passed = results[check["id"]]
+        result = {True: "Pass", False: "Fail", None: "Not applicable"}[passed]
+        fix = (check.get("fix") or "") if passed is False else ""
+        rows.append((check["id"], check.get("title") or "", result, fix))
+    return rows
+
+
+WARNING_TEXT = {
+    "S1": "S1 Stale report: portfolio.json is more than 30 days old while the "
+    "repo had pushes in the last 30 days.",
+    "S2": "S2 Health never reported: still not reported 14 days after the repo "
+    "was created or adopted the standard.",
+}
+
+
+def _warning_text(warning: dict[str, Any]) -> str:
+    """A scan warning in words (spec/compliance.md, Warnings worked out by
+    the scanner)."""
+    if warning.get("id") == "S3":
+        return (
+            f"S3 Required change due soon: {warning.get('check_id')} is required "
+            f"from {warning.get('required_from')}."
+        )
+    return WARNING_TEXT.get(warning.get("id"), str(warning.get("id")))
+
+
+def _milestone(milestone: dict[str, Any] | None) -> str:
+    """The next milestone as "name, date"; either part may be missing."""
+    if not milestone:
+        return MISSING
+    return ", ".join(
+        str(part) for part in (milestone.get("name"), milestone.get("date")) if part
+    )
+
+
+def _joined(*parts: str | None) -> str:
+    return " — ".join(part for part in parts if part)
+
+
+def _date(value: str | None) -> str:
+    """The date part of an ISO date and time, or a dash."""
+    return value[:10] if value else MISSING
+
+
+def _text(value: Any) -> str:
+    return MISSING if value is None else str(value)

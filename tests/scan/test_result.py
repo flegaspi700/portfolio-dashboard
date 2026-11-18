@@ -13,7 +13,7 @@ import logging
 from dataclasses import fields, replace
 from datetime import UTC, datetime
 
-from fake_github import OWNER, FakeGitHub, http_error
+from fake_github import OWNER, REGISTRY, FakeGitHub, http_error
 
 from scan.result import COULD_NOT_SCAN, SCAN_OK, RepoRow, run_scan
 
@@ -170,6 +170,20 @@ def test_failed_row_keeps_its_visibility_for_the_filter():
 
 
 # --- The whole run fails ---
+
+
+def test_result_carries_the_registry_checks_as_stated():
+    # S4.3.1: the page shows each check's title and fix from the registry.
+    result, _ = scan({"repo": {"files": CURRENT}})
+
+    assert result.checks == REGISTRY["checks"]
+
+
+def test_unreadable_registry_gives_no_checks():
+    result, _ = scan({"repo": {"files": CURRENT}}, fail_registry=True)
+
+    assert result.status == "failed"
+    assert result.checks == []
 
 
 def test_bad_token_fails_the_result_with_no_rows():

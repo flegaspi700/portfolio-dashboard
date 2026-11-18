@@ -13,6 +13,36 @@ its numbered docs. Where they live now: `00`, `01`, `04` → `requirements.md`;
 
 ---
 
+## 2026-11-18 — Check titles and fixes in the scan output
+
+**Status:** Accepted
+
+**Context:** S4.3.1 shows each check's result on a public repo's page, with
+the standard's fix for a failure. The scan output held only check ID ->
+pass, fail or n/a; the titles and fixes are in the check registry, which
+the scan read and then dropped.
+
+**Options considered:**
+
+| Option | Pros | Cons | Cost |
+|---|---|---|---|
+| A. The scan output carries the registry's checks: ID, title, severity, fix | The page stays built from the scan output alone; the text matches the registry the scan used | A new top-level field to filter and test | $0 |
+| B. Link failures to the compliance spec, no fix text | No change to the scan output | Doesn't meet S4.3.1's criterion as written | $0 |
+| C. The page build reads the registry from GitHub | No scan output change | Network in the build step; can disagree with the scan's registry | $0 |
+
+**Decision:** A. `ScanResult.checks` holds the registry's checks as stated;
+the allow-list filter copies only `id`, `title`, `severity` and `fix`, by
+name, into the scan output's `checks`.
+
+**Why:** It keeps one input for the report and page, and the fix shown is
+the one from the registry that judged the repo.
+
+**Trade-offs accepted:** The scan output grows by the standard's own text
+(about 15 short entries). It is public, the same for every repo, and holds
+no repo data, so the private-row allow-list is unchanged.
+
+---
+
 ## 2026-11-17 — Scan output: one JSON file
 
 **Status:** Accepted
