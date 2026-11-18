@@ -255,3 +255,24 @@ def test_python_m_report_without_scan_output_exits_non_zero(tmp_path):
 
     assert done.returncode == 1
     assert "No scan output" in done.stderr
+
+
+# --- F4.1 integration: scan, filter, write, build ---
+
+
+def test_the_page_built_from_a_real_shaped_scan_ranks_and_counts_every_repo(tmp_path):
+    repos = {
+        "private-repo": PRIVATE_REPO,
+        "public-repo": {"files": PRIVATE_REPO["files"]},
+    }
+    result = run_scan(FakeGitHub(repos), OWNER, NOW)
+    scan_file = tmp_path / "output" / "scan.json"
+    write_output(result, scan_file)
+
+    assert build_site(scan_file, tmp_path / "output" / "site") == 0
+
+    page = (tmp_path / "output" / "site" / "index.html").read_text(encoding="utf-8")
+    attention = page[page.index('id="attention"') : page.index('id="summary"')]
+    assert "private-repo" in attention
+    assert "public-repo" in attention
+    assert '<span class="count">2</span> <span class="label">Repos</span>' in page

@@ -9,17 +9,22 @@ Auto-escaping is on for every value, because a public repo's text could
 carry markup (threat model T3), and an undefined value fails the build
 instead of showing as blank. The page is our own HTML with its style and
 script inline: nothing is loaded from another site. Every state has a text
-label, never colour alone (accessibility.md). Built for S4.1.1 (the page)
-and S4.1.2 (summary tiles, scan time, old-data notice, levels explained).
+label, never colour alone (accessibility.md). Built for S4.1.1 (the page),
+S4.1.2 (summary tiles, scan time, old-data notice, levels explained) and
+S4.1.3 (needs attention first, docs/decisions.md, "'Needs attention
+first' ranking": it reads the allow-list fields only, so public and private
+repos rank alike).
 """
 
+import math
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
+from privacy.allow_list import PRIVATE_FIELDS
 from report.markdown import COULD_NOT_SCAN, HEALTH_VALUES
 from scan.levels import LEVEL_NAMES
 
@@ -53,6 +58,20 @@ LEVEL_SENTENCES = (
         "required check that is due passing."
     ),
 )
+
+# The tiers of "needs attention first", in order; the first match wins.
+# Each is (reason shown on the page, test on the allow-list fields).
+ATTENTION_TIERS = (
+    ("Could not scan", lambda row: row["scan_status"] == COULD_NOT_SCAN),
+    ("Health red", lambda row: row["health"] == "red"),
+    ("Has blockers", lambda row: (row["blocker_count"] or 0) > 0),
+    ("Health amber", lambda row: row["health"] == "amber"),
+    ("Health not reported", lambda row: row["health"] in ("not-reported", None)),
+    ("Below Level 2", lambda row: row["level"] is None or row["level"] < 2),
+    ("Nothing flagged", lambda row: True),
+)
+NOT_RANKED = ("done", "archived")
+ATTENTION_LIST_LENGTH = 5  # From S4.1.3's criteria.
 
 COMPLIANCE_SPEC_URL = (
     "https://github.com/flegaspi700/pmo-project-standardization"
@@ -89,4 +108,45 @@ def render_page(output: dict[str, Any]) -> str:
             )
         ],
         compliance_spec_url=COMPLIANCE_SPEC_URL,
+        attention=[
+            (row["name"], reason)
+            for row, reason in rank_for_attention(rows)[:ATTENTION_LIST_LENGTH]
+        ],
     )
+
+
+def rank_for_attention(
+    rows: list[dict[str, Any]],
+) -> list[tuple[dict[str, Any], str]]:
+    """Rows in "needs attention first" order, each with its tier's reason.
+
+    Order: tier, then lifecycle `active` first, then the most recent
+    activity (none last), then the name. Rows whose lifecycle is `done` or
+    `archived` are left out. Only the allow-list fields are read, so a
+    public row ranks exactly as it would if it were private.
+    """
+    ranked = []
+    for row in rows:
+        fields = {name: row.get(name) for name in PRIVATE_FIELDS}
+        if fields["lifecycle"] in NOT_RANKED:
+            continue
+        tier, reason = next(
+            (number, reason)
+            for number, (reason, matches) in enumerate(ATTENTION_TIERS)
+            if matches(fields)
+        )
+        key = (
+            tier,
+            fields["lifecycle"] != "active",
+            -_day_number(fields["last_activity"]),
+            fields["name"].lower(),
+            fields["name"],
+        )
+        ranked.append((key, row, reason))
+    ranked.sort(key=lambda item: item[0])
+    return [(row, reason) for _, row, reason in ranked]
+
+
+def _day_number(day: str | None) -> float:
+    """A date as a number for sorting, with no date as the oldest."""
+    return date.fromisoformat(day).toordinal() if day else -math.inf

@@ -11,7 +11,7 @@ import re
 
 from scan_outputs import ROWS, output, private_row
 
-from report.page import render_page
+from report.page import rank_for_attention, render_page
 
 COULD_NOT = {"name": "broken", "scan_status": "could not scan"}
 
@@ -168,3 +168,135 @@ def test_health_tiles_carry_their_value_as_text_not_only_a_colour_class():
             rf'<span class="label">{label}</span></li>',
             page,
         ), value
+
+
+# --- S4.1.3: needs attention first ---
+
+TIER_ROWS = [
+    private_row("rest"),
+    private_row("low-level", level=1),
+    private_row("unreported", health="not-reported"),
+    private_row("amber", health="amber"),
+    private_row("blocked", blocker_count=2),
+    private_row("red", health="red"),
+    {"name": "broken", "scan_status": "could not scan"},
+]
+
+
+def ranked_names(rows):
+    return [row["name"] for row, _ in rank_for_attention(rows)]
+
+
+def attention_items(page):
+    """The "Needs attention first" list, as (name, reason) pairs."""
+    section = page[page.index('id="attention"') : page.index('id="summary"')]
+    return re.findall(
+        r'<li><span class="name">([^<]*)</span> — <span class="reason">([^<]*)'
+        r"</span></li>",
+        section,
+    )
+
+
+def test_repos_are_ranked_by_tier():
+    ranked = rank_for_attention(list(reversed(TIER_ROWS)))
+
+    assert [(row["name"], reason) for row, reason in ranked] == [
+        ("broken", "Could not scan"),
+        ("red", "Health red"),
+        ("blocked", "Has blockers"),
+        ("amber", "Health amber"),
+        ("unreported", "Health not reported"),
+        ("low-level", "Below Level 2"),
+        ("rest", "Nothing flagged"),
+    ]
+
+
+def test_the_first_matching_tier_wins():
+    row = private_row("both", health="amber", blocker_count=1, level=0)
+
+    assert rank_for_attention([row])[0][1] == "Has blockers"
+
+
+def test_missing_health_or_level_counts_as_not_reported_and_below_level_2():
+    assert rank_for_attention([private_row("a", health=None)])[0][1] == (
+        "Health not reported"
+    )
+    assert rank_for_attention([private_row("b", level=None)])[0][1] == "Below Level 2"
+
+
+def test_ties_go_to_active_then_recent_activity_then_name():
+    rows = [
+        private_row("b-old", health="red", last_activity="2026-10-01"),
+        private_row("paused-new", health="red", lifecycle="paused"),
+        private_row("a-old", health="red", last_activity="2026-10-01"),
+        private_row("new", health="red", last_activity="2026-11-30"),
+        private_row("no-date", health="red", last_activity=None),
+    ]
+
+    assert ranked_names(rows) == ["new", "a-old", "b-old", "no-date", "paused-new"]
+
+
+def test_done_and_archived_repos_are_not_ranked():
+    rows = [
+        private_row("done", lifecycle="done", health="red"),
+        private_row("archived", lifecycle="archived", health="red"),
+        private_row("kept", lifecycle="paused"),
+    ]
+
+    assert ranked_names(rows) == ["kept"]
+
+
+def test_page_lists_the_top_5_with_their_reason_private_and_public_alike():
+    rows = [*TIER_ROWS, private_row("open-red", visibility="public", health="red")]
+
+    items = attention_items(render_page(output(rows, status="partial")))
+
+    assert items == [
+        ("broken", "Could not scan"),
+        ("open-red", "Health red"),
+        ("red", "Health red"),
+        ("blocked", "Has blockers"),
+        ("amber", "Health amber"),
+    ]
+
+
+def test_needs_attention_comes_before_the_summary():
+    page = render_page(output(ROWS))
+
+    assert page.index('id="attention"') < page.index('id="summary"')
+    assert "Needs attention first</h2>" in page
+
+
+def test_no_rankable_repos_says_so():
+    page = render_page(output([private_row("done", lifecycle="done")]))
+
+    assert attention_items(page) == []
+    assert "No repos to rank." in page
+
+
+def test_many_repos_still_list_only_5():
+    rows = [private_row(f"r{n:03d}", health="red") for n in range(300)]
+
+    items = attention_items(render_page(output(rows)))
+
+    assert [name for name, _ in items] == ["r000", "r001", "r002", "r003", "r004"]
+
+
+def test_a_public_row_ranks_exactly_as_it_would_if_private():
+    private = private_row("open", health="green", level=3, blocker_count=0)
+    # Fields only a public row carries, all pointing at trouble.
+    public = {
+        **private,
+        "visibility": "public",
+        "warnings": [{"id": "S1", "check_id": None, "required_from": None}],
+        "reported": {"health": "red", "blockers": [{"description": "x"}]},
+        "checks": {"C4": False},
+        "description": "red",
+    }
+    others = [private_row("amber", health="amber"), private_row("rest")]
+
+    def names_and_reasons(rows):
+        return [(row["name"], reason) for row, reason in rank_for_attention(rows)]
+
+    assert names_and_reasons([public, *others]) == names_and_reasons([private, *others])
+    assert ("open", "Nothing flagged") in names_and_reasons([public, *others])

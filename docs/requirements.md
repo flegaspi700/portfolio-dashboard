@@ -227,7 +227,7 @@ no accessibility pass.
 | F4.1 | Portfolio summary | Feature | 3 | In progress |
 | S4.1.1 | Build the page from the scan output | Story | 3 | Done |
 | S4.1.2 | Summary tiles, freshness and levels | Story | 3 | Done |
-| S4.1.3 | Needs attention first | Story | 3 | Ready |
+| S4.1.3 | Needs attention first | Story | 3 | Done |
 | F4.2 | Sortable table | Feature | 3 | Backlog |
 | S4.2.1 | Sortable, accessible repo table | Story | 3 | Ready |
 | F4.3 | Per-repo pages | Feature | 3 | Backlog |
@@ -655,6 +655,7 @@ old-data flag, and an explanation of the compliance levels.
 **Depends on:** F3.2
 **Done when:** a first-time reader can name the project needing attention
 within 3 minutes.
+**Status:** In progress 2026-11-18: all three stories done; the Done when line is the first-reader test in `docs/manual-tests.md` (F4.1), still to run.
 
 #### S4.1.1 — Build the page from the scan output
 
@@ -692,17 +693,17 @@ within 3 minutes.
 
 **Story:** As the owner, I want the repos that need attention listed first, with the reason, so that I know where to look this week.
 
-**Component:** `site/`
-**Status:** Ready
+**Component:** `report/` (`page.py`, `templates/index.html`)
+**Status:** Done
 
 **Acceptance criteria:**
-- [ ] Given the scan output, when ranking, then repos are ordered by tier, first match wins: could not scan, health red, has blockers, health amber, health not reported, below Level 2, the rest
-- [ ] Given repos in the same tier, when ranking, then lifecycle `active` comes first, then the most recent activity, then the name
-- [ ] Given a repo whose lifecycle is `done` or `archived`, when ranking, then it isn't listed
-- [ ] Given the page, when read, then a "Needs attention first" section lists the top 5 with their reason, private and public alike
-- [ ] Given a public row, when ranking, then only the allow-list fields count, so it ranks exactly as it would if it were private
+- [x] Given the scan output, when ranking, then repos are ordered by tier, first match wins: could not scan, health red, has blockers, health amber, health not reported, below Level 2, the rest
+- [x] Given repos in the same tier, when ranking, then lifecycle `active` comes first, then the most recent activity, then the name
+- [x] Given a repo whose lifecycle is `done` or `archived`, when ranking, then it isn't listed
+- [x] Given the page, when read, then a "Needs attention first" section lists the top 5 with their reason, private and public alike
+- [x] Given a public row, when ranking, then only the allow-list fields count, so it ranks exactly as it would if it were private
 
-**Notes:** Criteria approved by the owner on 2026-11-17, with the rest of Phase 3's stories. `decisions.md`, "Needs attention first" ranking (2026-11-17).
+**Notes:** Criteria approved by the owner on 2026-11-17, with the rest of Phase 3's stories. `decisions.md`, "Needs attention first" ranking (2026-11-17). Built as `rank_for_attention` in `report/page.py`: it copies each row's allow-list fields (`privacy/allow_list.py`, `PRIVATE_FIELDS`) before testing the tiers, so no other field can count. A missing health counts as not reported and a missing level as below Level 2. When fewer than 5 repos are flagged, the list fills from the last tier with the reason "Nothing flagged", since every ranked repo shows its tier. The page also states the rule in one sentence. On the real scan output of 2026-11-17 the top 5 were all "Health not reported", as expected while only this repo reports. Integration test for F4.1: `test_the_page_built_from_a_real_shaped_scan_ranks_and_counts_every_repo`.
 
 ### F4.2 — Sortable table
 
