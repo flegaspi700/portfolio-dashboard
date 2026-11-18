@@ -33,7 +33,7 @@ import report.page
 import report.site
 from privacy.output import write_output
 from report.markdown import render_report
-from report.page import ENVIRONMENT, render_page
+from report.page import ENVIRONMENT, STYLESHEET, render_page
 from report.site import build_site
 from scan.result import run_scan
 
@@ -376,3 +376,22 @@ def test_request_links_go_to_the_scanned_owners_public_repo_only(tmp_path):
     assert "Request a status update" in public
     assert "Request standard adoption" in public
     assert "issues/new" not in private
+
+
+# --- B1: reflow at 320 CSS px ---
+
+
+def test_definition_list_label_column_is_bounded_so_long_labels_wrap():
+    # B1: a `max-content` label column was as wide as "Level 0 · Not on
+    # standard" and pushed the values past the edge at 320 CSS px (WCAG
+    # 1.4.10). The suite has no browser, so this checks the rule that keeps
+    # the column bounded; the 320 px check itself is in docs/accessibility.md.
+    css = STYLESHEET.read_text(encoding="utf-8")
+    rule = re.search(r"(?m)^dl \{([^}]*)\}", css).group(1)
+    columns = re.search(r"grid-template-columns:\s*([^;]+);", rule).group(1)
+    # The first track, with or without brackets, then the rest.
+    label, value = re.match(r"(\S+\([^)]*\)|\S+)\s+(.+)", columns).groups()
+
+    assert label.startswith(("fit-content(", "minmax(")), label
+    assert "max-content" not in label
+    assert value.startswith("minmax(0"), value
