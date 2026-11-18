@@ -18,7 +18,7 @@ history and trends, and older repos. See `docs/requirements.md` → Non-goals.
 ## How this project is run
 
 It follows the
-[PMO project standard](https://github.com/flegaspi700/pmo-project-standardization/tree/v2.2.0/standard):
+[PMO project standard](https://github.com/flegaspi700/pmo-project-standardization/tree/v2.3.0/standard):
 
 - [`docs/requirements.md`](docs/requirements.md): the vision, phases,
   epics, features and stories
